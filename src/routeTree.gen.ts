@@ -12,6 +12,8 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PlayersPlayerIdRouteImport } from './routes/players.$playerId'
+import { Route as AuctionsAuctionIdRouteImport } from './routes/auctions.$auctionId'
+import { Route as AdminAuctionsNewRouteImport } from './routes/admin.auctions.new'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -28,35 +30,69 @@ const PlayersPlayerIdRoute = PlayersPlayerIdRouteImport.update({
   path: '/players/$playerId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuctionsAuctionIdRoute = AuctionsAuctionIdRouteImport.update({
+  id: '/auctions/$auctionId',
+  path: '/auctions/$auctionId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminAuctionsNewRoute = AdminAuctionsNewRouteImport.update({
+  id: '/admin/auctions/new',
+  path: '/admin/auctions/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/auctions/$auctionId': typeof AuctionsAuctionIdRoute
   '/players/$playerId': typeof PlayersPlayerIdRoute
+  '/admin/auctions/new': typeof AdminAuctionsNewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/auctions/$auctionId': typeof AuctionsAuctionIdRoute
   '/players/$playerId': typeof PlayersPlayerIdRoute
+  '/admin/auctions/new': typeof AdminAuctionsNewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/auctions/$auctionId': typeof AuctionsAuctionIdRoute
   '/players/$playerId': typeof PlayersPlayerIdRoute
+  '/admin/auctions/new': typeof AdminAuctionsNewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/players/$playerId'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/auctions/$auctionId'
+    | '/players/$playerId'
+    | '/admin/auctions/new'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/players/$playerId'
-  id: '__root__' | '/' | '/login' | '/players/$playerId'
+  to:
+    | '/'
+    | '/login'
+    | '/auctions/$auctionId'
+    | '/players/$playerId'
+    | '/admin/auctions/new'
+  id:
+    | '__root__'
+    | '/'
+    | '/login'
+    | '/auctions/$auctionId'
+    | '/players/$playerId'
+    | '/admin/auctions/new'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LoginRoute: typeof LoginRoute
+  AuctionsAuctionIdRoute: typeof AuctionsAuctionIdRoute
   PlayersPlayerIdRoute: typeof PlayersPlayerIdRoute
+  AdminAuctionsNewRoute: typeof AdminAuctionsNewRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -82,13 +118,29 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlayersPlayerIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auctions/$auctionId': {
+      id: '/auctions/$auctionId'
+      path: '/auctions/$auctionId'
+      fullPath: '/auctions/$auctionId'
+      preLoaderRoute: typeof AuctionsAuctionIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/auctions/new': {
+      id: '/admin/auctions/new'
+      path: '/admin/auctions/new'
+      fullPath: '/admin/auctions/new'
+      preLoaderRoute: typeof AdminAuctionsNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LoginRoute: LoginRoute,
+  AuctionsAuctionIdRoute: AuctionsAuctionIdRoute,
   PlayersPlayerIdRoute: PlayersPlayerIdRoute,
+  AdminAuctionsNewRoute: AdminAuctionsNewRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
