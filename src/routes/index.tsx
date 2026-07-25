@@ -59,7 +59,7 @@ function CatalogPage() {
   }, [products, search]);
 
   const update = (patch: Partial<CatalogSearch>) =>
-    navigate({ to: ".", search: (prev) => ({ ...prev, ...patch }) });
+    navigate({ to: "/", search: { ...search, ...patch } });
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-8">
