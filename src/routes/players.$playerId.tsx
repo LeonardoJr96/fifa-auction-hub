@@ -1,0 +1,193 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+
+import { PlayerPhoto } from "@/components/PlayerPhoto";
+import { isGoalkeeper, StatBars } from "@/components/StatBars";
+import { useAuctions, auctionProductId, usePlayer, useProducts } from "@/features/players/hooks";
+import { formatMoney } from "@/lib/format";
+import type { Player } from "@/types/api";
+
+export const Route = createFileRoute("/players/$playerId")({
+  head: () => ({
+    meta: [
+      { title: "Detalhes do jogador · ReverseDraft" },
+      {
+        name: "description",
+        content: "Atributos completos do jogador: ataque, passe, drible, defesa, físico e goleiro.",
+      },
+      { property: "og:title", content: "Detalhes do jogador · ReverseDraft" },
+      { property: "og:description", content: "Atributos completos do jogador no ReverseDraft." },
+    ],
+  }),
+  component: PlayerDetailPage,
+});
+
+const GROUPS: { title: string; keys: [string, string][] }[] = [
+  {
+    title: "Ataque",
+    keys: [
+      ["crossing", "Cruzamento"],
+      ["finishing", "Finalização"],
+      ["headingaccuracy", "Cabeceio"],
+      ["shortpassing", "Passe curto"],
+      ["volleys", "Voleio"],
+    ],
+  },
+  {
+    title: "Passe",
+    keys: [
+      ["curve", "Efeito"],
+      ["fkaccuracy", "Faltas"],
+      ["longpassing", "Passe longo"],
+      ["vision", "Visão"],
+    ],
+  },
+  {
+    title: "Drible",
+    keys: [
+      ["dribbling", "Drible"],
+      ["agility", "Agilidade"],
+      ["balance", "Equilíbrio"],
+      ["reactions", "Reação"],
+      ["ballcontrol", "Controle de bola"],
+      ["composure", "Frieza"],
+    ],
+  },
+  {
+    title: "Defesa",
+    keys: [
+      ["interceptions", "Interceptação"],
+      ["defensiveawareness", "Posicionamento def."],
+      ["standingtackle", "Desarme em pé"],
+      ["slidingtackle", "Carrinho"],
+    ],
+  },
+  {
+    title: "Físico",
+    keys: [
+      ["acceleration", "Aceleração"],
+      ["sprintspeed", "Velocidade"],
+      ["jumping", "Impulsão"],
+      ["stamina", "Fôlego"],
+      ["strength", "Força"],
+      ["aggression", "Agressividade"],
+    ],
+  },
+  {
+    title: "Goleiro",
+    keys: [
+      ["gkdiving", "Elasticidade"],
+      ["gkhandling", "Manejo"],
+      ["gkkicking", "Chute"],
+      ["gkpositioning", "Posicionamento"],
+      ["gkreflexes", "Reflexos"],
+    ],
+  },
+];
+
+function readValue(player: Player, key: string): string {
+  const raw = player[key];
+  if (typeof raw === "number") return String(raw);
+  if (typeof raw === "string" && raw.trim() !== "") return raw;
+  return "—";
+}
+
+function PlayerDetailPage() {
+  const { playerId } = Route.useParams();
+  const { data: player, isLoading, isError, error } = usePlayer(playerId);
+  const { data: products } = useProducts();
+  const { data: auctions } = useAuctions();
+
+  if (isLoading) {
+    return (
+      <div className="mx-auto w-full max-w-4xl px-4 py-10">
+        <div className="h-40 animate-pulse rounded-xl bg-muted" />
+        <div className="mt-6 grid gap-4 sm:grid-cols-2">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <div key={index} className="h-40 animate-pulse rounded-xl bg-muted" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (isError || !player) {
+    return (
+      <p role="alert" className="mx-auto max-w-4xl px-4 py-10 text-sm text-destructive">
+        {error instanceof Error ? error.message : "Jogador não encontrado."}
+      </p>
+    );
+  }
+
+  const product = (products ?? []).find((item) => item.player?.id === player.id);
+  const openAuction = (auctions ?? []).find(
+    (auction) =>
+      auction.status === "OPEN" && product !== undefined && auctionProductId(auction) === product.id,
+  );
+  const groups = isGoalkeeper(player)
+    ? GROUPS
+    : GROUPS.filter((group) => group.title !== "Goleiro");
+
+  return (
+    <div className="mx-auto w-full max-w-4xl px-4 py-8">
+      <div className="flex flex-col gap-5 rounded-xl border border-border bg-card p-5 sm:flex-row sm:items-center">
+        <PlayerPhoto
+          src={player.photo_url}
+          alt={player.common_name}
+          className="h-28 w-28 shrink-0"
+        />
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            {player.common_name}
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {(player.positions ?? [player.best_position]).filter(Boolean).join(" · ") || "—"} ·{" "}
+            {player.age} anos
+          </p>
+          <p className="mt-2 flex flex-wrap items-center gap-3 text-sm">
+            <span className="rounded bg-pitch px-2 py-1 font-bold text-pitch-foreground tabular-nums">
+              {player.overall_rating} OVR
+            </span>
+            <span className="text-muted-foreground">Potencial {player.potential}</span>
+            <span className="font-semibold text-foreground">{formatMoney(player.price)}</span>
+          </p>
+        </div>
+        {openAuction ? (
+          <Link
+            to="/auctions/$auctionId"
+            params={{ auctionId: String(openAuction.id) }}
+            className="rounded-md bg-gold px-4 py-2 text-center text-sm font-bold text-gold-foreground"
+          >
+            Ver leilão
+          </Link>
+        ) : null}
+      </div>
+
+      <div className="mt-6 rounded-xl border border-border bg-card p-5">
+        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+          Atributos principais
+        </h2>
+        <StatBars player={player} />
+      </div>
+
+      <div className="mt-6 grid gap-4 sm:grid-cols-2">
+        {groups.map((group) => (
+          <section key={group.title} className="rounded-xl border border-border bg-card p-5">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+              {group.title}
+            </h2>
+            <dl className="mt-3 space-y-1.5 text-sm">
+              {group.keys.map(([key, label]) => (
+                <div key={key} className="flex items-center justify-between gap-3">
+                  <dt className="text-muted-foreground">{label}</dt>
+                  <dd className="font-semibold tabular-nums text-foreground">
+                    {readValue(player, key)}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </section>
+        ))}
+      </div>
+    </div>
+  );
+}
