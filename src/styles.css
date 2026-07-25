@@ -158,3 +158,12 @@
     color: var(--color-foreground);
   }
 }
+
+.dark {
+  --pitch: oklch(0.6 0.14 155);
+  --pitch-foreground: oklch(0.15 0.03 155);
+  --pitch-deep: oklch(0.3 0.09 155);
+  --pitch-line: oklch(0.98 0.01 150 / 45%);
+  --gold: oklch(0.79 0.15 85);
+  --gold-foreground: oklch(0.2 0.05 85);
+}
