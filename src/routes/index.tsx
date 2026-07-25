@@ -116,7 +116,7 @@ function CatalogPage() {
 
       {isError ? (
         <p role="alert" className="mt-8 rounded-md bg-destructive/10 px-4 py-3 text-sm text-destructive">
-          {error instanceof Error ? error.message : "Não foi possível carregar o catálogo."}
+          Nenhum jogador encontrado.
         </p>
       ) : null}
 
