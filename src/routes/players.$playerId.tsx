@@ -4,7 +4,7 @@ import { PlayerPhoto } from "@/components/PlayerPhoto";
 import { isGoalkeeper, StatBars } from "@/components/StatBars";
 import { useAuctions, auctionProductId, usePlayer, useProducts } from "@/features/players/hooks";
 import { formatMoney } from "@/lib/format";
-import type { Player } from "@/types/api";
+import type { Player, PlayerRole } from "@/types/api";
 
 export const Route = createFileRoute("/players/$playerId")({
   head: () => ({
@@ -123,6 +123,15 @@ function PlayerDetailPage() {
     (auction) =>
       auction.status === "OPEN" && product !== undefined && auctionProductId(auction) === product.id,
   );
+  const playstyles = Array.isArray(player.playstyles)
+    ? (player.playstyles as unknown[]).filter((item): item is string => typeof item === "string")
+    : [];
+  const roles = Array.isArray(player.player_roles)
+    ? (player.player_roles as unknown[]).filter(
+        (item): item is PlayerRole =>
+          typeof item === "object" && item !== null && "role" in item,
+      )
+    : [];
   const groups = isGoalkeeper(player)
     ? GROUPS
     : GROUPS.filter((group) => group.title !== "Goleiro");
@@ -148,6 +157,11 @@ function PlayerDetailPage() {
               {player.overall_rating} OVR
             </span>
             <span className="text-muted-foreground">Potencial {player.potential}</span>
+            {typeof player.international_reputation === "number" ? (
+              <span className="text-muted-foreground">
+                Reputação {player.international_reputation}★
+              </span>
+            ) : null}
             <span className="font-semibold text-foreground">{formatMoney(player.price)}</span>
           </p>
         </div>
@@ -168,6 +182,45 @@ function PlayerDetailPage() {
         </h2>
         <StatBars player={player} />
       </div>
+
+      {playstyles.length || roles.length ? (
+        <div className="mt-6 grid gap-4 sm:grid-cols-2">
+          {playstyles.length ? (
+            <section className="rounded-xl border border-border bg-card p-5">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                Playstyles
+              </h2>
+              <ul className="mt-3 flex flex-wrap gap-2">
+                {playstyles.map((style) => (
+                  <li
+                    key={style}
+                    className="rounded-full bg-muted px-2.5 py-1 text-xs font-semibold text-foreground"
+                  >
+                    {style}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
+          {roles.length ? (
+            <section className="rounded-xl border border-border bg-card p-5">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                Funções
+              </h2>
+              <ul className="mt-3 space-y-2 text-sm">
+                {roles.map((role, index) => (
+                  <li key={`${role.role}-${index}`} className="flex flex-wrap items-baseline gap-2">
+                    <span className="font-semibold text-foreground">{role.role}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {[role.position, ...(role.focuses ?? [])].filter(Boolean).join(" · ")}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
+        </div>
+      ) : null}
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2">
         {groups.map((group) => (
