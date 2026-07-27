@@ -51,6 +51,14 @@ function LoginPage() {
         A sessão fica apenas em memória: ao recarregar a página é preciso entrar novamente.
       </p>
 
+      {registered ? (
+        <p className="mt-4 rounded-md border border-pitch bg-pitch/10 px-3 py-2 text-sm font-semibold text-foreground">
+          Conta criada! Faça login para continuar.
+        </p>
+      ) : null}
+
+
+
       <form onSubmit={handleSubmit} className="mt-6 space-y-4">
         <div>
           <label htmlFor="username" className="text-sm font-medium text-foreground">
