@@ -3,7 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ProductCard, ProductCardSkeleton } from "@/components/ProductCard";
 import { useOpenAuctionsByProduct, useProducts } from "@/features/players/hooks";
 
-export const Route = createFileRoute("/players")({
+export const Route = createFileRoute("/players/")({
   head: () => ({
     meta: [
       { title: "Todos os jogadores · ReverseDraft" },
