@@ -103,6 +103,13 @@ function LoginPage() {
           {pending ? "Entrando…" : "Entrar"}
         </button>
       </form>
+
+      <p className="mt-4 text-sm text-muted-foreground">
+        Não tem conta?{" "}
+        <Link to="/register" className="font-semibold text-pitch hover:underline">
+          Cadastre-se
+        </Link>
+      </p>
     </div>
   );
 }
