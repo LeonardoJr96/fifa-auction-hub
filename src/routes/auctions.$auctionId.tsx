@@ -55,7 +55,12 @@ function AuctionPage() {
   const { data: auction, isLoading, isError, error } = useAuction(auctionId);
   const { data: product } = useAuctionProduct(auction);
   const { data: bids } = useBids(auctionId, auction?.status === "OPEN");
+  const { data: me } = useMe(isAuthenticated);
   const placeBid = usePlaceBid(auctionId);
+  const payAuction = usePayAuction();
+  const isWinner =
+    auction?.status === "PENDING" && me?.id !== undefined && auction.winner === me.id;
+
 
   const remaining = useCountdown(auction?.time_ending);
   const [extended, setExtended] = useState(false);
