@@ -1,9 +1,12 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 
 import { useAuth } from "@/features/auth/AuthContext";
 
 export const Route = createFileRoute("/login")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    registered: search.registered === true || search.registered === "true",
+  }),
   head: () => ({
     meta: [
       { title: "Entrar · ReverseDraft" },
@@ -21,6 +24,7 @@ export const Route = createFileRoute("/login")({
 function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const { registered } = Route.useSearch();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);

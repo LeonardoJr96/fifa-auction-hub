@@ -9,16 +9,24 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as TeamRouteImport } from './routes/team'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as RegisterRouteImport } from './routes/register'
 import { Route as MeRouteImport } from './routes/me'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PlayersIndexRouteImport } from './routes/players.index'
 import { Route as PlayersPlayerIdRouteImport } from './routes/players.$playerId'
 import { Route as AuctionsAuctionIdRouteImport } from './routes/auctions.$auctionId'
+import { Route as AdminAuctionsIndexRouteImport } from './routes/admin.auctions.index'
 import { Route as AdminAuctionsNewRouteImport } from './routes/admin.auctions.new'
 
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TeamRoute = TeamRouteImport.update({
   id: '/team',
   path: '/team',
@@ -27,6 +35,11 @@ const TeamRoute = TeamRouteImport.update({
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegisterRoute = RegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MeRoute = MeRouteImport.update({
@@ -59,6 +72,11 @@ const AuctionsAuctionIdRoute = AuctionsAuctionIdRouteImport.update({
   path: '/auctions/$auctionId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminAuctionsIndexRoute = AdminAuctionsIndexRouteImport.update({
+  id: '/admin/auctions/',
+  path: '/admin/auctions/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminAuctionsNewRoute = AdminAuctionsNewRouteImport.update({
   id: '/admin/auctions/new',
   path: '/admin/auctions/new',
@@ -69,35 +87,44 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/me': typeof MeRoute
+  '/register': typeof RegisterRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/team': typeof TeamRoute
+  '/terms': typeof TermsRoute
   '/auctions/$auctionId': typeof AuctionsAuctionIdRoute
   '/players/$playerId': typeof PlayersPlayerIdRoute
   '/players/': typeof PlayersIndexRoute
   '/admin/auctions/new': typeof AdminAuctionsNewRoute
+  '/admin/auctions/': typeof AdminAuctionsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/me': typeof MeRoute
+  '/register': typeof RegisterRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/team': typeof TeamRoute
+  '/terms': typeof TermsRoute
   '/auctions/$auctionId': typeof AuctionsAuctionIdRoute
   '/players/$playerId': typeof PlayersPlayerIdRoute
   '/players': typeof PlayersIndexRoute
   '/admin/auctions/new': typeof AdminAuctionsNewRoute
+  '/admin/auctions': typeof AdminAuctionsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/me': typeof MeRoute
+  '/register': typeof RegisterRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/team': typeof TeamRoute
+  '/terms': typeof TermsRoute
   '/auctions/$auctionId': typeof AuctionsAuctionIdRoute
   '/players/$playerId': typeof PlayersPlayerIdRoute
   '/players/': typeof PlayersIndexRoute
   '/admin/auctions/new': typeof AdminAuctionsNewRoute
+  '/admin/auctions/': typeof AdminAuctionsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -105,50 +132,69 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/me'
+    | '/register'
     | '/sitemap.xml'
     | '/team'
+    | '/terms'
     | '/auctions/$auctionId'
     | '/players/$playerId'
     | '/players/'
     | '/admin/auctions/new'
+    | '/admin/auctions/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/login'
     | '/me'
+    | '/register'
     | '/sitemap.xml'
     | '/team'
+    | '/terms'
     | '/auctions/$auctionId'
     | '/players/$playerId'
     | '/players'
     | '/admin/auctions/new'
+    | '/admin/auctions'
   id:
     | '__root__'
     | '/'
     | '/login'
     | '/me'
+    | '/register'
     | '/sitemap.xml'
     | '/team'
+    | '/terms'
     | '/auctions/$auctionId'
     | '/players/$playerId'
     | '/players/'
     | '/admin/auctions/new'
+    | '/admin/auctions/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LoginRoute: typeof LoginRoute
   MeRoute: typeof MeRoute
+  RegisterRoute: typeof RegisterRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TeamRoute: typeof TeamRoute
+  TermsRoute: typeof TermsRoute
   AuctionsAuctionIdRoute: typeof AuctionsAuctionIdRoute
   PlayersPlayerIdRoute: typeof PlayersPlayerIdRoute
   PlayersIndexRoute: typeof PlayersIndexRoute
   AdminAuctionsNewRoute: typeof AdminAuctionsNewRoute
+  AdminAuctionsIndexRoute: typeof AdminAuctionsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/team': {
       id: '/team'
       path: '/team'
@@ -161,6 +207,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/register': {
+      id: '/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/me': {
@@ -205,6 +258,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuctionsAuctionIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/auctions/': {
+      id: '/admin/auctions/'
+      path: '/admin/auctions'
+      fullPath: '/admin/auctions/'
+      preLoaderRoute: typeof AdminAuctionsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/auctions/new': {
       id: '/admin/auctions/new'
       path: '/admin/auctions/new'
@@ -219,12 +279,15 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LoginRoute: LoginRoute,
   MeRoute: MeRoute,
+  RegisterRoute: RegisterRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TeamRoute: TeamRoute,
+  TermsRoute: TermsRoute,
   AuctionsAuctionIdRoute: AuctionsAuctionIdRoute,
   PlayersPlayerIdRoute: PlayersPlayerIdRoute,
   PlayersIndexRoute: PlayersIndexRoute,
   AdminAuctionsNewRoute: AdminAuctionsNewRoute,
+  AdminAuctionsIndexRoute: AdminAuctionsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
