@@ -75,6 +75,10 @@ function MePage() {
         <p className="text-4xl font-black tabular-nums text-pitch">{formatMoney(me.balance)}</p>
       </header>
 
+      <ChangePasswordCard />
+
+
+
       <section className="mt-6 rounded-xl border border-border bg-card p-5">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
           Meus jogadores ({me.players?.length ?? 0})
