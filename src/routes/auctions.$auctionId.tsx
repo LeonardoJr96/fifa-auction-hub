@@ -5,6 +5,8 @@ import { PlayerPhoto } from "@/components/PlayerPhoto";
 import { StatBars } from "@/components/StatBars";
 import { useAuction, useAuctionProduct, useBids, usePlaceBid } from "@/features/auction/hooks";
 import { useAuth } from "@/features/auth/AuthContext";
+import { useMe, usePayAuction } from "@/features/me/hooks";
+
 import { formatCountdown, formatDateTime, formatMoney } from "@/lib/format";
 
 export const Route = createFileRoute("/auctions/$auctionId")({
