@@ -56,7 +56,11 @@ function AuctionPage() {
   const { isAuthenticated } = useAuth();
   const { data: auction, isLoading, isError, error } = useAuction(auctionId);
   const { data: product } = useAuctionProduct(auction);
-  const { data: bids } = useBids(auctionId, auction?.status === "OPEN");
+  const {
+    data: bids,
+    isLoading: bidsLoading,
+    isError: bidsError,
+  } = useBids(auctionId, auction?.status === "OPEN");
   const { data: me } = useMe(isAuthenticated);
   const placeBid = usePlaceBid(auctionId);
   const payAuction = usePayAuction();
@@ -285,22 +289,33 @@ function AuctionPage() {
             <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
               Últimos lances
             </h2>
-            <ul className="mt-3 space-y-2 text-sm">
-              {(bids ?? []).slice(0, 10).map((bid) => (
-                <li key={bid.id} className="flex items-center justify-between gap-3">
-                  <span className="font-semibold tabular-nums text-foreground">
-                    {formatMoney(bid.price)}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {bid.username ? `${bid.username} · ` : ""}
-                    {formatDateTime(bid.bid_time)}
-                  </span>
-                </li>
-              ))}
-              {(bids ?? []).length === 0 ? (
-                <li className="text-sm text-muted-foreground">Nenhum lance ainda.</li>
-              ) : null}
-            </ul>
+            {bidsLoading ? (
+              <div className="mt-3 space-y-2" aria-busy="true">
+                <div className="h-4 animate-pulse rounded bg-muted" />
+                <div className="h-4 animate-pulse rounded bg-muted" />
+                <div className="h-4 animate-pulse rounded bg-muted" />
+              </div>
+            ) : bidsError ? (
+              <p role="alert" className="mt-3 text-sm text-muted-foreground">
+                Histórico de lances indisponível no momento.
+              </p>
+            ) : (
+              <ul className="mt-3 space-y-2 text-sm">
+                {(bids ?? []).slice(0, 10).map((bid) => (
+                  <li key={bid.id} className="flex items-center justify-between gap-3">
+                    <span className="font-semibold tabular-nums text-foreground">
+                      {formatMoney(bid.price)}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {bid.username ?? "Você"} · {formatDateTime(bid.bid_time)}
+                    </span>
+                  </li>
+                ))}
+                {(bids ?? []).length === 0 ? (
+                  <li className="text-sm text-muted-foreground">Nenhum lance ainda.</li>
+                ) : null}
+              </ul>
+            )}
           </div>
         </section>
       </div>
