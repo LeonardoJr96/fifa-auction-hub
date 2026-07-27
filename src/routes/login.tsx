@@ -1,9 +1,12 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 
 import { useAuth } from "@/features/auth/AuthContext";
 
 export const Route = createFileRoute("/login")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    registered: search.registered === true || search.registered === "true",
+  }),
   head: () => ({
     meta: [
       { title: "Entrar · ReverseDraft" },
@@ -21,6 +24,7 @@ export const Route = createFileRoute("/login")({
 function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const { registered } = Route.useSearch();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -46,6 +50,14 @@ function LoginPage() {
       <p className="mt-1 text-sm text-muted-foreground">
         A sessão fica apenas em memória: ao recarregar a página é preciso entrar novamente.
       </p>
+
+      {registered ? (
+        <p className="mt-4 rounded-md border border-pitch bg-pitch/10 px-3 py-2 text-sm font-semibold text-foreground">
+          Conta criada! Faça login para continuar.
+        </p>
+      ) : null}
+
+
 
       <form onSubmit={handleSubmit} className="mt-6 space-y-4">
         <div>
@@ -91,6 +103,13 @@ function LoginPage() {
           {pending ? "Entrando…" : "Entrar"}
         </button>
       </form>
+
+      <p className="mt-4 text-sm text-muted-foreground">
+        Não tem conta?{" "}
+        <Link to="/register" className="font-semibold text-pitch hover:underline">
+          Cadastre-se
+        </Link>
+      </p>
     </div>
   );
 }

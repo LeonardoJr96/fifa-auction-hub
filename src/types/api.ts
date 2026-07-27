@@ -65,6 +65,7 @@ export interface Bid {
   price: string;
   bid_time: string;
   user?: number;
+  /** Nome de quem deu o lance (a API pode omitir no lance recém-criado pelo próprio usuário). */
   username?: string;
 }
 
