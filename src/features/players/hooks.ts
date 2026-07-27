@@ -16,7 +16,7 @@ export function useProducts() {
 export const playerQueryOptions = (id: string) =>
   queryOptions({
     queryKey: ["player", id],
-    queryFn: () => apiRequest<Player>(`/fifa/players/${id}/`),
+    queryFn: () => apiRequest<Player>(`/details/players/${id}/`),
   });
 
 export function usePlayer(id: string) {
