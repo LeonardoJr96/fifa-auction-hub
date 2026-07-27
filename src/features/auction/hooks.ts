@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { apiRequest, toList } from "@/lib/api";
+import { ApiError, apiRequest, toList } from "@/lib/api";
 import type { Auction, Bid, Product } from "@/types/api";
 
 export function useAuction(id: string) {
@@ -11,12 +11,29 @@ export function useAuction(id: string) {
   });
 }
 
+/**
+ * Lista pública de lances do leilão (todos os participantes).
+ * Ordena por preço desc (empate: mais recente primeiro).
+ */
 export function useBids(id: string, enabled = true) {
   return useQuery({
     queryKey: ["auction", id, "bids"],
-    queryFn: async () => toList<Bid>(await apiRequest<unknown>(`/auctions/${id}/bids/`)),
+    queryFn: async () => {
+      const list = toList<Bid>(await apiRequest<unknown>(`/auctions/${id}/bids/`));
+      return [...list].sort((a, b) => {
+        const diff = Number(b.price) - Number(a.price);
+        if (diff !== 0) return diff;
+        return new Date(b.bid_time).getTime() - new Date(a.bid_time).getTime();
+      });
+    },
     enabled,
-    refetchInterval: enabled ? 2000 : false,
+    // Endpoint pode não existir ainda em produção: não insistir em 404.
+    retry: (failureCount, error) =>
+      error instanceof ApiError && error.status === 404 ? false : failureCount < 2,
+    refetchInterval: (query) =>
+      enabled && !(query.state.error instanceof ApiError && query.state.error.status === 404)
+        ? 2000
+        : false,
   });
 }
 
