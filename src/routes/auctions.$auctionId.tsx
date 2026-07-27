@@ -187,13 +187,49 @@ function AuctionPage() {
           </div>
 
           {auction.status === "PENDING" ? (
-            <p className="rounded-xl border border-gold bg-gold/15 px-4 py-3 text-sm font-semibold text-foreground">
-              Encerrado! Vencedor: usuário #{auction.winner ?? "—"}
-              {auction.payment_deadline
-                ? ` · pagamento até ${formatDateTime(auction.payment_deadline)}`
-                : ""}
+            <div className="rounded-xl border border-gold bg-gold/15 px-4 py-3 text-sm text-foreground">
+              <p className="font-semibold">
+                Encerrado! Vencedor: {auction.winner === me?.id ? "você" : `usuário #${auction.winner ?? "—"}`}
+                {auction.payment_deadline
+                  ? ` · pagamento até ${formatDateTime(auction.payment_deadline)}`
+                  : ""}
+              </p>
+              {isWinner ? (
+                <>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Seu saldo: {formatMoney(me?.balance ?? 0)} · valor a pagar:{" "}
+                    {formatMoney(auction.current_price)}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => payAuction.mutate(auction.id)}
+                    disabled={payAuction.isPending}
+                    className="mt-3 w-full rounded-md bg-pitch px-4 py-2.5 text-sm font-bold text-pitch-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
+                  >
+                    {payAuction.isPending ? "Pagando…" : "Pagar agora"}
+                  </button>
+                  {payAuction.isError ? (
+                    <p role="alert" className="mt-2 text-sm font-medium text-destructive">
+                      {payAuction.error instanceof Error
+                        ? payAuction.error.message
+                        : "Pagamento recusado."}
+                    </p>
+                  ) : null}
+                </>
+              ) : null}
+            </div>
+          ) : null}
+
+          {auction.status === "PAID" ? (
+            <p className="rounded-xl border border-pitch bg-pitch/10 px-4 py-3 text-sm font-semibold text-foreground">
+              Pago! O jogador já está no seu elenco —{" "}
+              <Link to="/team" className="text-pitch hover:underline">
+                escale no Meu time
+              </Link>
+              .
             </p>
           ) : null}
+
 
           {auction.status === "NO_WINNER" ? (
             <p className="rounded-xl border border-border bg-muted px-4 py-3 text-sm text-muted-foreground">
