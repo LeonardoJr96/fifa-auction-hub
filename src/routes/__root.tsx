@@ -132,6 +132,9 @@ function SiteHeader() {
           <Link to="/" activeOptions={{ exact: true }} className={navLinkClass}>
             Catálogo
           </Link>
+          <Link to="/players" className={navLinkClass}>
+            Jogadores
+          </Link>
           <Link to="/team" className={navLinkClass}>
             Meu time
           </Link>
