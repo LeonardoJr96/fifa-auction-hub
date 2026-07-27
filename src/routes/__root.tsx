@@ -135,6 +135,11 @@ function SiteHeader() {
           <Link to="/team" className={navLinkClass}>
             Meu time
           </Link>
+          {isAuthenticated ? (
+            <Link to="/me" className={navLinkClass}>
+              Minha conta
+            </Link>
+          ) : null}
           {isStaff ? (
             <Link to="/admin/auctions/new" className={navLinkClass}>
               Novo leilão

@@ -97,3 +97,38 @@ export interface Paginated<T> {
   previous: string | null;
   results: T[];
 }
+
+export interface BidHistoryItem {
+  id: number;
+  auction: number;
+  product_title: string;
+  price: string;
+  bid_time: string;
+  status: string;
+}
+
+export interface Me {
+  id: number;
+  username: string;
+  balance: string;
+  bid_history: BidHistoryItem[];
+  players: Player[];
+}
+
+export type TransactionType = "auction_payment" | "balance_recharge" | "refund";
+
+export interface Transaction {
+  id: number;
+  type: TransactionType;
+  status: string;
+  amount: string;
+  balance_after: string;
+  auction: number | null;
+  created_at: string;
+}
+
+export interface PlayerRole {
+  role: string;
+  position: string;
+  focuses: string[];
+}
