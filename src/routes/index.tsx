@@ -59,6 +59,8 @@ function CatalogPage() {
     });
   }, [products, search]);
 
+  const { visible, hasMore, loadMore, sentinelRef, total } = useBatchedList(filtered, 100);
+
   const update = (patch: Partial<CatalogSearch>) =>
     navigate({ to: "/", search: { ...search, ...patch } });
 
