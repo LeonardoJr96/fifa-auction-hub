@@ -158,7 +158,8 @@ function PlayerDetailPage() {
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {(player.positions ?? [player.best_position]).filter(Boolean).join(" · ") || "—"} ·{" "}
-            {player.age} anos
+            {player.age} anos · {footLabel(player.foot)} · Perna ruim{" "}
+            {starLabel(player.weak_foot)}
           </p>
           <p className="mt-2 flex flex-wrap items-center gap-3 text-sm">
             <span className="rounded bg-pitch px-2 py-1 font-bold text-pitch-foreground tabular-nums">
