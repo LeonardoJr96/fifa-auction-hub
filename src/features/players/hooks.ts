@@ -1,4 +1,5 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
 
 import { apiRequest, toList } from "@/lib/api";
 import type { Auction, Player, Product } from "@/types/api";
@@ -39,9 +40,11 @@ export function auctionProductId(auction: Auction): number {
 /** Mapa produto -> leilão aberto. */
 export function useOpenAuctionsByProduct() {
   const { data } = useAuctions();
-  const map = new Map<number, Auction>();
-  for (const auction of data ?? []) {
-    if (auction.status === "OPEN") map.set(auctionProductId(auction), auction);
-  }
-  return map;
+  return useMemo(() => {
+    const map = new Map<number, Auction>();
+    for (const auction of data ?? []) {
+      if (auction.status === "OPEN") map.set(auctionProductId(auction), auction);
+    }
+    return map;
+  }, [data]);
 }
