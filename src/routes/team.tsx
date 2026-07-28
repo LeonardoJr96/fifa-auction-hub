@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { playerPhotoSrc } from "@/lib/player-photo";
 import { useState } from "react";
 
 import { PlayerPhoto } from "@/components/PlayerPhoto";
@@ -120,7 +121,7 @@ function TeamPage() {
               >
                 {player ? (
                   <PlayerPhoto
-                    src={player.photo_url}
+                    src={playerPhotoSrc(player)}
                     alt={player.common_name}
                     className="h-11 w-11 border-2 border-gold bg-card"
                   />
@@ -158,7 +159,7 @@ function TeamPage() {
                   }`}
                 >
                   <PlayerPhoto
-                    src={player.photo_url}
+                    src={playerPhotoSrc(player)}
                     alt={player.common_name}
                     className="h-8 w-8 shrink-0"
                   />
@@ -202,7 +203,7 @@ function TeamPage() {
                     className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm hover:bg-accent"
                   >
                     <PlayerPhoto
-                      src={player.photo_url}
+                      src={playerPhotoSrc(player)}
                       alt={player.common_name}
                       className="h-8 w-8 shrink-0"
                     />

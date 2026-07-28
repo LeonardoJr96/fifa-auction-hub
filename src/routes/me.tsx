@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { playerPhotoSrc } from "@/lib/player-photo";
 import { useState } from "react";
 
 import { PlayerPhoto } from "@/components/PlayerPhoto";
@@ -95,7 +96,7 @@ function MePage() {
                   className="flex items-center gap-3 rounded-lg border border-border p-3 transition-colors hover:bg-accent"
                 >
                   <PlayerPhoto
-                    src={player.photo_url}
+                    src={playerPhotoSrc(player)}
                     alt={player.common_name}
                     className="h-12 w-12 shrink-0"
                   />

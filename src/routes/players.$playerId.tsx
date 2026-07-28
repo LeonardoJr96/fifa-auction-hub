@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { playerPhotoSrc } from "@/lib/player-photo";
 
 import { PlayerPhoto } from "@/components/PlayerPhoto";
 import { isGoalkeeper, StatBars } from "@/components/StatBars";
@@ -147,7 +148,7 @@ function PlayerDetailPage() {
     <div className="mx-auto w-full max-w-4xl px-4 py-8">
       <div className="flex flex-col gap-5 rounded-xl border border-border bg-card p-5 sm:flex-row sm:items-center">
         <PlayerPhoto
-          src={player.photo_url}
+          src={playerPhotoSrc(player)}
           alt={player.common_name}
           className="h-28 w-28 shrink-0"
         />
