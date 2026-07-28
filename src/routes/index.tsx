@@ -23,13 +23,13 @@ export const Route = createFileRoute("/")({
   }),
   head: () => ({
     meta: [
-      { title: "Catálogo de jogadores · ReverseDraft" },
+      { title: "Leilão de jogadores · ReverseDraft" },
       {
         name: "description",
         content:
           "Explore jogadores importados do SoFIFA, compare atributos e entre nos leilões ao vivo.",
       },
-      { property: "og:title", content: "Catálogo de jogadores · ReverseDraft" },
+      { property: "og:title", content: "Leilão de jogadores · ReverseDraft" },
       {
         property: "og:description",
         content: "Explore jogadores, compare atributos e entre nos leilões ao vivo.",
@@ -59,7 +59,7 @@ function CatalogPage() {
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-8">
       <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-        Catálogo de jogadores
+        Leilão de jogadores
       </h1>
       <p className="mt-1 text-sm text-muted-foreground">
         Jogadores disponíveis para leilão ascendente.
