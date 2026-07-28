@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { memo } from "react";
 
 import { PlayerPhoto } from "@/components/PlayerPhoto";
 import { StatBars } from "@/components/StatBars";
@@ -10,11 +11,15 @@ interface ProductCardProps {
   openAuction?: Auction;
 }
 
-export function ProductCard({ product, openAuction }: ProductCardProps) {
+export const ProductCard = memo(function ProductCard({ product, openAuction }: ProductCardProps) {
   const { player } = product;
 
   return (
-    <article className="group relative flex flex-col rounded-xl border border-border bg-card p-4 shadow-card transition-shadow hover:shadow-lg">
+    <article
+      className="group relative flex flex-col rounded-xl border border-border bg-card p-4 shadow-card transition-shadow hover:shadow-lg"
+      style={{ contentVisibility: "auto", containIntrinsicSize: "320px" }}
+    >
+
       {openAuction ? (
         <Link
           to="/auctions/$auctionId"
@@ -59,7 +64,7 @@ export function ProductCard({ product, openAuction }: ProductCardProps) {
       </div>
     </article>
   );
-}
+});
 
 export function ProductCardSkeleton() {
   return (

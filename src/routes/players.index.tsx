@@ -1,7 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useMemo } from "react";
 
 import { ProductCard, ProductCardSkeleton } from "@/components/ProductCard";
 import { useOpenAuctionsByProduct, useProducts } from "@/features/players/hooks";
+import { useBatchedList } from "@/hooks/use-batched-list";
 
 export const Route = createFileRoute("/players/")({
   head: () => ({
@@ -25,6 +27,9 @@ function PlayersPage() {
   const { data: products, isLoading, isError } = useProducts();
   const openAuctions = useOpenAuctionsByProduct();
 
+  const list = useMemo(() => products ?? [], [products]);
+  const { visible, hasMore, loadMore, sentinelRef, total } = useBatchedList(list, 100);
+
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-8">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -35,7 +40,7 @@ function PlayersPage() {
           <p className="mt-1 text-sm text-muted-foreground">
             {isLoading
               ? "Carregando lista de jogadores..."
-              : `Exibindo ${products?.length ?? 0} jogadores disponíveis.`}
+              : `Exibindo ${visible.length} de ${total} jogadores disponíveis.`}
           </p>
         </div>
         <Link
@@ -55,7 +60,7 @@ function PlayersPage() {
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {isLoading
           ? Array.from({ length: 6 }).map((_, index) => <ProductCardSkeleton key={index} />)
-          : (products ?? []).map((product) => (
+          : visible.map((product) => (
               <ProductCard
                 key={product.id}
                 product={product}
@@ -64,7 +69,19 @@ function PlayersPage() {
             ))}
       </div>
 
-      {!isLoading && !isError && (products ?? []).length === 0 ? (
+      {!isLoading && hasMore ? (
+        <div ref={sentinelRef} className="mt-6 flex justify-center">
+          <button
+            type="button"
+            onClick={loadMore}
+            className="rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+          >
+            Carregar mais 100
+          </button>
+        </div>
+      ) : null}
+
+      {!isLoading && !isError && total === 0 ? (
         <p className="mt-10 text-center text-sm text-muted-foreground">
           Nenhum jogador disponível no momento.
         </p>

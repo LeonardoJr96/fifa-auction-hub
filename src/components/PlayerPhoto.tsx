@@ -1,13 +1,22 @@
+import { memo } from "react";
+
 import { cn } from "@/lib/utils";
 
 interface PlayerPhotoProps {
   src: string | null | undefined;
   alt: string;
   className?: string;
+  /** Tamanho renderizado em px (evita decodificar imagens base64 grandes sem necessidade). */
+  size?: number;
 }
 
 /** Foto do jogador com fallback de silhueta quando photo_url vem null. */
-export function PlayerPhoto({ src, alt, className }: PlayerPhotoProps) {
+export const PlayerPhoto = memo(function PlayerPhoto({
+  src,
+  alt,
+  className,
+  size = 64,
+}: PlayerPhotoProps) {
   return (
     <div
       className={cn(
@@ -16,7 +25,16 @@ export function PlayerPhoto({ src, alt, className }: PlayerPhotoProps) {
       )}
     >
       {src ? (
-        <img src={src} alt={alt} loading="lazy" className="h-full w-full object-cover" />
+        <img
+          src={src}
+          alt={alt}
+          width={size}
+          height={size}
+          loading="lazy"
+          decoding="async"
+          draggable={false}
+          className="h-full w-full object-cover"
+        />
       ) : (
         <svg viewBox="0 0 24 24" aria-hidden="true" className="h-2/3 w-2/3 text-muted-foreground">
           <path
@@ -27,4 +45,4 @@ export function PlayerPhoto({ src, alt, className }: PlayerPhotoProps) {
       )}
     </div>
   );
-}
+});
