@@ -3,6 +3,7 @@ import { useMemo } from "react";
 
 import { ProductCard, ProductCardSkeleton } from "@/components/ProductCard";
 import { useOpenAuctionsByProduct, useProducts } from "@/features/players/hooks";
+import { useBatchedList } from "@/hooks/use-batched-list";
 
 interface CatalogSearch {
   position: string;
