@@ -30,9 +30,12 @@ export function useQueryCachePersistence(queryClient: QueryClient) {
         throttleTime: 2000,
       });
 
+      type PersistOptions = Parameters<typeof persistQueryClient>[0];
+
       const [unsubscribe] = persistQueryClient({
-        queryClient,
+        queryClient: queryClient as unknown as PersistOptions["queryClient"],
         persister,
+
         maxAge: 24 * 60 * 60 * 1000,
         buster: "v1",
         dehydrateOptions: {
