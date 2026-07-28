@@ -1,7 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo } from "react";
+import { useState } from "react";
 
 import { PaginationBar } from "@/components/PaginationBar";
+import {
+  PlayerFilters,
+  defaultPlayerFilters,
+  usePlayerFiltering,
+  type PlayerFilterValues,
+} from "@/components/PlayerFilters";
 import { ProductCard, ProductCardSkeleton } from "@/components/ProductCard";
 import { useOpenAuctionsByProduct, useProducts } from "@/features/players/hooks";
 import { usePagination } from "@/hooks/use-pagination";
@@ -27,9 +33,10 @@ export const Route = createFileRoute("/players/")({
 function PlayersPage() {
   const { data: products, isLoading, isError } = useProducts();
   const openAuctions = useOpenAuctionsByProduct();
+  const [filters, setFilters] = useState<PlayerFilterValues>(defaultPlayerFilters);
 
-  const list = useMemo(() => products ?? [], [products]);
-  const pagination = usePagination(list, 100);
+  const { positions, filtered } = usePlayerFiltering(products, filters);
+  const pagination = usePagination(filtered, 100);
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-8">
@@ -41,7 +48,7 @@ function PlayersPage() {
           <p className="mt-1 text-sm text-muted-foreground">
             {isLoading
               ? "Carregando lista de jogadores..."
-              : `${pagination.total} jogadores disponíveis · 100 por página.`}
+              : `${pagination.total} jogadores encontrados · 100 por página.`}
           </p>
         </div>
         <Link
@@ -51,6 +58,13 @@ function PlayersPage() {
           Ir para o catálogo
         </Link>
       </div>
+
+      <PlayerFilters
+        values={filters}
+        positions={positions}
+        onChange={(patch) => setFilters((prev) => ({ ...prev, ...patch }))}
+        onReset={() => setFilters(defaultPlayerFilters)}
+      />
 
       {isError ? (
         <p role="alert" className="mt-8 rounded-md bg-destructive/10 px-4 py-3 text-sm text-destructive">
@@ -86,7 +100,7 @@ function PlayersPage() {
 
       {!isLoading && !isError && pagination.total === 0 ? (
         <p className="mt-10 text-center text-sm text-muted-foreground">
-          Nenhum jogador disponível no momento.
+          Nenhum jogador encontrado com esses filtros.
         </p>
       ) : null}
     </div>
