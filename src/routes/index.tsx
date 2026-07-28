@@ -44,7 +44,12 @@ function CatalogPage() {
   const { data: products, isLoading, isError } = useProducts();
   const openAuctions = useOpenAuctionsByProduct();
 
-  const { positions, filtered } = usePlayerFiltering(products, search);
+  const inAuction = useMemo(
+    () => (products ?? []).filter((product) => openAuctions.has(product.id)),
+    [products, openAuctions],
+  );
+
+  const { positions, filtered } = usePlayerFiltering(inAuction, search);
   const pagination = usePagination(filtered, 100);
 
   const update = (patch: Partial<PlayerFilterValues>) =>
