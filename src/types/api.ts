@@ -4,6 +4,8 @@ export interface Player {
   common_name: string;
   age: number;
   photo_url: string | null;
+  photo_data_uri?: string | null;
+  photo_base64?: string | null;
   price: number;
   positions?: string[];
   best_position?: string;

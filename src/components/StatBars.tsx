@@ -10,12 +10,11 @@ const KEYS = [
 ] as const;
 
 const GK_KEYS = [
-  { key: "gkdiving", label: "DIV" },
-  { key: "gkhandling", label: "HAN" },
-  { key: "gkkicking", label: "KIC" },
-  { key: "gkreflexes", label: "REF" },
-  { key: "gkspeed", label: "SPD" },
-  { key: "gkpositioning", label: "POS" },
+  { key: "gk_diving", label: "DIV" },
+  { key: "gk_handling", label: "HAN" },
+  { key: "gk_kicking", label: "KIC" },
+  { key: "gk_reflexes", label: "REF" },
+  { key: "gk_positioning", label: "POS" },
 ] as const;
 
 function readStat(player: Player, key: string): number | null {
@@ -26,7 +25,9 @@ function readStat(player: Player, key: string): number | null {
 }
 
 export function isGoalkeeper(player: Player): boolean {
-  return player.pac === null && player.sho === null && player.dri === null;
+  if (player.best_position === "GK") return true;
+  if (Array.isArray(player.positions) && player.positions.includes("GK")) return true;
+  return readStat(player, "gk_diving") !== null && (player.pac ?? 0) === 0;
 }
 
 /** Barras dos 6 atributos calculados (ou atributos de GK para goleiros). */

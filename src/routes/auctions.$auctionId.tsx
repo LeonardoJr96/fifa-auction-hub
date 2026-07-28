@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { playerPhotoSrc } from "@/lib/player-photo";
 import { useEffect, useRef, useState } from "react";
 
 import { PlayerPhoto } from "@/components/PlayerPhoto";
@@ -125,7 +126,7 @@ function AuctionPage() {
         <section className="rounded-xl border border-border bg-card p-5">
           <div className="flex items-center gap-4">
             <PlayerPhoto
-              src={player?.photo_url ?? null}
+              src={playerPhotoSrc(player)}
               alt={player?.common_name ?? "Jogador"}
               className="h-20 w-20 shrink-0"
             />

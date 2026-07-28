@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { playerPhotoSrc } from "@/lib/player-photo";
 
 import { PlayerPhoto } from "@/components/PlayerPhoto";
 import { isGoalkeeper, StatBars } from "@/components/StatBars";
@@ -27,17 +28,20 @@ const GROUPS: { title: string; keys: [string, string][] }[] = [
     keys: [
       ["crossing", "Cruzamento"],
       ["finishing", "Finalização"],
-      ["headingaccuracy", "Cabeceio"],
-      ["shortpassing", "Passe curto"],
+      ["heading", "Cabeceio"],
+      ["short_passing", "Passe curto"],
       ["volleys", "Voleio"],
+      ["shot_power", "Força do chute"],
+      ["long_shots", "Chutes de longe"],
+      ["penalties", "Pênaltis"],
     ],
   },
   {
     title: "Passe",
     keys: [
       ["curve", "Efeito"],
-      ["fkaccuracy", "Faltas"],
-      ["longpassing", "Passe longo"],
+      ["free_kick", "Faltas"],
+      ["long_passing", "Passe longo"],
       ["vision", "Visão"],
     ],
   },
@@ -48,38 +52,42 @@ const GROUPS: { title: string; keys: [string, string][] }[] = [
       ["agility", "Agilidade"],
       ["balance", "Equilíbrio"],
       ["reactions", "Reação"],
-      ["ballcontrol", "Controle de bola"],
+      ["ball_control", "Controle de bola"],
       ["composure", "Frieza"],
+      ["skill_moves", "Dribles especiais"],
     ],
   },
   {
     title: "Defesa",
     keys: [
       ["interceptions", "Interceptação"],
-      ["defensiveawareness", "Posicionamento def."],
-      ["standingtackle", "Desarme em pé"],
-      ["slidingtackle", "Carrinho"],
+      ["marking", "Marcação"],
+      ["positioning", "Posicionamento"],
+      ["standing_tackle", "Desarme em pé"],
+      ["sliding_tackle", "Carrinho"],
     ],
   },
   {
     title: "Físico",
     keys: [
       ["acceleration", "Aceleração"],
-      ["sprintspeed", "Velocidade"],
+      ["sprint_speed", "Velocidade"],
       ["jumping", "Impulsão"],
       ["stamina", "Fôlego"],
       ["strength", "Força"],
       ["aggression", "Agressividade"],
+      ["height", "Altura (cm)"],
+      ["weight", "Peso (kg)"],
     ],
   },
   {
     title: "Goleiro",
     keys: [
-      ["gkdiving", "Elasticidade"],
-      ["gkhandling", "Manejo"],
-      ["gkkicking", "Chute"],
-      ["gkpositioning", "Posicionamento"],
-      ["gkreflexes", "Reflexos"],
+      ["gk_diving", "Elasticidade"],
+      ["gk_handling", "Manejo"],
+      ["gk_kicking", "Chute"],
+      ["gk_positioning", "Posicionamento"],
+      ["gk_reflexes", "Reflexos"],
     ],
   },
 ];
@@ -140,7 +148,7 @@ function PlayerDetailPage() {
     <div className="mx-auto w-full max-w-4xl px-4 py-8">
       <div className="flex flex-col gap-5 rounded-xl border border-border bg-card p-5 sm:flex-row sm:items-center">
         <PlayerPhoto
-          src={player.photo_url}
+          src={playerPhotoSrc(player)}
           alt={player.common_name}
           className="h-28 w-28 shrink-0"
         />

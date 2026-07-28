@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { playerPhotoSrc } from "@/lib/player-photo";
 import { memo } from "react";
 
 import { PlayerPhoto } from "@/components/PlayerPhoto";
@@ -31,7 +32,7 @@ export const ProductCard = memo(function ProductCard({ product, openAuction }: P
       ) : null}
 
       <div className="flex items-center gap-3">
-        <PlayerPhoto src={player.photo_url} alt={player.common_name} className="h-16 w-16 shrink-0" />
+        <PlayerPhoto src={playerPhotoSrc(player)} alt={player.common_name} className="h-16 w-16 shrink-0" />
         <div className="min-w-0">
           <h3 className="truncate text-base font-semibold text-foreground">{product.title}</h3>
           <p className="text-xs text-muted-foreground">
