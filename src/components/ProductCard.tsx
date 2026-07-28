@@ -64,7 +64,7 @@ export const ProductCard = memo(function ProductCard({ product, openAuction }: P
       </div>
     </article>
   );
-}
+});
 
 export function ProductCardSkeleton() {
   return (
