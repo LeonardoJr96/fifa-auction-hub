@@ -1,9 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo } from "react";
 
+import { PaginationBar } from "@/components/PaginationBar";
 import { ProductCard, ProductCardSkeleton } from "@/components/ProductCard";
 import { useOpenAuctionsByProduct, useProducts } from "@/features/players/hooks";
-import { useBatchedList } from "@/hooks/use-batched-list";
+import { usePagination } from "@/hooks/use-pagination";
 
 export const Route = createFileRoute("/players/")({
   head: () => ({
@@ -28,7 +29,7 @@ function PlayersPage() {
   const openAuctions = useOpenAuctionsByProduct();
 
   const list = useMemo(() => products ?? [], [products]);
-  const { visible, hasMore, loadMore, sentinelRef, total } = useBatchedList(list, 100);
+  const pagination = usePagination(list, 100);
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-8">
@@ -40,7 +41,7 @@ function PlayersPage() {
           <p className="mt-1 text-sm text-muted-foreground">
             {isLoading
               ? "Carregando lista de jogadores..."
-              : `Exibindo ${visible.length} de ${total} jogadores disponíveis.`}
+              : `${pagination.total} jogadores disponíveis · 100 por página.`}
           </p>
         </div>
         <Link
@@ -60,7 +61,7 @@ function PlayersPage() {
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {isLoading
           ? Array.from({ length: 6 }).map((_, index) => <ProductCardSkeleton key={index} />)
-          : visible.map((product) => (
+          : pagination.items.map((product) => (
               <ProductCard
                 key={product.id}
                 product={product}
@@ -69,19 +70,21 @@ function PlayersPage() {
             ))}
       </div>
 
-      {!isLoading && hasMore ? (
-        <div ref={sentinelRef} className="mt-6 flex justify-center">
-          <button
-            type="button"
-            onClick={loadMore}
-            className="rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
-          >
-            Carregar mais 100
-          </button>
-        </div>
+      {!isLoading ? (
+        <PaginationBar
+          page={pagination.page}
+          pageCount={pagination.pageCount}
+          rangeStart={pagination.rangeStart}
+          rangeEnd={pagination.rangeEnd}
+          total={pagination.total}
+          hasPrev={pagination.hasPrev}
+          hasNext={pagination.hasNext}
+          onPrev={pagination.prev}
+          onNext={pagination.next}
+        />
       ) : null}
 
-      {!isLoading && !isError && total === 0 ? (
+      {!isLoading && !isError && pagination.total === 0 ? (
         <p className="mt-10 text-center text-sm text-muted-foreground">
           Nenhum jogador disponível no momento.
         </p>

@@ -1,9 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo } from "react";
 
+import { PaginationBar } from "@/components/PaginationBar";
 import { ProductCard, ProductCardSkeleton } from "@/components/ProductCard";
 import { useOpenAuctionsByProduct, useProducts } from "@/features/players/hooks";
-import { useBatchedList } from "@/hooks/use-batched-list";
+import { usePagination } from "@/hooks/use-pagination";
 
 interface CatalogSearch {
   position: string;
@@ -59,7 +60,7 @@ function CatalogPage() {
     });
   }, [products, search]);
 
-  const { visible, hasMore, loadMore, sentinelRef, total } = useBatchedList(filtered, 100);
+  const pagination = usePagination(filtered, 100);
 
   const update = (patch: Partial<CatalogSearch>) =>
     navigate({ to: "/", search: { ...search, ...patch } });
@@ -126,7 +127,7 @@ function CatalogPage() {
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {isLoading
           ? Array.from({ length: 6 }).map((_, index) => <ProductCardSkeleton key={index} />)
-          : visible.map((product) => (
+          : pagination.items.map((product) => (
               <ProductCard
                 key={product.id}
                 product={product}
@@ -135,19 +136,18 @@ function CatalogPage() {
             ))}
       </div>
 
-      {!isLoading && hasMore ? (
-        <div ref={sentinelRef} className="mt-6 flex flex-col items-center gap-2">
-          <p className="text-xs text-muted-foreground">
-            Exibindo {visible.length} de {total} jogadores
-          </p>
-          <button
-            type="button"
-            onClick={loadMore}
-            className="rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
-          >
-            Carregar mais 100
-          </button>
-        </div>
+      {!isLoading ? (
+        <PaginationBar
+          page={pagination.page}
+          pageCount={pagination.pageCount}
+          rangeStart={pagination.rangeStart}
+          rangeEnd={pagination.rangeEnd}
+          total={pagination.total}
+          hasPrev={pagination.hasPrev}
+          hasNext={pagination.hasNext}
+          onPrev={pagination.prev}
+          onNext={pagination.next}
+        />
       ) : null}
 
       {!isLoading && !isError && filtered.length === 0 ? (

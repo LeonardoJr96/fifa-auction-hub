@@ -1,4 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+import { useQueryCachePersistence } from "@/lib/query-persist";
 import {
   Outlet,
   Link,
@@ -170,6 +172,9 @@ function SiteHeader() {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  useQueryCachePersistence(queryClient);
+
+
 
   return (
     <QueryClientProvider client={queryClient}>

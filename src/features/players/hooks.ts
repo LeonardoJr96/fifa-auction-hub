@@ -8,7 +8,11 @@ export const productsQueryOptions = () =>
   queryOptions({
     queryKey: ["products"],
     queryFn: async () => toList<Product>(await apiRequest<unknown>("/products/")),
+    staleTime: 10 * 60 * 1000,
+    gcTime: 24 * 60 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
+
 
 export function useProducts() {
   return useQuery(productsQueryOptions());
