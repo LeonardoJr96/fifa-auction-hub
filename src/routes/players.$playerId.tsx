@@ -92,6 +92,20 @@ const GROUPS: { title: string; keys: [string, string][] }[] = [
   },
 ];
 
+/** foot: 1 = destro, 2 = canhoto. */
+function footLabel(foot: unknown): string {
+  if (foot === 1 || foot === "1") return "Destro";
+  if (foot === 2 || foot === "2") return "Canhoto";
+  return "Pé —";
+}
+
+/** Estrelas (perna ruim / dribles), de 1 a 5. */
+function starLabel(value: unknown): string {
+  const n = Number(value);
+  if (!Number.isFinite(n) || n <= 0) return "—";
+  return `${"★".repeat(Math.min(5, n))}${"☆".repeat(Math.max(0, 5 - n))} (${n})`;
+}
+
 function readValue(player: Player, key: string): string {
   const raw = player[key];
   if (typeof raw === "number") return String(raw);
@@ -158,7 +172,8 @@ function PlayerDetailPage() {
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {(player.positions ?? [player.best_position]).filter(Boolean).join(" · ") || "—"} ·{" "}
-            {player.age} anos
+            {player.age} anos · {footLabel(player.foot)} · Perna ruim{" "}
+            {starLabel(player.weak_foot)}
           </p>
           <p className="mt-2 flex flex-wrap items-center gap-3 text-sm">
             <span className="rounded bg-pitch px-2 py-1 font-bold text-pitch-foreground tabular-nums">
