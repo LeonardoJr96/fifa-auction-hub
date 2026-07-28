@@ -126,7 +126,7 @@ function CatalogPage() {
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {isLoading
           ? Array.from({ length: 6 }).map((_, index) => <ProductCardSkeleton key={index} />)
-          : filtered.map((product) => (
+          : visible.map((product) => (
               <ProductCard
                 key={product.id}
                 product={product}
@@ -134,6 +134,21 @@ function CatalogPage() {
               />
             ))}
       </div>
+
+      {!isLoading && hasMore ? (
+        <div ref={sentinelRef} className="mt-6 flex flex-col items-center gap-2">
+          <p className="text-xs text-muted-foreground">
+            Exibindo {visible.length} de {total} jogadores
+          </p>
+          <button
+            type="button"
+            onClick={loadMore}
+            className="rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+          >
+            Carregar mais 100
+          </button>
+        </div>
+      ) : null}
 
       {!isLoading && !isError && filtered.length === 0 ? (
         <p className="mt-10 text-center text-sm text-muted-foreground">
