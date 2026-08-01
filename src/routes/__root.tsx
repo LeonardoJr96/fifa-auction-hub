@@ -162,12 +162,12 @@ function SiteHeader() {
             </Link>
           ) : null}
           {isAuthenticated ? (
-            <button type="button" onClick={logout} className={navLinkClass}>
+            <button type="button" onClick={logout} className={`ml-auto ${navLinkClass}`}>
               Sair ({user?.username})
             </button>
           ) : (
-            <Link to="/login" className={navLinkClass}>
-              Entrar
+            <Link to="/login" className={`ml-auto ${navLinkClass} text-primary`}>
+              Fazer login
             </Link>
           )}
         </nav>
