@@ -8,6 +8,7 @@ import { ratingBg, ratingChip } from "@/lib/rating";
 import { useAuctions, auctionProductId, usePlayer, useProducts } from "@/features/players/hooks";
 import { formatMoney } from "@/lib/format";
 import type { Player, PlayerRole } from "@/types/api";
+import { isOpenAuction } from "@/lib/auction-status";
 
 export const Route = createFileRoute("/players/$playerId")({
   head: () => ({
@@ -154,7 +155,7 @@ function PlayerDetailPage() {
   const product = (products ?? []).find((item) => item.player?.id === player.id);
   const openAuction = (auctions ?? []).find(
     (auction) =>
-      auction.status === "OPEN" && product !== undefined && auctionProductId(auction) === product.id,
+      isOpenAuction(auction) && product !== undefined && auctionProductId(auction) === product.id,
   );
   const playstyles = Array.isArray(player.playstyles)
     ? (player.playstyles as unknown[]).filter((item): item is string => typeof item === "string")

@@ -67,7 +67,7 @@ function AuctionPage() {
   const placeBid = usePlaceBid(auctionId);
   const payAuction = usePayAuction();
   const isWinner =
-    auctionStatus(auction) === "PENDING" && me?.id !== undefined && auction.winner === me.id;
+    auctionStatus(auction) === "PENDING" && me?.id !== undefined && auction?.winner === me.id;
 
 
   const remaining = useCountdown(auction?.time_ending);
