@@ -113,6 +113,17 @@ function readValue(player: Player, key: string): string {
   return "—";
 }
 
+/** Altura/peso/dribles não são notas 0-99 — não recebem cor. */
+const UNRATED_KEYS = new Set(["height", "weight", "skill_moves"]);
+
+function ratedValue(player: Player, key: string): number | null {
+  if (UNRATED_KEYS.has(key)) return null;
+  const raw = player[key];
+  const n = typeof raw === "number" ? raw : Number(raw);
+  return Number.isFinite(n) && n > 0 && n <= 99 ? n : null;
+}
+
+
 function PlayerDetailPage() {
   const { playerId } = Route.useParams();
   const { data: player, isLoading, isError, error } = usePlayer(playerId);
