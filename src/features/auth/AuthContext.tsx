@@ -42,7 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setTokens(null, null);
     setUser(null);
     queryClient.clear();
-    navigate({ to: "/login", replace: true });
+    navigate({ to: "/login", replace: true, search: {} });
   }, [navigate, queryClient]);
 
   useEffect(() => {

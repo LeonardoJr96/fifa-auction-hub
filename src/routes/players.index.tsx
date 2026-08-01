@@ -36,7 +36,7 @@ function PlayersPage() {
   const [filters, setFilters] = useState<PlayerFilterValues>(defaultPlayerFilters);
 
   const { positions, filtered } = usePlayerFiltering(products, filters);
-  const pagination = usePagination(filtered, 100);
+  const pagination = usePagination(filtered, 24);
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-8">
@@ -48,7 +48,7 @@ function PlayersPage() {
           <p className="mt-1 text-sm text-muted-foreground">
             {isLoading
               ? "Carregando lista de jogadores..."
-              : `${pagination.total} jogadores encontrados · 100 por página.`}
+              : `${pagination.total} jogadores encontrados · 24 por página.`}
           </p>
         </div>
         <Link

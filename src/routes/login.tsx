@@ -4,8 +4,8 @@ import { useState } from "react";
 import { useAuth } from "@/features/auth/AuthContext";
 
 export const Route = createFileRoute("/login")({
-  validateSearch: (search: Record<string, unknown>) => ({
-    registered: search.registered === true || search.registered === "true",
+  validateSearch: (search: Record<string, unknown>): { registered?: boolean } => ({
+    registered: search.registered === true || search.registered === "true" || undefined,
   }),
   head: () => ({
     meta: [
@@ -36,7 +36,7 @@ function LoginPage() {
     setError(null);
     try {
       await login(username, password);
-      navigate({ to: "/", replace: true });
+      navigate({ to: "/", replace: true, search: {} });
     } catch (loginError) {
       setError(loginError instanceof Error ? loginError.message : "Não foi possível entrar.");
     } finally {

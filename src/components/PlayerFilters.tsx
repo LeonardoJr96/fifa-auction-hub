@@ -42,19 +42,20 @@ export function usePlayerFiltering(products: Product[] | undefined, filters: Pla
   }, [products]);
 
   const filtered = useMemo(() => {
-    const term = filters.q.trim().toLowerCase();
+    const q = filters?.q ?? "";
+    const term = typeof q === "string" ? q.trim().toLowerCase() : "";
     const list = (products ?? []).filter((product) => {
       if (term && !playerName(product).includes(term)) return false;
-      if (filters.position && product.category !== filters.position) return false;
+      if (filters?.position && product.category !== filters.position) return false;
       const overall = product.player?.overall_rating ?? 0;
-      if (filters.minOverall && overall < filters.minOverall) return false;
-      if (filters.maxOverall && overall > filters.maxOverall) return false;
-      if (filters.maxPrice && Number(product.price) > filters.maxPrice) return false;
+      if (filters?.minOverall && overall < filters.minOverall) return false;
+      if (filters?.maxOverall && overall > filters.maxOverall) return false;
+      if (filters?.maxPrice && Number(product.price) > filters.maxPrice) return false;
       return true;
     });
 
     const sorted = [...list];
-    switch (filters.sort) {
+    switch (filters?.sort) {
       case "name":
         sorted.sort((a, b) => playerName(a).localeCompare(playerName(b)));
         break;

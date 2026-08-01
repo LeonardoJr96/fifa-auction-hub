@@ -140,6 +140,12 @@ function SiteHeader() {
           <Link to="/team" className={navLinkClass}>
             Meu time
           </Link>
+          <Link to="/campaigns" className={navLinkClass}>
+            Campanhas
+          </Link>
+          <Link to="/competitions" className={navLinkClass}>
+            Competições
+          </Link>
           {isAuthenticated ? (
             <Link to="/me" className={navLinkClass}>
               Minha conta

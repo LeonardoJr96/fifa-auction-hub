@@ -9,17 +9,18 @@ import {
   type PlayerFilterValues,
 } from "@/components/PlayerFilters";
 import { ProductCard, ProductCardSkeleton } from "@/components/ProductCard";
-import { useOpenAuctionsByProduct, useProducts } from "@/features/players/hooks";
+import { useAuctions, auctionProductId } from "@/features/players/hooks";
 import { usePagination } from "@/hooks/use-pagination";
+import type { Product } from "@/types/api";
 
 export const Route = createFileRoute("/")({
-  validateSearch: (search: Record<string, unknown>): PlayerFilterValues => ({
-    q: typeof search.q === "string" ? search.q : "",
-    position: typeof search.position === "string" ? search.position : "",
-    minOverall: Number(search.minOverall) || 0,
-    maxOverall: Number(search.maxOverall) || 0,
-    maxPrice: Number(search.maxPrice) || 0,
-    sort: typeof search.sort === "string" ? search.sort : "default",
+  validateSearch: (search: Record<string, unknown>): Partial<PlayerFilterValues> => ({
+    q: typeof search.q === "string" ? search.q : undefined,
+    position: typeof search.position === "string" ? search.position : undefined,
+    minOverall: Number(search.minOverall) || undefined,
+    maxOverall: Number(search.maxOverall) || undefined,
+    maxPrice: Number(search.maxPrice) || undefined,
+    sort: typeof search.sort === "string" ? search.sort : undefined,
   }),
   head: () => ({
     meta: [
@@ -40,18 +41,28 @@ export const Route = createFileRoute("/")({
 });
 
 function CatalogPage() {
-  const search = Route.useSearch();
+  const rawSearch = Route.useSearch();
+  // Mescla com defaults para garantir valores sempre definidos
+  const search: PlayerFilterValues = { ...defaultPlayerFilters, ...rawSearch };
   const navigate = Route.useNavigate();
-  const { data: products, isLoading, isError } = useProducts();
-  const openAuctions = useOpenAuctionsByProduct();
 
-  const inAuction = useMemo(
-    () => (products ?? []).filter((product) => openAuctions.has(product.id)),
-    [products, openAuctions],
-  );
+  // Usa auctions diretamente: o serializer já traz product+player aninhados
+  const { data: auctions, isLoading, isError } = useAuctions();
 
-  const { positions, filtered } = usePlayerFiltering(inAuction, search);
-  const pagination = usePagination(filtered, 100);
+  const { openAuctions, products } = useMemo(() => {
+    const openMap = new Map();
+    const prods: Product[] = [];
+    for (const auction of auctions ?? []) {
+      if (auction.status === "OPEN" && typeof auction.product !== "number") {
+        openMap.set(auctionProductId(auction), auction);
+        prods.push(auction.product as Product);
+      }
+    }
+    return { openAuctions: openMap, products: prods };
+  }, [auctions]);
+
+  const { positions, filtered } = usePlayerFiltering(products, search);
+  const pagination = usePagination(filtered, 24);
 
   const update = (patch: Partial<PlayerFilterValues>) =>
     navigate({ to: "/", search: { ...search, ...patch } });
@@ -74,7 +85,7 @@ function CatalogPage() {
 
       {isError ? (
         <p role="alert" className="mt-8 rounded-md bg-destructive/10 px-4 py-3 text-sm text-destructive">
-          Nenhum jogador encontrado.
+          Erro ao carregar leilões. Verifique se o backend está rodando.
         </p>
       ) : null}
 
@@ -106,7 +117,9 @@ function CatalogPage() {
 
       {!isLoading && !isError && filtered.length === 0 ? (
         <p className="mt-10 text-center text-sm text-muted-foreground">
-          Nenhum jogador encontrado com esses filtros.
+          {(auctions ?? []).length === 0
+            ? "Não há nenhum leilão aberto no momento."
+            : "Nenhum jogador encontrado com esses filtros."}
         </p>
       ) : null}
     </div>
