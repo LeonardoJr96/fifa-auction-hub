@@ -15,6 +15,7 @@ import { ProductCard, ProductCardSkeleton } from "@/components/ProductCard";
 import { useAuctions, auctionProductId } from "@/features/players/hooks";
 import { usePagination } from "@/hooks/use-pagination";
 import type { Product } from "@/types/api";
+import { isOpenAuction } from "@/lib/auction-status";
 
 export const Route = createFileRoute("/")({
   validateSearch: (search: Record<string, unknown>): Partial<PlayerFilterValues> =>
@@ -50,7 +51,7 @@ function CatalogPage() {
     const openMap = new Map();
     const prods: Product[] = [];
     for (const auction of auctions ?? []) {
-      if (auction.status === "OPEN" && typeof auction.product !== "number") {
+      if (isOpenAuction(auction) && typeof auction.product !== "number") {
         openMap.set(auctionProductId(auction), auction);
         prods.push(auction.product as Product);
       }

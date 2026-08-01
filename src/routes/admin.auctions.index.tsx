@@ -5,6 +5,7 @@ import { useAuth } from "@/features/auth/AuthContext";
 import { useAuctions, useProducts } from "@/features/players/hooks";
 import { formatCountdown, formatMoney } from "@/lib/format";
 import type { AuctionStatus } from "@/types/api";
+import { auctionStatus } from "@/lib/auction-status";
 
 export const Route = createFileRoute("/admin/auctions/")({
   head: () => ({
@@ -52,7 +53,7 @@ function AdminAuctionsPage() {
   }, [products]);
 
   const filtered = useMemo(
-    () => (auctions ?? []).filter((auction) => status === "ALL" || auction.status === status),
+    () => (auctions ?? []).filter((auction) => status === "ALL" || auctionStatus(auction) === status),
     [auctions, status],
   );
 
@@ -146,14 +147,14 @@ function AdminAuctionsPage() {
                       </Link>
                     </td>
                     <td className="px-4 py-3 text-muted-foreground">
-                      {STATUS_LABEL[auction.status] ?? auction.status}
+                      {STATUS_LABEL[auctionStatus(auction)] ?? auction.status}
                     </td>
                     <td className="px-4 py-3 text-right font-semibold tabular-nums">
                       {formatMoney(auction.current_price)}
                     </td>
                     <td className="px-4 py-3 text-right tabular-nums">{auction.number_of_bids}</td>
                     <td className="px-4 py-3 text-right tabular-nums text-muted-foreground">
-                      {auction.status === "OPEN" && remaining > 0
+                      {auctionStatus(auction) === "OPEN" && remaining > 0
                         ? formatCountdown(remaining)
                         : "encerrado"}
                     </td>
