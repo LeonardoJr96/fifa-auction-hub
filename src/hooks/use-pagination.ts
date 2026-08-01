@@ -14,17 +14,30 @@ export interface PaginationResult<T> {
   prev: () => void;
 }
 
-/** Paginação simples no cliente: mostra apenas uma página de itens por vez. */
-export function usePagination<T>(items: T[], pageSize = 100): PaginationResult<T> {
-  const [page, setPage] = useState(1);
+export interface PaginationOptions {
+  /** Página controlada (ex.: search param da URL). */
+  page?: number;
+  /** Chamado quando a página muda; obrigatório no modo controlado. */
+  onPageChange?: (page: number) => void;
+}
+
+/** Paginação no cliente. Aceita modo controlado para sincronizar com a URL. */
+export function usePagination<T>(
+  items: T[],
+  pageSize = 100,
+  options: PaginationOptions = {},
+): PaginationResult<T> {
+  const controlled = options.page !== undefined && options.onPageChange !== undefined;
+  const [internalPage, setInternalPage] = useState(1);
   const total = items.length;
   const pageCount = Math.max(1, Math.ceil(total / pageSize));
 
   useEffect(() => {
-    setPage(1);
-  }, [items, pageSize]);
+    if (!controlled) setInternalPage(1);
+  }, [items, pageSize, controlled]);
 
-  const current = Math.min(page, pageCount);
+  const requested = controlled ? Number(options.page) || 1 : internalPage;
+  const current = Math.min(Math.max(1, requested), pageCount);
 
   const visible = useMemo(
     () => items.slice((current - 1) * pageSize, current * pageSize),
@@ -32,7 +45,9 @@ export function usePagination<T>(items: T[], pageSize = 100): PaginationResult<T
   );
 
   const goTo = (next: number) => {
-    setPage(Math.min(Math.max(1, next), pageCount));
+    const target = Math.min(Math.max(1, next), pageCount);
+    if (controlled) options.onPageChange?.(target);
+    else setInternalPage(target);
     if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
