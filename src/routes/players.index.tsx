@@ -8,7 +8,7 @@ import {
   usePlayerFiltering,
   type PlayerFilterValues,
 } from "@/components/PlayerFilters";
-import { ProductCard, ProductCardSkeleton } from "@/components/ProductCard";
+import { PlayerTable, PlayerTableSkeleton } from "@/components/PlayerTable";
 import { useOpenAuctionsByProduct, useProducts } from "@/features/players/hooks";
 import { usePagination } from "@/hooks/use-pagination";
 
@@ -72,16 +72,12 @@ function PlayersPage() {
         </p>
       ) : null}
 
-      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {isLoading
-          ? Array.from({ length: 6 }).map((_, index) => <ProductCardSkeleton key={index} />)
-          : pagination.items.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                openAuction={openAuctions.get(product.id)}
-              />
-            ))}
+      <div className="mt-6">
+        {isLoading ? (
+          <PlayerTableSkeleton />
+        ) : (
+          <PlayerTable products={pagination.items} openAuctions={openAuctions} />
+        )}
       </div>
 
       {!isLoading ? (
