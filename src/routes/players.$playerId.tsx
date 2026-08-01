@@ -3,6 +3,8 @@ import { playerPhotoSrc } from "@/lib/player-photo";
 
 import { PlayerPhoto } from "@/components/PlayerPhoto";
 import { isGoalkeeper, StatBars } from "@/components/StatBars";
+import { AttributeRadar } from "@/components/AttributeRadar";
+import { ratingBg, ratingChip } from "@/lib/rating";
 import { useAuctions, auctionProductId, usePlayer, useProducts } from "@/features/players/hooks";
 import { formatMoney } from "@/lib/format";
 import type { Player, PlayerRole } from "@/types/api";
@@ -106,6 +108,15 @@ function starLabel(value: unknown): string {
   return `${"★".repeat(Math.min(5, n))}${"☆".repeat(Math.max(0, 5 - n))} (${n})`;
 }
 
+const NON_RATING_KEYS = new Set(["height", "weight", "skill_moves"]);
+
+function readNumber(player: Player, key: string): number | null {
+  const raw = player[key];
+  if (typeof raw === "number") return raw;
+  if (typeof raw === "string" && raw.trim() !== "" && Number.isFinite(Number(raw))) return Number(raw);
+  return null;
+}
+
 function readValue(player: Player, key: string): string {
   const raw = player[key];
   if (typeof raw === "number") return String(raw);
@@ -176,10 +187,18 @@ function PlayerDetailPage() {
             {starLabel(player.weak_foot)}
           </p>
           <p className="mt-2 flex flex-wrap items-center gap-3 text-sm">
-            <span className="rounded bg-pitch px-2 py-1 font-bold text-pitch-foreground tabular-nums">
-              {player.overall_rating} OVR
+            <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              OVR
+              <span className={`${ratingBg(player.overall_rating)} rounded px-2 py-1 text-sm font-bold tabular-nums`}>
+                {player.overall_rating}
+              </span>
             </span>
-            <span className="text-muted-foreground">Potencial {player.potential}</span>
+            <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              POT
+              <span className={`${ratingBg(player.potential)} rounded px-2 py-1 text-sm font-bold tabular-nums`}>
+                {player.potential}
+              </span>
+            </span>
             {typeof player.international_reputation === "number" ? (
               <span className="text-muted-foreground">
                 Reputação {player.international_reputation}★
@@ -199,11 +218,16 @@ function PlayerDetailPage() {
         ) : null}
       </div>
 
-      <div className="mt-6 rounded-xl border border-border bg-card p-5">
-        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-          Atributos principais
-        </h2>
-        <StatBars player={player} />
+      <div className="mt-6 grid gap-4 md:grid-cols-[minmax(0,1fr)_260px]">
+        <div className="rounded-xl border border-border bg-card p-5">
+          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            Atributos principais
+          </h2>
+          <StatBars player={player} />
+        </div>
+        <div className="flex items-center justify-center rounded-xl border border-border bg-card p-3">
+          <AttributeRadar player={player} />
+        </div>
       </div>
 
       {playstyles.length || roles.length ? (
@@ -255,9 +279,15 @@ function PlayerDetailPage() {
               {group.keys.map(([key, label]) => (
                 <div key={key} className="flex items-center justify-between gap-3">
                   <dt className="text-muted-foreground">{label}</dt>
-                  <dd className="font-semibold tabular-nums text-foreground">
-                    {readValue(player, key)}
-                  </dd>
+                  {NON_RATING_KEYS.has(key) ? (
+                    <dd className="font-semibold tabular-nums text-foreground">
+                      {readValue(player, key)}
+                    </dd>
+                  ) : (
+                    <dd className={ratingChip(readNumber(player, key))}>
+                      {readValue(player, key)}
+                    </dd>
+                  )}
                 </div>
               ))}
             </dl>
