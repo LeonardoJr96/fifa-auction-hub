@@ -3,8 +3,11 @@ import { useMemo } from "react";
 
 import { PaginationBar } from "@/components/PaginationBar";
 import {
+  AppliedFilters,
   PlayerFilters,
+  cleanPlayerSearch,
   defaultPlayerFilters,
+  parsePlayerSearch,
   usePlayerFiltering,
   type PlayerFilterValues,
 } from "@/components/PlayerFilters";
@@ -14,18 +17,8 @@ import { usePagination } from "@/hooks/use-pagination";
 import type { Product } from "@/types/api";
 
 export const Route = createFileRoute("/")({
-  validateSearch: (search: Record<string, unknown>): Partial<PlayerFilterValues> => ({
-    q: typeof search.q === "string" ? search.q : undefined,
-    position: typeof search.position === "string" ? search.position : undefined,
-    minOverall: Number(search.minOverall) || undefined,
-    maxOverall: Number(search.maxOverall) || undefined,
-    minPotential: Number(search.minPotential) || undefined,
-    minAge: Number(search.minAge) || undefined,
-    maxAge: Number(search.maxAge) || undefined,
-    foot: typeof search.foot === "string" ? search.foot : undefined,
-    maxPrice: Number(search.maxPrice) || undefined,
-    sort: typeof search.sort === "string" ? search.sort : undefined,
-  }),
+  validateSearch: (search: Record<string, unknown>): Partial<PlayerFilterValues> =>
+    parsePlayerSearch(search),
   head: () => ({
     meta: [
       { title: "Leilão de jogadores · ReverseDraft" },
@@ -51,7 +44,7 @@ function CatalogPage() {
   const navigate = Route.useNavigate();
 
   // Usa auctions diretamente: o serializer já traz product+player aninhados
-  const { data: auctions, isLoading, isError } = useAuctions();
+  const { data: auctions, isLoading, isFetching, isError } = useAuctions();
 
   const { openAuctions, products } = useMemo(() => {
     const openMap = new Map();
@@ -66,10 +59,16 @@ function CatalogPage() {
   }, [auctions]);
 
   const { positions, filtered } = usePlayerFiltering(products, search);
-  const pagination = usePagination(filtered, 24);
 
   const update = (patch: Partial<PlayerFilterValues>) =>
-    navigate({ to: "/", search: { ...search, ...patch } });
+    navigate({ to: "/", search: cleanPlayerSearch({ ...search, ...patch }) });
+
+  const pagination = usePagination(filtered, 24, {
+    page: search.page,
+    onPageChange: (page) => update({ page }),
+  });
+
+  const refreshing = isFetching && !isLoading;
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-8">
@@ -84,7 +83,14 @@ function CatalogPage() {
         values={search}
         positions={positions}
         onChange={update}
-        onReset={() => navigate({ to: "/", search: defaultPlayerFilters })}
+        onReset={() => navigate({ to: "/", search: {} })}
+        isLoading={refreshing}
+      />
+
+      <AppliedFilters
+        values={search}
+        onChange={update}
+        onReset={() => navigate({ to: "/", search: {} })}
       />
 
       {isError ? (
@@ -93,7 +99,12 @@ function CatalogPage() {
         </p>
       ) : null}
 
-      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div
+        aria-busy={isLoading || refreshing}
+        className={`mt-6 grid grid-cols-1 gap-4 transition-opacity sm:grid-cols-2 lg:grid-cols-3 ${
+          refreshing ? "opacity-60" : "opacity-100"
+        }`}
+      >
         {isLoading
           ? Array.from({ length: 6 }).map((_, index) => <ProductCardSkeleton key={index} />)
           : pagination.items.map((product) => (
@@ -116,6 +127,7 @@ function CatalogPage() {
           hasNext={pagination.hasNext}
           onPrev={pagination.prev}
           onNext={pagination.next}
+          isLoading={refreshing}
         />
       ) : null}
 
