@@ -1,10 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
 
 import { PaginationBar } from "@/components/PaginationBar";
 import {
+  AppliedFilters,
   PlayerFilters,
+  cleanPlayerSearch,
   defaultPlayerFilters,
+  parsePlayerSearch,
   usePlayerFiltering,
   type PlayerFilterValues,
 } from "@/components/PlayerFilters";
@@ -13,6 +15,8 @@ import { useOpenAuctionsByProduct, useProducts } from "@/features/players/hooks"
 import { usePagination } from "@/hooks/use-pagination";
 
 export const Route = createFileRoute("/players/")({
+  validateSearch: (search: Record<string, unknown>): Partial<PlayerFilterValues> =>
+    parsePlayerSearch(search),
   head: () => ({
     meta: [
       { title: "Todos os jogadores · ReverseDraft" },
@@ -31,17 +35,28 @@ export const Route = createFileRoute("/players/")({
 });
 
 function PlayersPage() {
-  const { data: products, isLoading, isError } = useProducts();
+  const { data: products, isLoading, isFetching, isError } = useProducts();
   const openAuctions = useOpenAuctionsByProduct();
-  const [filters, setFilters] = useState<PlayerFilterValues>(defaultPlayerFilters);
+  const rawSearch = Route.useSearch();
+  const filters: PlayerFilterValues = { ...defaultPlayerFilters, ...rawSearch };
+  const navigate = Route.useNavigate();
+
+  const update = (patch: Partial<PlayerFilterValues>) =>
+    navigate({ to: "/players", search: cleanPlayerSearch({ ...filters, ...patch }) });
+  const reset = () => navigate({ to: "/players", search: {} });
 
   const { positions, filtered } = usePlayerFiltering(products, filters);
-  const pagination = usePagination(filtered, 24);
+  const pagination = usePagination(filtered, 24, {
+    page: filters.page,
+    onPageChange: (page) => update({ page }),
+  });
+
+  const refreshing = isFetching && !isLoading;
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-8">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div>
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 sm:flex sm:flex-wrap sm:justify-between">
+        <div className="min-w-0">
           <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
             Todos os jogadores
           </h1>
@@ -53,7 +68,7 @@ function PlayersPage() {
         </div>
         <Link
           to="/"
-          className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+          className="inline-flex shrink-0 items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
         >
           Ir para o leilão
         </Link>
@@ -62,9 +77,12 @@ function PlayersPage() {
       <PlayerFilters
         values={filters}
         positions={positions}
-        onChange={(patch) => setFilters((prev) => ({ ...prev, ...patch }))}
-        onReset={() => setFilters(defaultPlayerFilters)}
+        onChange={update}
+        onReset={reset}
+        isLoading={refreshing}
       />
+
+      <AppliedFilters values={filters} onChange={update} onReset={reset} />
 
       {isError ? (
         <p role="alert" className="mt-8 rounded-md bg-destructive/10 px-4 py-3 text-sm text-destructive">
@@ -72,7 +90,10 @@ function PlayersPage() {
         </p>
       ) : null}
 
-      <div className="mt-6">
+      <div
+        aria-busy={isLoading || refreshing}
+        className={`mt-6 transition-opacity ${refreshing ? "opacity-60" : "opacity-100"}`}
+      >
         {isLoading ? (
           <PlayerTableSkeleton />
         ) : (
@@ -91,6 +112,7 @@ function PlayersPage() {
           hasNext={pagination.hasNext}
           onPrev={pagination.prev}
           onNext={pagination.next}
+          isLoading={refreshing}
         />
       ) : null}
 
