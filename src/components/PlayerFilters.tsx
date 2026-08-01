@@ -7,6 +7,10 @@ export interface PlayerFilterValues {
   position: string;
   minOverall: number;
   maxOverall: number;
+  minPotential: number;
+  minAge: number;
+  maxAge: number;
+  foot: string;
   maxPrice: number;
   sort: string;
 }
@@ -16,6 +20,10 @@ export const defaultPlayerFilters: PlayerFilterValues = {
   position: "",
   minOverall: 0,
   maxOverall: 0,
+  minPotential: 0,
+  minAge: 0,
+  maxAge: 0,
+  foot: "",
   maxPrice: 0,
   sort: "default",
 };
@@ -27,6 +35,9 @@ export const sortOptions = [
   { value: "overall_asc", label: "Overall (menor)" },
   { value: "price_desc", label: "Preço (maior)" },
   { value: "price_asc", label: "Preço (menor)" },
+  { value: "potential_desc", label: "Potencial (maior)" },
+  { value: "age_asc", label: "Idade (menor)" },
+  { value: "age_desc", label: "Idade (maior)" },
 ];
 
 function playerName(product: Product) {
@@ -50,6 +61,12 @@ export function usePlayerFiltering(products: Product[] | undefined, filters: Pla
       const overall = product.player?.overall_rating ?? 0;
       if (filters?.minOverall && overall < filters.minOverall) return false;
       if (filters?.maxOverall && overall > filters.maxOverall) return false;
+      const potential = product.player?.potential ?? 0;
+      if (filters?.minPotential && potential < filters.minPotential) return false;
+      const age = Number(product.player?.age ?? 0);
+      if (filters?.minAge && age < filters.minAge) return false;
+      if (filters?.maxAge && age && age > filters.maxAge) return false;
+      if (filters?.foot && String(product.player?.foot ?? "") !== filters.foot) return false;
       if (filters?.maxPrice && Number(product.price) > filters.maxPrice) return false;
       return true;
     });
@@ -74,6 +91,15 @@ export function usePlayerFiltering(products: Product[] | undefined, filters: Pla
         break;
       case "price_asc":
         sorted.sort((a, b) => Number(a.price) - Number(b.price));
+        break;
+      case "potential_desc":
+        sorted.sort((a, b) => (b.player?.potential ?? 0) - (a.player?.potential ?? 0));
+        break;
+      case "age_asc":
+        sorted.sort((a, b) => Number(a.player?.age ?? 999) - Number(b.player?.age ?? 999));
+        break;
+      case "age_desc":
+        sorted.sort((a, b) => Number(b.player?.age ?? 0) - Number(a.player?.age ?? 0));
         break;
       default:
         break;
@@ -100,11 +126,30 @@ export function PlayerFilters({ values, positions, onChange, onReset }: PlayerFi
     values.position !== "" ||
     values.minOverall !== 0 ||
     values.maxOverall !== 0 ||
+    values.minPotential !== 0 ||
+    values.minAge !== 0 ||
+    values.maxAge !== 0 ||
+    values.foot !== "" ||
     values.maxPrice !== 0 ||
     values.sort !== "default";
 
   return (
-    <div className="mt-6 flex flex-wrap items-end gap-3">
+    <div className="mt-6 rounded-xl border border-border bg-card p-4 shadow-card">
+      <div className="mb-3 flex items-center justify-between">
+        <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+          Filtros
+        </h2>
+        {isDirty ? (
+          <button
+            type="button"
+            onClick={onReset}
+            className="text-xs font-semibold text-primary underline-offset-2 hover:underline"
+          >
+            Limpar filtros
+          </button>
+        ) : null}
+      </div>
+      <div className="flex flex-wrap items-end gap-3">
       <label className="flex flex-col gap-1 text-xs font-medium text-muted-foreground">
         Buscar jogador
         <input
@@ -159,6 +204,58 @@ export function PlayerFilters({ values, positions, onChange, onReset }: PlayerFi
       </label>
 
       <label className="flex flex-col gap-1 text-xs font-medium text-muted-foreground">
+        Potencial mínimo
+        <input
+          type="number"
+          min={0}
+          max={99}
+          value={values.minPotential || ""}
+          onChange={(event) => onChange({ minPotential: Number(event.target.value) || 0 })}
+          placeholder="0"
+          className={`${inputClass} w-28`}
+        />
+      </label>
+
+      <label className="flex flex-col gap-1 text-xs font-medium text-muted-foreground">
+        Idade mínima
+        <input
+          type="number"
+          min={0}
+          max={60}
+          value={values.minAge || ""}
+          onChange={(event) => onChange({ minAge: Number(event.target.value) || 0 })}
+          placeholder="15"
+          className={`${inputClass} w-24`}
+        />
+      </label>
+
+      <label className="flex flex-col gap-1 text-xs font-medium text-muted-foreground">
+        Idade máxima
+        <input
+          type="number"
+          min={0}
+          max={60}
+          value={values.maxAge || ""}
+          onChange={(event) => onChange({ maxAge: Number(event.target.value) || 0 })}
+          placeholder="45"
+          className={`${inputClass} w-24`}
+        />
+      </label>
+
+      <label className="flex flex-col gap-1 text-xs font-medium text-muted-foreground">
+        Pé preferido
+        <select
+          value={values.foot}
+          onChange={(event) => onChange({ foot: event.target.value })}
+          className={inputClass}
+        >
+          <option value="">Todos</option>
+          <option value="1">Destro</option>
+          <option value="2">Canhoto</option>
+        </select>
+      </label>
+
+      <label className="flex flex-col gap-1 text-xs font-medium text-muted-foreground">
         Preço máximo (€)
         <input
           type="number"
@@ -186,15 +283,7 @@ export function PlayerFilters({ values, positions, onChange, onReset }: PlayerFi
         </select>
       </label>
 
-      {isDirty ? (
-        <button
-          type="button"
-          onClick={onReset}
-          className="rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
-        >
-          Limpar filtros
-        </button>
-      ) : null}
+      </div>
     </div>
   );
 }
