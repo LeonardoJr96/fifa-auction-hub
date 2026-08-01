@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 import type { Product } from "@/types/api";
 
@@ -13,6 +13,7 @@ export interface PlayerFilterValues {
   foot: string;
   maxPrice: number;
   sort: string;
+  page: number;
 }
 
 export const defaultPlayerFilters: PlayerFilterValues = {
@@ -26,6 +27,7 @@ export const defaultPlayerFilters: PlayerFilterValues = {
   foot: "",
   maxPrice: 0,
   sort: "default",
+  page: 1,
 };
 
 export const sortOptions = [
@@ -39,6 +41,67 @@ export const sortOptions = [
   { value: "age_asc", label: "Idade (menor)" },
   { value: "age_desc", label: "Idade (maior)" },
 ];
+
+/** Lê os search params da URL e devolve valores parciais válidos. */
+export function parsePlayerSearch(search: Record<string, unknown>): Partial<PlayerFilterValues> {
+  const str = (value: unknown) => (typeof value === "string" && value !== "" ? value : undefined);
+  const num = (value: unknown) => Number(value) || undefined;
+  return {
+    q: str(search.q),
+    position: str(search.position),
+    minOverall: num(search.minOverall),
+    maxOverall: num(search.maxOverall),
+    minPotential: num(search.minPotential),
+    minAge: num(search.minAge),
+    maxAge: num(search.maxAge),
+    foot: str(search.foot),
+    maxPrice: num(search.maxPrice),
+    sort: str(search.sort),
+    page: num(search.page),
+  };
+}
+
+/** Remove chaves com valor padrão para manter a URL limpa e compartilhável. */
+export function cleanPlayerSearch(values: PlayerFilterValues): Partial<PlayerFilterValues> {
+  const out: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(values)) {
+    const fallback = defaultPlayerFilters[key as keyof PlayerFilterValues];
+    if (value !== fallback && value !== "" && value !== 0) out[key] = value;
+  }
+  return out as Partial<PlayerFilterValues>;
+}
+
+const footLabels: Record<string, string> = { "1": "Destro", "2": "Canhoto" };
+
+export interface FilterChip {
+  key: keyof PlayerFilterValues;
+  label: string;
+}
+
+/** Chips dos filtros aplicados (não inclui paginação). */
+export function activeFilterChips(values: PlayerFilterValues): FilterChip[] {
+  const chips: FilterChip[] = [];
+  if (values.q) chips.push({ key: "q", label: `Busca: "${values.q}"` });
+  if (values.position) chips.push({ key: "position", label: `Posição: ${values.position}` });
+  if (values.minOverall) chips.push({ key: "minOverall", label: `OVR ≥ ${values.minOverall}` });
+  if (values.maxOverall) chips.push({ key: "maxOverall", label: `OVR ≤ ${values.maxOverall}` });
+  if (values.minPotential)
+    chips.push({ key: "minPotential", label: `POT ≥ ${values.minPotential}` });
+  if (values.minAge) chips.push({ key: "minAge", label: `Idade ≥ ${values.minAge}` });
+  if (values.maxAge) chips.push({ key: "maxAge", label: `Idade ≤ ${values.maxAge}` });
+  if (values.foot)
+    chips.push({ key: "foot", label: `Pé: ${footLabels[values.foot] ?? values.foot}` });
+  if (values.maxPrice)
+    chips.push({
+      key: "maxPrice",
+      label: `Preço ≤ € ${values.maxPrice.toLocaleString("pt-BR")}`,
+    });
+  if (values.sort && values.sort !== "default") {
+    const option = sortOptions.find((item) => item.value === values.sort);
+    chips.push({ key: "sort", label: `Ordem: ${option?.label ?? values.sort}` });
+  }
+  return chips;
+}
 
 function playerName(product: Product) {
   return (product.player?.common_name || product.title || "").toLowerCase();
@@ -113,176 +176,248 @@ export function usePlayerFiltering(products: Product[] | undefined, filters: Pla
 const inputClass =
   "rounded-md border border-input bg-card px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring";
 
+export function activeFilterCount(values: PlayerFilterValues): number {
+  return activeFilterChips(values).length;
+}
+
+interface AppliedFiltersProps {
+  values: PlayerFilterValues;
+  onChange: (patch: Partial<PlayerFilterValues>) => void;
+  onReset: () => void;
+}
+
+/** Chips dos filtros aplicados, cada um removível individualmente. */
+export function AppliedFilters({ values, onChange, onReset }: AppliedFiltersProps) {
+  const chips = activeFilterChips(values);
+  if (chips.length === 0) return null;
+
+  return (
+    <div className="mt-4 flex flex-wrap items-center gap-2">
+      <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        Filtros aplicados
+      </span>
+      {chips.map((chip) => (
+        <button
+          key={chip.key}
+          type="button"
+          onClick={() =>
+            onChange({
+              [chip.key]: defaultPlayerFilters[chip.key],
+              page: 1,
+            } as Partial<PlayerFilterValues>)
+          }
+          className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-border bg-secondary px-3 py-1 text-xs font-semibold text-secondary-foreground transition-colors hover:bg-accent"
+          aria-label={`Remover filtro ${chip.label}`}
+        >
+          <span className="truncate">{chip.label}</span>
+          <span aria-hidden="true" className="text-muted-foreground">
+            ×
+          </span>
+        </button>
+      ))}
+      <button
+        type="button"
+        onClick={onReset}
+        className="rounded-full border border-input px-3 py-1 text-xs font-semibold text-foreground transition-colors hover:bg-accent"
+      >
+        Limpar tudo
+      </button>
+    </div>
+  );
+}
+
 interface PlayerFiltersProps {
   values: PlayerFilterValues;
   positions: string[];
   onChange: (patch: Partial<PlayerFilterValues>) => void;
   onReset: () => void;
+  isLoading?: boolean;
 }
 
-export function PlayerFilters({ values, positions, onChange, onReset }: PlayerFiltersProps) {
-  const isDirty =
-    values.q !== "" ||
-    values.position !== "" ||
-    values.minOverall !== 0 ||
-    values.maxOverall !== 0 ||
-    values.minPotential !== 0 ||
-    values.minAge !== 0 ||
-    values.maxAge !== 0 ||
-    values.foot !== "" ||
-    values.maxPrice !== 0 ||
-    values.sort !== "default";
+export function PlayerFilters({
+  values,
+  positions,
+  onChange,
+  onReset,
+  isLoading = false,
+}: PlayerFiltersProps) {
+  const [open, setOpen] = useState(false);
+  const count = activeFilterCount(values);
+  const isDirty = count > 0;
+  const set = (patch: Partial<PlayerFilterValues>) => onChange({ ...patch, page: 1 });
 
   return (
     <div className="mt-6 rounded-xl border border-border bg-card p-4 shadow-card">
-      <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-          Filtros
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+        <h2 className="flex min-w-0 items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+          <span className="truncate">Filtros</span>
+          {count > 0 ? (
+            <span className="shrink-0 rounded-full bg-primary px-2 py-0.5 text-[11px] font-bold text-primary-foreground tabular-nums">
+              {count}
+            </span>
+          ) : null}
+          {isLoading ? (
+            <span className="shrink-0 text-[11px] font-medium normal-case text-muted-foreground">
+              atualizando...
+            </span>
+          ) : null}
         </h2>
-        {isDirty ? (
+        <div className="flex shrink-0 items-center gap-2">
+          {isDirty ? (
+            <button
+              type="button"
+              onClick={onReset}
+              className="text-xs font-semibold text-primary underline-offset-2 hover:underline"
+            >
+              Limpar filtros
+            </button>
+          ) : null}
           <button
             type="button"
-            onClick={onReset}
-            className="text-xs font-semibold text-primary underline-offset-2 hover:underline"
+            onClick={() => setOpen((prev) => !prev)}
+            aria-expanded={open}
+            className="rounded-md border border-input px-3 py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-accent sm:hidden"
           >
-            Limpar filtros
+            {open ? "Ocultar" : "Filtrar"}
           </button>
-        ) : null}
+        </div>
       </div>
-      <div className="flex flex-wrap items-end gap-3">
-      <label className="flex flex-col gap-1 text-xs font-medium text-muted-foreground">
-        Buscar jogador
-        <input
-          type="search"
-          value={values.q}
-          onChange={(event) => onChange({ q: event.target.value })}
-          placeholder="Nome do jogador"
-          className={`${inputClass} w-56`}
-        />
-      </label>
 
-      <label className="flex flex-col gap-1 text-xs font-medium text-muted-foreground">
-        Posição
-        <select
-          value={values.position}
-          onChange={(event) => onChange({ position: event.target.value })}
-          className={inputClass}
-        >
-          <option value="">Todas</option>
-          {positions.map((position) => (
-            <option key={position} value={position}>
-              {position}
-            </option>
-          ))}
-        </select>
-      </label>
+      <div
+        className={`${open ? "grid" : "hidden"} mt-3 grid-cols-2 gap-3 sm:mt-3 sm:flex sm:flex-wrap sm:items-end`}
+      >
+        <label className="col-span-2 flex flex-col gap-1 text-xs font-medium text-muted-foreground">
+          Buscar jogador
+          <input
+            type="search"
+            value={values.q}
+            onChange={(event) => set({ q: event.target.value })}
+            placeholder="Nome do jogador"
+            className={`${inputClass} w-full sm:w-56`}
+          />
+        </label>
 
-      <label className="flex flex-col gap-1 text-xs font-medium text-muted-foreground">
-        Overall mínimo
-        <input
-          type="number"
-          min={0}
-          max={99}
-          value={values.minOverall || ""}
-          onChange={(event) => onChange({ minOverall: Number(event.target.value) || 0 })}
-          placeholder="0"
-          className={`${inputClass} w-28`}
-        />
-      </label>
+        <label className="flex min-w-0 flex-col gap-1 text-xs font-medium text-muted-foreground">
+          Posição
+          <select
+            value={values.position}
+            onChange={(event) => set({ position: event.target.value })}
+            className={`${inputClass} w-full sm:w-auto`}
+          >
+            <option value="">Todas</option>
+            {positions.map((position) => (
+              <option key={position} value={position}>
+                {position}
+              </option>
+            ))}
+          </select>
+        </label>
 
-      <label className="flex flex-col gap-1 text-xs font-medium text-muted-foreground">
-        Overall máximo
-        <input
-          type="number"
-          min={0}
-          max={99}
-          value={values.maxOverall || ""}
-          onChange={(event) => onChange({ maxOverall: Number(event.target.value) || 0 })}
-          placeholder="99"
-          className={`${inputClass} w-28`}
-        />
-      </label>
+        <label className="flex min-w-0 flex-col gap-1 text-xs font-medium text-muted-foreground">
+          Ordenar por
+          <select
+            value={values.sort}
+            onChange={(event) => set({ sort: event.target.value })}
+            className={`${inputClass} w-full sm:w-auto`}
+          >
+            {sortOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </label>
 
-      <label className="flex flex-col gap-1 text-xs font-medium text-muted-foreground">
-        Potencial mínimo
-        <input
-          type="number"
-          min={0}
-          max={99}
-          value={values.minPotential || ""}
-          onChange={(event) => onChange({ minPotential: Number(event.target.value) || 0 })}
-          placeholder="0"
-          className={`${inputClass} w-28`}
-        />
-      </label>
+        <label className="flex min-w-0 flex-col gap-1 text-xs font-medium text-muted-foreground">
+          Overall mínimo
+          <input
+            type="number"
+            min={0}
+            max={99}
+            value={values.minOverall || ""}
+            onChange={(event) => set({ minOverall: Number(event.target.value) || 0 })}
+            placeholder="0"
+            className={`${inputClass} w-full sm:w-28`}
+          />
+        </label>
 
-      <label className="flex flex-col gap-1 text-xs font-medium text-muted-foreground">
-        Idade mínima
-        <input
-          type="number"
-          min={0}
-          max={60}
-          value={values.minAge || ""}
-          onChange={(event) => onChange({ minAge: Number(event.target.value) || 0 })}
-          placeholder="15"
-          className={`${inputClass} w-24`}
-        />
-      </label>
+        <label className="flex min-w-0 flex-col gap-1 text-xs font-medium text-muted-foreground">
+          Overall máximo
+          <input
+            type="number"
+            min={0}
+            max={99}
+            value={values.maxOverall || ""}
+            onChange={(event) => set({ maxOverall: Number(event.target.value) || 0 })}
+            placeholder="99"
+            className={`${inputClass} w-full sm:w-28`}
+          />
+        </label>
 
-      <label className="flex flex-col gap-1 text-xs font-medium text-muted-foreground">
-        Idade máxima
-        <input
-          type="number"
-          min={0}
-          max={60}
-          value={values.maxAge || ""}
-          onChange={(event) => onChange({ maxAge: Number(event.target.value) || 0 })}
-          placeholder="45"
-          className={`${inputClass} w-24`}
-        />
-      </label>
+        <label className="flex min-w-0 flex-col gap-1 text-xs font-medium text-muted-foreground">
+          Potencial mínimo
+          <input
+            type="number"
+            min={0}
+            max={99}
+            value={values.minPotential || ""}
+            onChange={(event) => set({ minPotential: Number(event.target.value) || 0 })}
+            placeholder="0"
+            className={`${inputClass} w-full sm:w-28`}
+          />
+        </label>
 
-      <label className="flex flex-col gap-1 text-xs font-medium text-muted-foreground">
-        Pé preferido
-        <select
-          value={values.foot}
-          onChange={(event) => onChange({ foot: event.target.value })}
-          className={inputClass}
-        >
-          <option value="">Todos</option>
-          <option value="1">Destro</option>
-          <option value="2">Canhoto</option>
-        </select>
-      </label>
+        <label className="flex min-w-0 flex-col gap-1 text-xs font-medium text-muted-foreground">
+          Idade mínima
+          <input
+            type="number"
+            min={0}
+            max={60}
+            value={values.minAge || ""}
+            onChange={(event) => set({ minAge: Number(event.target.value) || 0 })}
+            placeholder="15"
+            className={`${inputClass} w-full sm:w-24`}
+          />
+        </label>
 
-      <label className="flex flex-col gap-1 text-xs font-medium text-muted-foreground">
-        Preço máximo (€)
-        <input
-          type="number"
-          min={0}
-          step={100000}
-          value={values.maxPrice || ""}
-          onChange={(event) => onChange({ maxPrice: Number(event.target.value) || 0 })}
-          placeholder="sem limite"
-          className={`${inputClass} w-40`}
-        />
-      </label>
+        <label className="flex min-w-0 flex-col gap-1 text-xs font-medium text-muted-foreground">
+          Idade máxima
+          <input
+            type="number"
+            min={0}
+            max={60}
+            value={values.maxAge || ""}
+            onChange={(event) => set({ maxAge: Number(event.target.value) || 0 })}
+            placeholder="45"
+            className={`${inputClass} w-full sm:w-24`}
+          />
+        </label>
 
-      <label className="flex flex-col gap-1 text-xs font-medium text-muted-foreground">
-        Ordenar por
-        <select
-          value={values.sort}
-          onChange={(event) => onChange({ sort: event.target.value })}
-          className={inputClass}
-        >
-          {sortOptions.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-      </label>
+        <label className="flex min-w-0 flex-col gap-1 text-xs font-medium text-muted-foreground">
+          Pé preferido
+          <select
+            value={values.foot}
+            onChange={(event) => set({ foot: event.target.value })}
+            className={`${inputClass} w-full sm:w-auto`}
+          >
+            <option value="">Todos</option>
+            <option value="1">Destro</option>
+            <option value="2">Canhoto</option>
+          </select>
+        </label>
 
+        <label className="col-span-2 flex flex-col gap-1 text-xs font-medium text-muted-foreground">
+          Preço máximo (€)
+          <input
+            type="number"
+            min={0}
+            step={100000}
+            value={values.maxPrice || ""}
+            onChange={(event) => set({ maxPrice: Number(event.target.value) || 0 })}
+            placeholder="sem limite"
+            className={`${inputClass} w-full sm:w-40`}
+          />
+        </label>
       </div>
     </div>
   );
