@@ -2,7 +2,10 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { playerPhotoSrc } from "@/lib/player-photo";
 
 import { PlayerPhoto } from "@/components/PlayerPhoto";
+import { AttributeRadar } from "@/components/AttributeRadar";
 import { isGoalkeeper, StatBars } from "@/components/StatBars";
+import { ratingBg } from "@/lib/rating";
+import { cn } from "@/lib/utils";
 import { useAuctions, auctionProductId, usePlayer, useProducts } from "@/features/players/hooks";
 import { formatMoney } from "@/lib/format";
 import type { Player, PlayerRole } from "@/types/api";
@@ -187,7 +190,12 @@ function PlayerDetailPage() {
             {starLabel(player.weak_foot)}
           </p>
           <p className="mt-2 flex flex-wrap items-center gap-3 text-sm">
-            <span className="rounded bg-pitch px-2 py-1 font-bold text-pitch-foreground tabular-nums">
+            <span
+              className={cn(
+                "rounded px-2 py-1 font-bold tabular-nums",
+                ratingBg(player.overall_rating),
+              )}
+            >
               {player.overall_rating} OVR
             </span>
             <span className="text-muted-foreground">Potencial {player.potential}</span>
@@ -210,11 +218,16 @@ function PlayerDetailPage() {
         ) : null}
       </div>
 
-      <div className="mt-6 rounded-xl border border-border bg-card p-5">
-        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-          Atributos principais
-        </h2>
-        <StatBars player={player} />
+      <div className="mt-6 grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto]">
+        <div className="rounded-xl border border-border bg-card p-5">
+          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            Atributos principais
+          </h2>
+          <StatBars player={player} />
+        </div>
+        <div className="rounded-xl border border-border bg-card p-5">
+          <AttributeRadar player={player} />
+        </div>
       </div>
 
       {playstyles.length || roles.length ? (
@@ -266,7 +279,14 @@ function PlayerDetailPage() {
               {group.keys.map(([key, label]) => (
                 <div key={key} className="flex items-center justify-between gap-3">
                   <dt className="text-muted-foreground">{label}</dt>
-                  <dd className="font-semibold tabular-nums text-foreground">
+                  <dd
+                    className={cn(
+                      "min-w-8 rounded px-1.5 py-0.5 text-center text-xs font-bold tabular-nums",
+                      ratedValue(player, key) === null
+                        ? "text-foreground"
+                        : ratingBg(ratedValue(player, key)),
+                    )}
+                  >
                     {readValue(player, key)}
                   </dd>
                 </div>

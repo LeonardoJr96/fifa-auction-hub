@@ -5,6 +5,8 @@ import { memo } from "react";
 import { PlayerPhoto } from "@/components/PlayerPhoto";
 import { StatBars } from "@/components/StatBars";
 import { formatMoney } from "@/lib/format";
+import { ratingBg } from "@/lib/rating";
+import { cn } from "@/lib/utils";
 import type { Auction, Product } from "@/types/api";
 
 interface ProductCardProps {
@@ -39,7 +41,12 @@ export const ProductCard = memo(function ProductCard({ product, openAuction }: P
             {product.category} · {player.age} anos
           </p>
           <p className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground">
-            <span className="rounded bg-pitch px-1.5 py-0.5 text-pitch-foreground tabular-nums">
+            <span
+              className={cn(
+                "rounded px-1.5 py-0.5 font-bold tabular-nums",
+                ratingBg(player.overall_rating),
+              )}
+            >
               {player.overall_rating}
             </span>
             OVR
