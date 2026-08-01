@@ -120,7 +120,9 @@ async function tryRefresh(): Promise<boolean> {
     if (!data.access) return false;
     accessToken = data.access;
     if (data.refresh) refreshToken = data.refresh;
+    persist();
     return true;
+
   } catch {
     return false;
   }
