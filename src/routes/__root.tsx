@@ -113,24 +113,24 @@ function RootShell({ children }: { children: ReactNode }) {
 }
 
 const navLinkClass =
-  "rounded-md px-3 py-1.5 text-sm font-medium text-pitch-foreground/80 transition-colors hover:bg-pitch-foreground/10 hover:text-pitch-foreground";
+  "px-2 py-1 text-[13px] font-medium text-foreground/70 transition-colors hover:text-primary";
 
 function SiteHeader() {
   const { isAuthenticated, isStaff, user, logout } = useAuth();
 
   return (
-    <header className="bg-pitch-deep">
-      <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-2 px-4 py-3">
-        <Link to="/" className="mr-auto flex items-center gap-2">
-          <span className="grid h-8 w-8 place-items-center rounded-md bg-gold text-sm font-black text-gold-foreground">
-            RD
+    <header className="border-b border-border bg-pitch-deep">
+      <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-1 gap-y-2 px-4 py-2.5">
+        <Link to="/" className="mr-3 flex items-center gap-2">
+          <span className="grid h-7 w-7 place-items-center rounded-full bg-primary text-[13px] font-black text-primary-foreground">
+            R
           </span>
-          <span className="text-base font-bold tracking-tight text-pitch-foreground">
+          <span className="text-[15px] font-semibold tracking-tight text-foreground">
             ReverseDraft
           </span>
         </Link>
 
-        <nav className="flex items-center gap-1">
+        <nav className="flex flex-1 flex-wrap items-center gap-x-1">
           <Link to="/" activeOptions={{ exact: true }} className={navLinkClass}>
             Leilão
           </Link>
