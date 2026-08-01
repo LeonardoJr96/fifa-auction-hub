@@ -11,18 +11,60 @@ export const API_URL =
 /** A raiz do backend (sem /api/v1) — onde ficam /login/ e /login/refresh/. */
 export const AUTH_URL = API_URL.replace(/\/api\/v1\/?$/, "");
 
+const STORAGE_KEY = "reversedraft.session";
+
 let accessToken: string | null = null;
 let refreshToken: string | null = null;
 let onSessionLost: (() => void) | null = null;
 
+function persist() {
+  if (typeof window === "undefined") return;
+  try {
+    if (accessToken && refreshToken) {
+      window.localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({ access: accessToken, refresh: refreshToken }),
+      );
+    } else {
+      window.localStorage.removeItem(STORAGE_KEY);
+    }
+  } catch {
+    /* storage indisponível (modo privado) — segue apenas em memória */
+  }
+}
+
+/** Lê a sessão salva no navegador (chamado na inicialização do AuthProvider). */
+export function loadStoredTokens(): { access: string; refresh: string } | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as { access?: string; refresh?: string };
+    if (!parsed.access || !parsed.refresh) return null;
+    accessToken = parsed.access;
+    refreshToken = parsed.refresh;
+    return { access: parsed.access, refresh: parsed.refresh };
+  } catch {
+    return null;
+  }
+}
+
 export function setTokens(access: string | null, refresh: string | null) {
   accessToken = access;
   refreshToken = refresh;
+  persist();
 }
 
 export function getAccessToken() {
   return accessToken;
 }
+
+/** Renova o access token usando o refresh salvo. Retorna o novo access ou null. */
+export async function refreshSession(): Promise<string | null> {
+  const ok = await tryRefresh();
+  return ok ? accessToken : null;
+}
+
 
 export function setSessionLostHandler(handler: (() => void) | null) {
   onSessionLost = handler;
