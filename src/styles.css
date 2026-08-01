@@ -34,7 +34,14 @@
   --color-gold-foreground: var(--gold-foreground);
   --shadow-card: 0 1px 2px oklch(0.2 0.03 150 / 8%), 0 8px 24px oklch(0.2 0.03 150 / 6%);
   --shadow-bid: 0 0 0 3px var(--gold);
+  --color-rating-elite: var(--rating-elite);
+  --color-rating-high: var(--rating-high);
+  --color-rating-mid: var(--rating-mid);
+  --color-rating-low: var(--rating-low);
+  --color-rating-poor: var(--rating-poor);
+  --color-rating-foreground: var(--rating-foreground);
   --color-background: var(--background);
+
 
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -97,6 +104,12 @@
   --pitch-line: oklch(0.98 0.01 150 / 55%);
   --gold: oklch(0.79 0.15 85);
   --gold-foreground: oklch(0.25 0.06 85);
+  --rating-elite: oklch(0.62 0.16 150);
+  --rating-high: oklch(0.72 0.17 140);
+  --rating-mid: oklch(0.8 0.16 95);
+  --rating-low: oklch(0.72 0.16 55);
+  --rating-poor: oklch(0.6 0.19 28);
+  --rating-foreground: oklch(0.16 0.02 150);
 
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
@@ -166,4 +179,10 @@
   --pitch-line: oklch(0.98 0.01 150 / 45%);
   --gold: oklch(0.79 0.15 85);
   --gold-foreground: oklch(0.2 0.05 85);
+  --rating-elite: oklch(0.58 0.15 150);
+  --rating-high: oklch(0.66 0.16 140);
+  --rating-mid: oklch(0.76 0.15 95);
+  --rating-low: oklch(0.68 0.16 55);
+  --rating-poor: oklch(0.58 0.19 28);
+  --rating-foreground: oklch(0.14 0.02 150);
 }

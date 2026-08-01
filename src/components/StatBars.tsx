@@ -1,3 +1,7 @@
+import { memo } from "react";
+
+import { ratingBg } from "@/lib/rating";
+import { cn } from "@/lib/utils";
 import type { Player } from "@/types/api";
 
 const KEYS = [
@@ -30,30 +34,38 @@ export function isGoalkeeper(player: Player): boolean {
   return readStat(player, "gk_diving") !== null && (player.pac ?? 0) === 0;
 }
 
-/** Barras dos 6 atributos calculados (ou atributos de GK para goleiros). */
-export function StatBars({ player }: { player: Player }) {
+export function statEntries(player: Player) {
   const goalkeeper = isGoalkeeper(player);
-  const entries = (goalkeeper ? GK_KEYS : KEYS).map((entry) => ({
+  return (goalkeeper ? GK_KEYS : KEYS).map((entry) => ({
     label: entry.label,
     value: readStat(player, entry.key),
   }));
+}
+
+/** Chips de atributo no estilo SoFIFA: valor colorido + sigla. */
+export const StatBars = memo(function StatBars({ player }: { player: Player }) {
+  const entries = statEntries(player);
 
   return (
-    <dl className="grid grid-cols-3 gap-x-3 gap-y-2">
+    <dl className="grid grid-cols-3 gap-1.5">
       {entries.map((entry) => (
-        <div key={entry.label}>
-          <div className="flex items-baseline justify-between text-[11px] font-semibold tracking-wide">
-            <dt className="text-muted-foreground">{entry.label}</dt>
-            <dd className="tabular-nums text-foreground">{entry.value ?? "—"}</dd>
-          </div>
-          <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted">
-            <div
-              className="h-full rounded-full bg-pitch transition-[width] duration-500"
-              style={{ width: `${Math.min(100, entry.value ?? 0)}%` }}
-            />
-          </div>
+        <div
+          key={entry.label}
+          className="flex items-center gap-1.5 rounded-md bg-secondary/60 px-1.5 py-1"
+        >
+          <dd
+            className={cn(
+              "min-w-7 rounded px-1 py-0.5 text-center text-[11px] font-bold tabular-nums",
+              ratingBg(entry.value),
+            )}
+          >
+            {entry.value ?? "—"}
+          </dd>
+          <dt className="text-[11px] font-semibold tracking-wide text-muted-foreground">
+            {entry.label}
+          </dt>
         </div>
       ))}
     </dl>
   );
-}
+});
