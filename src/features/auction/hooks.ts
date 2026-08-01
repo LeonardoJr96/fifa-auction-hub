@@ -2,12 +2,13 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { ApiError, apiRequest, toList } from "@/lib/api";
 import type { Auction, Bid, Product } from "@/types/api";
+import { normalizeStatus } from "@/lib/auction-status";
 
 export function useAuction(id: string) {
   return useQuery({
     queryKey: ["auction", id],
     queryFn: () => apiRequest<Auction>(`/auctions/${id}/`),
-    refetchInterval: (query) => (query.state.data?.status === "OPEN" ? 2000 : false),
+    refetchInterval: (query) => (normalizeStatus(query.state.data?.status) === "OPEN" ? 2000 : false),
   });
 }
 

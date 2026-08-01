@@ -50,11 +50,12 @@ export interface Auction {
   id: number;
   product: number | Product;
   pricing_mode: "player_value" | "manual";
-  starting_price: string;
-  current_price: string;
-  min_increment: string;
+  starting_price: string | number;
+  current_price: string | number;
+  min_increment: string | number;
   number_of_bids: number;
-  status: AuctionStatus;
+  /** A API pode devolver minúsculo ("open"); normalize com auctionStatus(). */
+  status: AuctionStatus | Lowercase<AuctionStatus>;
   time_starting: string;
   time_ending: string;
   winner: number | null;

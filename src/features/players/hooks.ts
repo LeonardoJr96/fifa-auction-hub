@@ -3,6 +3,7 @@ import { useMemo } from "react";
 
 import { apiRequest, toList } from "@/lib/api";
 import type { Auction, Player, Product } from "@/types/api";
+import { isOpenAuction } from "@/lib/auction-status";
 
 export const productsQueryOptions = () =>
   queryOptions({
@@ -47,7 +48,7 @@ export function useOpenAuctionsByProduct() {
   return useMemo(() => {
     const map = new Map<number, Auction>();
     for (const auction of data ?? []) {
-      if (auction.status === "OPEN") map.set(auctionProductId(auction), auction);
+      if (isOpenAuction(auction)) map.set(auctionProductId(auction), auction);
     }
     return map;
   }, [data]);

@@ -9,6 +9,7 @@ import { useAuth } from "@/features/auth/AuthContext";
 import { useMe, usePayAuction } from "@/features/me/hooks";
 
 import { formatCountdown, formatDateTime, formatMoney } from "@/lib/format";
+import { auctionStatus } from "@/lib/auction-status";
 
 export const Route = createFileRoute("/auctions/$auctionId")({
   head: () => ({
@@ -61,12 +62,12 @@ function AuctionPage() {
     data: bids,
     isLoading: bidsLoading,
     isError: bidsError,
-  } = useBids(auctionId, auction?.status === "OPEN");
+  } = useBids(auctionId, auctionStatus(auction) === "OPEN");
   const { data: me } = useMe(isAuthenticated);
   const placeBid = usePlaceBid(auctionId);
   const payAuction = usePayAuction();
   const isWinner =
-    auction?.status === "PENDING" && me?.id !== undefined && auction.winner === me.id;
+    auctionStatus(auction) === "PENDING" && me?.id !== undefined && auction?.winner === me.id;
 
 
   const remaining = useCountdown(auction?.time_ending);
@@ -106,7 +107,7 @@ function AuctionPage() {
     auction.number_of_bids === 0
       ? Number(auction.starting_price)
       : Number(auction.current_price) + Number(auction.min_increment);
-  const isOpen = auction.status === "OPEN" && remaining > 0;
+  const isOpen = auctionStatus(auction) === "OPEN" && remaining > 0;
 
   async function handleBid(event: React.FormEvent) {
     event.preventDefault();
@@ -135,7 +136,7 @@ function AuctionPage() {
                 {player?.common_name ?? product?.title ?? "Jogador"}
               </h1>
               <p className="text-xs text-muted-foreground">
-                {product?.category ?? "—"} · {STATUS_LABEL[auction.status] ?? auction.status}
+                {product?.category ?? "—"} · {STATUS_LABEL[auctionStatus(auction)] ?? auction.status}
               </p>
               {player ? (
                 <Link
@@ -198,7 +199,7 @@ function AuctionPage() {
             ) : null}
           </div>
 
-          {auction.status === "PENDING" ? (
+          {auctionStatus(auction) === "PENDING" ? (
             <div className="rounded-xl border border-gold bg-gold/15 px-4 py-3 text-sm text-foreground">
               <p className="font-semibold">
                 Encerrado! Vencedor: {auction.winner === me?.id ? "você" : `usuário #${auction.winner ?? "—"}`}
@@ -232,7 +233,7 @@ function AuctionPage() {
             </div>
           ) : null}
 
-          {auction.status === "PAID" ? (
+          {auctionStatus(auction) === "PAID" ? (
             <p className="rounded-xl border border-pitch bg-pitch/10 px-4 py-3 text-sm font-semibold text-foreground">
               Pago! O jogador já está no seu elenco —{" "}
               <Link to="/team" className="text-pitch hover:underline">
@@ -243,7 +244,7 @@ function AuctionPage() {
           ) : null}
 
 
-          {auction.status === "NO_WINNER" ? (
+          {auctionStatus(auction) === "NO_WINNER" ? (
             <p className="rounded-xl border border-border bg-muted px-4 py-3 text-sm text-muted-foreground">
               Ninguém deu lance.
             </p>
