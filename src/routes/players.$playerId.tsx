@@ -6,6 +6,7 @@ import { isGoalkeeper, StatBars } from "@/components/StatBars";
 import { AttributeRadar } from "@/components/AttributeRadar";
 import { ratingBg, ratingChip } from "@/lib/rating";
 import { useAuctions, auctionProductId, usePlayer, useProducts } from "@/features/players/hooks";
+import { accelerationBadgeClass, accelerationType } from "@/lib/acceleration";
 import { formatMoney } from "@/lib/format";
 import type { Player, PlayerRole } from "@/types/api";
 import { isOpenAuction } from "@/lib/auction-status";
@@ -186,6 +187,20 @@ function PlayerDetailPage() {
             {(player.positions ?? [player.best_position]).filter(Boolean).join(" · ") || "—"} ·{" "}
             {player.age} anos · {footLabel(player.foot)} · Perna ruim{" "}
             {starLabel(player.weak_foot)}
+          </p>
+          <p className="mt-2 flex flex-wrap items-center gap-2 text-xs">
+            <span className="font-semibold uppercase tracking-wide text-muted-foreground">
+              Tipo de corrida
+            </span>
+            {accelerationType(player) ? (
+              <span
+                className={`rounded px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide ${accelerationBadgeClass(accelerationType(player))}`}
+              >
+                {accelerationType(player)}
+              </span>
+            ) : (
+              <span className="text-muted-foreground">—</span>
+            )}
           </p>
           <p className="mt-2 flex flex-wrap items-center gap-3 text-sm">
             <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">

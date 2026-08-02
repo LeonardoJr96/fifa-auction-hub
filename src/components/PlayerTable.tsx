@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { memo } from "react";
 
 import { PlayerPhoto } from "@/components/PlayerPhoto";
+import { accelerationBadgeClass, accelerationType } from "@/lib/acceleration";
 import { formatMoney } from "@/lib/format";
 import { playerPhotoSrc } from "@/lib/player-photo";
 import { ratingBg } from "@/lib/rating";
@@ -22,6 +23,7 @@ const Row = memo(function Row({
 }) {
   const { player } = product;
   const positions = (player.positions ?? [player.best_position]).filter(Boolean) as string[];
+  const runType = accelerationType(player);
 
   return (
     <tr className="border-b border-border transition-colors last:border-0 hover:bg-secondary/50">
@@ -84,6 +86,20 @@ const Row = memo(function Row({
           )}
         </div>
       </td>
+      <td className="hidden px-3 py-2 text-center md:table-cell">
+        {runType ? (
+          <span
+            className={cn(
+              "rounded px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide",
+              accelerationBadgeClass(runType),
+            )}
+          >
+            {runType}
+          </span>
+        ) : (
+          <span className="text-xs text-muted-foreground">—</span>
+        )}
+      </td>
       <td className="px-3 py-2 text-right text-sm font-semibold tabular-nums text-foreground">
         {formatMoney(product.price)}
       </td>
@@ -116,6 +132,7 @@ export function PlayerTable({ products, openAuctions }: PlayerTableProps) {
             <th className="px-3 py-2 text-center">OVR</th>
             <th className="px-3 py-2 text-center">POT</th>
             <th className="hidden px-3 py-2 text-left sm:table-cell">Posições</th>
+            <th className="hidden px-3 py-2 text-center md:table-cell">Corrida</th>
             <th className="px-3 py-2 text-right">Valor</th>
             <th className="px-3 py-2 text-right">Leilão</th>
           </tr>
