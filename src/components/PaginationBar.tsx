@@ -43,7 +43,10 @@ export function PaginationBar({
       <div className="flex items-center gap-2">
         <button
           type="button"
-          onClick={onPrev}
+          onClick={() => {
+            console.debug("[PaginationBar] onPrev click", { page, hasPrev, isLoading });
+            onPrev();
+          }}
           disabled={!hasPrev || isLoading}
           className={buttonClass}
         >
@@ -54,7 +57,10 @@ export function PaginationBar({
         </span>
         <button
           type="button"
-          onClick={onNext}
+          onClick={() => {
+            console.debug("[PaginationBar] onNext click", { page, hasNext, isLoading });
+            onNext();
+          }}
           disabled={!hasNext || isLoading}
           className={buttonClass}
         >

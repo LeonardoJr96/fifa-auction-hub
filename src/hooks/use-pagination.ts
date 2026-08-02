@@ -53,6 +53,14 @@ export function usePagination<T>(
 
   const goTo = (next: number) => {
     const target = Math.min(Math.max(1, next), pageCount);
+    console.debug("[usePagination] goTo", {
+      next,
+      target,
+      current,
+      pageCount,
+      controlled,
+      externalPage: options.page,
+    });
     setInternalPage(target);
     if (controlled) options.onPageChange?.(target);
     if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });

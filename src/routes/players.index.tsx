@@ -12,7 +12,7 @@ import {
 } from "@/components/PlayerFilters";
 import { PlayerTable, PlayerTableSkeleton } from "@/components/PlayerTable";
 import { useOpenAuctionsByProduct, useProducts } from "@/features/players/hooks";
-import { usePagination } from "@/hooks/use-pagination";
+// Inline pagination to avoid hook-order issues
 
 export const Route = createFileRoute("/players/")({
   validateSearch: (search: Record<string, unknown>): Partial<PlayerFilterValues> =>
@@ -46,9 +46,26 @@ function PlayersPage() {
   const reset = () => navigate({ to: "/players", search: {} });
 
   const { positions, filtered } = usePlayerFiltering(products, filters);
-  const pagination = usePagination(filtered, 24, {
-    page: filters.page,
-    onPageChange: (page) => update({ page }),
+
+  const pageSize = 24;
+  const total = filtered.length;
+  const pageCount = Math.max(1, Math.ceil(total / pageSize));
+  const page = Number(filters.page) || 1;
+  const current = Math.min(Math.max(1, page), pageCount);
+  const visible = filtered.slice((current - 1) * pageSize, current * pageSize);
+
+  const goTo = (next: number) => {
+    const target = Math.min(Math.max(1, next), pageCount);
+    navigate({ to: "/players", search: cleanPlayerSearch({ ...filters, page: target }) });
+    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  console.debug("[PlayersPage] render", {
+    filters,
+    productsCount: products?.length ?? 0,
+    filteredCount: filtered.length,
+    paginationPage: current,
+    paginationPageCount: pageCount,
   });
 
   const refreshing = isFetching && !isLoading;
@@ -61,9 +78,9 @@ function PlayersPage() {
             Todos os jogadores
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {isLoading
-              ? "Carregando lista de jogadores..."
-              : `${pagination.total} jogadores encontrados · 24 por página.`}
+              {isLoading
+                ? "Carregando lista de jogadores..."
+                : `${total} jogadores encontrados · 24 por página.`}
           </p>
         </div>
         <Link
@@ -97,26 +114,26 @@ function PlayersPage() {
         {isLoading ? (
           <PlayerTableSkeleton />
         ) : (
-          <PlayerTable products={pagination.items} openAuctions={openAuctions} />
+          <PlayerTable products={visible} openAuctions={openAuctions} />
         )}
       </div>
 
       {!isLoading ? (
         <PaginationBar
-          page={pagination.page}
-          pageCount={pagination.pageCount}
-          rangeStart={pagination.rangeStart}
-          rangeEnd={pagination.rangeEnd}
-          total={pagination.total}
-          hasPrev={pagination.hasPrev}
-          hasNext={pagination.hasNext}
-          onPrev={pagination.prev}
-          onNext={pagination.next}
+          page={current}
+          pageCount={pageCount}
+          rangeStart={total === 0 ? 0 : (current - 1) * pageSize + 1}
+          rangeEnd={Math.min(current * pageSize, total)}
+          total={total}
+          hasPrev={current > 1}
+          hasNext={current < pageCount}
+          onPrev={() => goTo(current - 1)}
+          onNext={() => goTo(current + 1)}
           isLoading={refreshing}
         />
       ) : null}
 
-      {!isLoading && !isError && pagination.total === 0 ? (
+      {!isLoading && !isError && total === 0 ? (
         <p className="mt-10 text-center text-sm text-muted-foreground">
           Nenhum jogador encontrado com esses filtros.
         </p>
