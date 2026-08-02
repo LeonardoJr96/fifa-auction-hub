@@ -45,6 +45,6 @@ export function accelerationType(player: Player): AccelerationType {
 /** Classe de cor por tipo de corrida. */
 export function accelerationBadgeClass(type: AccelerationType): string {
   if (type === "Explosivo") return "bg-rating-elite text-rating-foreground";
-  if (type === "Alongado") return "bg-rating-mid text-rating-foreground";
+  if (type === "Alongado") return "bg-rating-mid text-rating-dark-foreground";
   return "bg-secondary text-secondary-foreground";
 }

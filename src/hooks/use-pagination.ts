@@ -28,16 +28,23 @@ export function usePagination<T>(
   options: PaginationOptions = {},
 ): PaginationResult<T> {
   const controlled = options.page !== undefined && options.onPageChange !== undefined;
-  const [internalPage, setInternalPage] = useState(1);
+  const [internalPage, setInternalPage] = useState(controlled ? Number(options.page) || 1 : 1);
   const total = items.length;
   const pageCount = Math.max(1, Math.ceil(total / pageSize));
 
+  const externalPage = controlled ? Number(options.page) || 1 : null;
+
+  // Espelha a página da URL quando ela muda por fora (link, voltar/avançar).
+  useEffect(() => {
+    if (externalPage !== null) setInternalPage(externalPage);
+  }, [externalPage]);
+
+  // Sem controle externo, qualquer mudança na lista volta pro início.
   useEffect(() => {
     if (!controlled) setInternalPage(1);
   }, [items, pageSize, controlled]);
 
-  const requested = controlled ? Number(options.page) || 1 : internalPage;
-  const current = Math.min(Math.max(1, requested), pageCount);
+  const current = Math.min(Math.max(1, internalPage), pageCount);
 
   const visible = useMemo(
     () => items.slice((current - 1) * pageSize, current * pageSize),
@@ -46,8 +53,8 @@ export function usePagination<T>(
 
   const goTo = (next: number) => {
     const target = Math.min(Math.max(1, next), pageCount);
+    setInternalPage(target);
     if (controlled) options.onPageChange?.(target);
-    else setInternalPage(target);
     if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
