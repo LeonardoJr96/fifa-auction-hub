@@ -247,7 +247,7 @@ export async function apiListAll<T>(path: string, maxPages = 50): Promise<T[]> {
   let nextPath: string | null = path;
   let pages = 0;
   while (nextPath && pages < maxPages) {
-    const page = toPage<T>(await apiRequest<unknown>(nextPath));
+    const page: Paginated<T> = toPage<T>(await apiRequest<unknown>(nextPath));
     items.push(...page.results);
     nextPath = page.next ? relativeToApi(page.next) : null;
     pages += 1;
