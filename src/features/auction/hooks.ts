@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { ApiError, apiRequest, toList } from "@/lib/api";
+import { ApiError, apiListAll, apiRequest } from "@/lib/api";
 import type { Auction, Bid, Product } from "@/types/api";
 import { normalizeStatus } from "@/lib/auction-status";
 
@@ -20,7 +20,7 @@ export function useBids(id: string, enabled = true) {
   return useQuery({
     queryKey: ["auction", id, "bids"],
     queryFn: async () => {
-      const list = toList<Bid>(await apiRequest<unknown>(`/auctions/${id}/bids/`));
+      const list = await apiListAll<Bid>(`/auctions/${id}/bids/`);
       return [...list].sort((a, b) => {
         const diff = Number(b.price) - Number(a.price);
         if (diff !== 0) return diff;

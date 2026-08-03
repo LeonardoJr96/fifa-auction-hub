@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { apiRequest, toList } from "@/lib/api";
+import { apiListAll, apiRequest } from "@/lib/api";
 import type { Formation, Player, Team } from "@/types/api";
 
 export function useTeam(enabled = true, campaignId?: number) {
@@ -14,12 +14,8 @@ export function useTeam(enabled = true, campaignId?: number) {
 export function useRoster(enabled = true, campaignId?: number) {
   return useQuery({
     queryKey: ["roster", campaignId ?? "global"],
-    queryFn: async () =>
-      toList<Player>(
-        await apiRequest<unknown>(
-          `/team/me/roster/${campaignId ? `?campaign_id=${campaignId}` : ""}`,
-        ),
-      ),
+    queryFn: () =>
+      apiListAll<Player>(`/team/me/roster/${campaignId ? `?campaign_id=${campaignId}` : ""}`),
     enabled,
   });
 }

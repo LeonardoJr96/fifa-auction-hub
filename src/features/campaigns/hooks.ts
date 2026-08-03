@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { apiRequest, toList } from "@/lib/api";
+import { apiListAll, apiRequest } from "@/lib/api";
 import type {
   Campaign,
   MarketWindow,
@@ -13,9 +13,8 @@ import type {
 export function useCampaigns() {
   return useQuery({
     queryKey: ["campaigns"],
-    queryFn: async () => {
-      const res = await apiRequest<unknown>("/campaigns/");
-      return toList<Campaign>(res);
+    queryFn: () => {
+      return apiListAll<Campaign>("/campaigns/");
     },
   });
 }
@@ -52,9 +51,8 @@ export function useJoinCampaign() {
 export function useMarketWindows() {
   return useQuery({
     queryKey: ["market-windows"],
-    queryFn: async () => {
-      const res = await apiRequest<unknown>("/campaigns/market-windows/");
-      return toList<MarketWindow>(res);
+    queryFn: () => {
+      return apiListAll<MarketWindow>("/campaigns/market-windows/");
     },
   });
 }
@@ -62,9 +60,8 @@ export function useMarketWindows() {
 export function useMarketListings() {
   return useQuery({
     queryKey: ["market-listings"],
-    queryFn: async () => {
-      const res = await apiRequest<unknown>("/campaigns/listings/");
-      return toList<MarketListing>(res);
+    queryFn: () => {
+      return apiListAll<MarketListing>("/campaigns/listings/");
     },
   });
 }
@@ -160,9 +157,8 @@ export function useMarketWindowAction() {
 export function useTransfers() {
   return useQuery({
     queryKey: ["transfers"],
-    queryFn: async () => {
-      const res = await apiRequest<unknown>("/campaigns/transfers/");
-      return toList<Transfer>(res);
+    queryFn: () => {
+      return apiListAll<Transfer>("/campaigns/transfers/");
     },
   });
 }
@@ -215,9 +211,8 @@ export function useRespondTransfer() {
 export function useCompetitions() {
   return useQuery({
     queryKey: ["competitions"],
-    queryFn: async () => {
-      const res = await apiRequest<unknown>("/competitions/");
-      return toList<Competition>(res);
+    queryFn: () => {
+      return apiListAll<Competition>("/competitions/");
     },
   });
 }
@@ -225,9 +220,8 @@ export function useCompetitions() {
 export function useMatches() {
   return useQuery({
     queryKey: ["matches"],
-    queryFn: async () => {
-      const res = await apiRequest<unknown>("/competitions/matches/");
-      return toList<Match>(res);
+    queryFn: () => {
+      return apiListAll<Match>("/competitions/matches/");
     },
   });
 }
