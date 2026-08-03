@@ -73,6 +73,7 @@ export function useCreateAuction() {
       pricing_mode: "player_value" | "manual";
       manual_price?: number;
       duration_minutes: number;
+      min_increment?: number;
     }) => apiRequest<Auction>("/auctions/", { method: "POST", body: payload }),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["auctions"] });
