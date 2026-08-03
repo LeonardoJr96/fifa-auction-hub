@@ -38,13 +38,7 @@ export interface Product {
 }
 
 export type AuctionStatus =
-  | "OPEN"
-  | "CLOSE"
-  | "PENDING"
-  | "PAID"
-  | "FAILED"
-  | "EXPIRED"
-  | "NO_WINNER";
+  "OPEN" | "CLOSE" | "PENDING" | "PAID" | "FAILED" | "EXPIRED" | "NO_WINNER";
 
 export interface Auction {
   id: number;
@@ -149,6 +143,9 @@ export interface Campaign {
   matches_played_since_last_market: number;
   transfer_policy: TransferPolicy;
   created_at: string;
+  /** Campos opcionais enquanto versões antigas da API ainda não os expõem. */
+  is_member?: boolean;
+  is_admin?: boolean;
 }
 
 export type MarketWindowMode = "auction" | "market" | "hybrid";
@@ -176,6 +173,7 @@ export interface MarketListing {
   price: string | null;
   is_active: boolean;
   created_at: string;
+  auction: number | null;
 }
 
 export type TransferStatus = "pending" | "accepted" | "rejected";
@@ -220,3 +218,37 @@ export interface Match {
   played_at: string;
   player_stats?: MatchPlayerStat[];
 }
+export interface FormationLayout extends FormationSlotLayout {
+  id?: number;
+}
+
+export interface Friend {
+  id: number;
+  username: string;
+}
+
+export interface Friendship {
+  id: number;
+  requester: number;
+  addressee: number;
+  status: "pending" | "accepted" | "rejected";
+  created_at: string;
+  responded_at: string | null;
+}
+
+export interface Conversation {
+  id: number;
+  type: "direct" | "campaign";
+  campaign: number | null;
+  participants: number[];
+  created_at: string;
+}
+
+export interface Message {
+  id: number;
+  conversation: number;
+  sender: number;
+  text: string;
+  created_at: string;
+}
+

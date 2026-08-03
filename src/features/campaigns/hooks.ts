@@ -1,6 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest, toList } from "@/lib/api";
-import type { Campaign, MarketWindow, MarketListing, Transfer, Competition, Match } from "@/types/api";
+import type {
+  Campaign,
+  MarketWindow,
+  MarketListing,
+  Transfer,
+  Competition,
+  Match,
+} from "@/types/api";
 
 // CAMPAIGNS
 export function useCampaigns() {
@@ -16,10 +23,27 @@ export function useCampaigns() {
 export function useCreateCampaign() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: { name: string; min_roster_size?: number; max_roster_size?: number; matches_per_market_cycle?: number; transfer_policy?: string }) =>
-      apiRequest<Campaign>("/campaigns/", { method: "POST", body: data }),
+    mutationFn: (data: {
+      name: string;
+      min_roster_size?: number;
+      max_roster_size?: number;
+      matches_per_market_cycle?: number;
+      transfer_policy?: string;
+    }) => apiRequest<Campaign>("/campaigns/", { method: "POST", body: data }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["campaigns"] });
+    },
+  });
+}
+
+export function useJoinCampaign() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (campaignId: number) =>
+      apiRequest<{ detail: string }>(`/campaigns/${campaignId}/join/`, { method: "POST" }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["campaigns"] });
+      queryClient.invalidateQueries({ queryKey: ["my-campaign-memberships"] });
     },
   });
 }
@@ -48,7 +72,15 @@ export function useMarketListings() {
 export function useBuyDirect() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ campaignId, playerId, price }: { campaignId: number; playerId: number; price?: string }) =>
+    mutationFn: ({
+      campaignId,
+      playerId,
+      price,
+    }: {
+      campaignId: number;
+      playerId: number;
+      price?: string;
+    }) =>
       apiRequest<unknown>(`/campaigns/${campaignId}/buy-direct/`, {
         method: "POST",
         body: { player_id: playerId, price },
@@ -57,6 +89,67 @@ export function useBuyDirect() {
       queryClient.invalidateQueries({ queryKey: ["market-listings"] });
       queryClient.invalidateQueries({ queryKey: ["me"] });
       queryClient.invalidateQueries({ queryKey: ["team"] });
+    },
+  });
+}
+
+export function useListPlayerForSale() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      campaignId,
+      playerId,
+      listingType,
+      price,
+    }: {
+      campaignId: number;
+      playerId: number;
+      listingType: "auction" | "direct";
+      price?: string;
+    }) =>
+      apiRequest<MarketListing>(`/campaigns/${campaignId}/list-player-for-sale/`, {
+        method: "POST",
+        body: { player: playerId, listing_type: listingType, price },
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["market-listings"] });
+      queryClient.invalidateQueries({ queryKey: ["team"] });
+    },
+  });
+}
+
+export function useCreateMarketWindow() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      campaignId,
+      mode,
+      playerCount,
+      randomSelection,
+    }: {
+      campaignId: number;
+      mode: "auction" | "market" | "hybrid";
+      playerCount?: number;
+      randomSelection?: boolean;
+    }) =>
+      apiRequest<MarketWindow>(`/campaigns/${campaignId}/market-windows/create/`, {
+        method: "POST",
+        body: { mode, player_count: playerCount, random_selection: randomSelection },
+      }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["market-windows"] }),
+  });
+}
+
+export function useMarketWindowAction() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ windowId, action }: { windowId: number; action: "open" | "close" }) =>
+      apiRequest<MarketWindow>(`/campaigns/market-windows/${windowId}/${action}/`, {
+        method: "POST",
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["market-windows"] });
+      queryClient.invalidateQueries({ queryKey: ["market-listings"] });
     },
   });
 }
@@ -75,10 +168,24 @@ export function useTransfers() {
 export function useProposeTransfer() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ campaignId, receiverId, offeredPlayers, requestedPlayers }: { campaignId: number; receiverId: number; offeredPlayers: number[]; requestedPlayers: number[] }) =>
+    mutationFn: ({
+      campaignId,
+      receiverId,
+      offeredPlayers,
+      requestedPlayers,
+    }: {
+      campaignId: number;
+      receiverId: number;
+      offeredPlayers: number[];
+      requestedPlayers: number[];
+    }) =>
       apiRequest<Transfer>(`/campaigns/${campaignId}/propose-transfer/`, {
         method: "POST",
-        body: { receiver_id: receiverId, offered_players: offeredPlayers, requested_players: requestedPlayers },
+        body: {
+          receiver_id: receiverId,
+          offered_players: offeredPlayers,
+          requested_players: requestedPlayers,
+        },
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["transfers"] });

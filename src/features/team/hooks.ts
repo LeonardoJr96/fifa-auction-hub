@@ -3,18 +3,23 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest, toList } from "@/lib/api";
 import type { Formation, Player, Team } from "@/types/api";
 
-export function useTeam(enabled = true) {
+export function useTeam(enabled = true, campaignId?: number) {
   return useQuery({
-    queryKey: ["team", "me"],
-    queryFn: () => apiRequest<Team>("/team/me/"),
+    queryKey: ["team", campaignId ?? "global"],
+    queryFn: () => apiRequest<Team>(`/team/me/${campaignId ? `?campaign_id=${campaignId}` : ""}`),
     enabled,
   });
 }
 
-export function useRoster(enabled = true) {
+export function useRoster(enabled = true, campaignId?: number) {
   return useQuery({
-    queryKey: ["team", "me", "roster"],
-    queryFn: async () => toList<Player>(await apiRequest<unknown>("/team/me/roster/")),
+    queryKey: ["roster", campaignId ?? "global"],
+    queryFn: async () =>
+      toList<Player>(
+        await apiRequest<unknown>(
+          `/team/me/roster/${campaignId ? `?campaign_id=${campaignId}` : ""}`,
+        ),
+      ),
     enabled,
   });
 }
@@ -22,8 +27,11 @@ export function useRoster(enabled = true) {
 export function useChangeFormation() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (formation: Formation) =>
-      apiRequest<Team>("/team/me/", { method: "PATCH", body: { formation } }),
+    mutationFn: ({ formation, campaignId }: { formation: Formation; campaignId?: number }) =>
+      apiRequest<Team>("/team/me/", {
+        method: "PATCH",
+        body: { formation, ...(campaignId ? { campaign_id: campaignId } : {}) },
+      }),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["team", "me"] });
     },
@@ -33,10 +41,18 @@ export function useChangeFormation() {
 export function useSetSlot() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ slotCode, playerId }: { slotCode: string; playerId: number | null }) =>
+    mutationFn: ({
+      slotCode,
+      playerId,
+      campaignId,
+    }: {
+      slotCode: string;
+      playerId: number | null;
+      campaignId?: number;
+    }) =>
       apiRequest<unknown>(`/team/me/slots/${slotCode}/`, {
         method: "PUT",
-        body: { player_id: playerId },
+        body: { player_id: playerId, ...(campaignId ? { campaign_id: campaignId } : {}) },
       }),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["team", "me"] });

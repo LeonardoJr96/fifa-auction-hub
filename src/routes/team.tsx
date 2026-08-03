@@ -1,10 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { playerPhotoSrc } from "@/lib/player-photo";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { PlayerPhoto } from "@/components/PlayerPhoto";
 import { useAuth } from "@/features/auth/AuthContext";
 import { useChangeFormation, useRoster, useSetSlot, useTeam } from "@/features/team/hooks";
+import { useCampaigns, useListPlayerForSale } from "@/features/campaigns/hooks";
 import type { Formation } from "@/types/api";
 
 export const Route = createFileRoute("/team")({
@@ -26,11 +27,26 @@ const FORMATIONS: Formation[] = ["4-3-3", "4-4-2", "3-5-2", "4-2-3-1"];
 
 function TeamPage() {
   const { isAuthenticated } = useAuth();
-  const team = useTeam(isAuthenticated);
-  const roster = useRoster(isAuthenticated);
+  const { data: campaigns, isLoading: loadingCampaigns } = useCampaigns();
+  const [selectedTeam, setSelectedTeam] = useState<number | "global" | null>(null);
+  const campaignId = typeof selectedTeam === "number" ? selectedTeam : undefined;
+  const memberCampaigns = (campaigns ?? []).filter((campaign) => campaign.is_member === true);
+
+  useEffect(() => {
+    if (selectedTeam !== null || loadingCampaigns) return;
+    setSelectedTeam(memberCampaigns[0]?.id ?? "global");
+  }, [loadingCampaigns, memberCampaigns, selectedTeam]);
+
+  // Não chama /team/me/ global enquanto a campanha do usuário ainda está sendo resolvida.
+  const team = useTeam(isAuthenticated && selectedTeam !== null, campaignId);
+  const roster = useRoster(isAuthenticated && selectedTeam !== null, campaignId);
   const changeFormation = useChangeFormation();
   const setSlot = useSetSlot();
+  const listPlayerForSale = useListPlayerForSale();
   const [activeSlot, setActiveSlot] = useState<string | null>(null);
+  const [playerForSale, setPlayerForSale] = useState<{ id: number; name: string } | null>(null);
+  const [listingType, setListingType] = useState<"direct" | "auction">("direct");
+  const [listingPrice, setListingPrice] = useState("");
 
   if (!isAuthenticated) {
     return (
@@ -46,7 +62,7 @@ function TeamPage() {
     );
   }
 
-  if (team.isLoading) {
+  if (loadingCampaigns || selectedTeam === null || team.isLoading) {
     return (
       <div className="mx-auto max-w-5xl px-4 py-10">
         <div className="aspect-[3/4] max-h-[600px] animate-pulse rounded-xl bg-muted sm:aspect-[4/3]" />
@@ -74,13 +90,30 @@ function TeamPage() {
   function handleFormationChange(next: Formation) {
     if (next === formation) return;
     if (!window.confirm("Trocar a formação limpa a escalação atual. Continuar?")) return;
-    changeFormation.mutate(next);
+    changeFormation.mutate({ formation: next, campaignId });
   }
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-8">
       <div className="flex flex-wrap items-center gap-3">
         <h1 className="mr-auto text-2xl font-bold tracking-tight text-foreground">Meu time</h1>
+        <label className="text-sm text-muted-foreground">
+          Time:
+          <select
+            value={selectedTeam === "global" ? "" : (selectedTeam ?? "")}
+            onChange={(event) =>
+              setSelectedTeam(event.target.value ? Number(event.target.value) : "global")
+            }
+            className="ml-2 rounded-md border border-input bg-background px-2 py-1.5 text-foreground"
+          >
+            <option value="">Catálogo global</option>
+            {memberCampaigns.map((campaign) => (
+              <option key={campaign.id} value={campaign.id}>
+                {campaign.name}
+              </option>
+            ))}
+          </select>
+        </label>
         <div className="flex flex-wrap gap-1 rounded-md border border-border p-1">
           {FORMATIONS.map((option) => (
             <button
@@ -167,6 +200,15 @@ function TeamPage() {
                   <span className="ml-auto text-xs tabular-nums text-muted-foreground">
                     {player.overall_rating}
                   </span>
+                  {campaignId && (
+                    <button
+                      type="button"
+                      onClick={() => setPlayerForSale({ id: player.id, name: player.common_name })}
+                      className="rounded border border-gold/40 px-2 py-1 text-[10px] font-bold text-gold hover:bg-gold/10"
+                    >
+                      Anunciar
+                    </button>
+                  )}
                 </li>
               ))}
               {(roster.data ?? []).length === 0 ? (
@@ -188,16 +230,14 @@ function TeamPage() {
             className="w-full max-w-sm rounded-xl border border-border bg-card p-4"
             onClick={(event) => event.stopPropagation()}
           >
-            <h2 className="text-base font-semibold text-foreground">
-              Escalar em {activeSlot}
-            </h2>
+            <h2 className="text-base font-semibold text-foreground">Escalar em {activeSlot}</h2>
             <ul className="mt-3 max-h-72 space-y-1 overflow-auto">
               {availableForSlot(activeSlot).map((player) => (
                 <li key={player.id}>
                   <button
                     type="button"
                     onClick={() => {
-                      setSlot.mutate({ slotCode: activeSlot, playerId: player.id });
+                      setSlot.mutate({ slotCode: activeSlot, playerId: player.id, campaignId });
                       setActiveSlot(null);
                     }}
                     className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm hover:bg-accent"
@@ -224,7 +264,7 @@ function TeamPage() {
               <button
                 type="button"
                 onClick={() => {
-                  setSlot.mutate({ slotCode: activeSlot, playerId: null });
+                  setSlot.mutate({ slotCode: activeSlot, playerId: null, campaignId });
                   setActiveSlot(null);
                 }}
                 className="flex-1 rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-accent"
@@ -240,6 +280,71 @@ function TeamPage() {
               </button>
             </div>
           </div>
+        </div>
+      ) : null}
+      {playerForSale && campaignId ? (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/50 p-4 sm:items-center"
+          onClick={() => setPlayerForSale(null)}
+        >
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+              listPlayerForSale.mutate(
+                {
+                  campaignId,
+                  playerId: playerForSale.id,
+                  listingType,
+                  price: listingType === "direct" ? listingPrice : undefined,
+                },
+                { onSuccess: () => setPlayerForSale(null) },
+              );
+            }}
+            onClick={(event) => event.stopPropagation()}
+            className="w-full max-w-sm rounded-xl border border-border bg-card p-5"
+          >
+            <h2 className="text-lg font-bold">Anunciar {playerForSale.name}</h2>
+            <label className="mt-4 block text-sm">
+              Tipo de anúncio
+              <select
+                value={listingType}
+                onChange={(event) => setListingType(event.target.value as "direct" | "auction")}
+                className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2"
+              >
+                <option value="direct">Venda direta</option>
+                <option value="auction">Leilão</option>
+              </select>
+            </label>
+            {listingType === "direct" && (
+              <label className="mt-3 block text-sm">
+                Preço
+                <input
+                  required
+                  min="0"
+                  step="0.01"
+                  value={listingPrice}
+                  onChange={(event) => setListingPrice(event.target.value)}
+                  type="number"
+                  className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2"
+                />
+              </label>
+            )}
+            <div className="mt-5 flex gap-2">
+              <button
+                type="button"
+                onClick={() => setPlayerForSale(null)}
+                className="flex-1 rounded-md border border-border px-3 py-2 text-sm"
+              >
+                Cancelar
+              </button>
+              <button
+                disabled={listPlayerForSale.isPending}
+                className="flex-1 rounded-md bg-primary px-3 py-2 text-sm font-bold text-primary-foreground"
+              >
+                {listPlayerForSale.isPending ? "Anunciando..." : "Anunciar"}
+              </button>
+            </div>
+          </form>
         </div>
       ) : null}
     </div>
