@@ -65,6 +65,7 @@ function AuctionPage() {
     isError: bidsError,
   } = useBids(auctionId, auctionStatus(auction) === "OPEN");
   const { data: me } = useMe(isAuthenticated);
+  const { data: team } = useTeam(isAuthenticated);
   const placeBid = usePlaceBid(auctionId);
   const payAuction = usePayAuction();
   const isWinner =
