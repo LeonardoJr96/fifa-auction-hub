@@ -270,3 +270,8 @@ export interface Message {
   created_at: string;
 }
 
+
+export interface ConversationMessages {
+  messages: Message[];
+  has_more: boolean;
+}
