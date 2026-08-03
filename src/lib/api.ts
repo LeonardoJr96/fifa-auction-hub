@@ -180,3 +180,77 @@ export function toList<T>(data: unknown): T[] {
   }
   return [];
 }
+
+/** Resposta paginada padrão do DRF. */
+export interface Paginated<T> {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
+}
+
+/** Normaliza qualquer resposta (array direto ou paginada) para o formato paginado. */
+export function toPage<T>(data: unknown): Paginated<T> {
+  if (Array.isArray(data)) {
+    return { count: data.length, next: null, previous: null, results: data as T[] };
+  }
+  if (data && typeof data === "object" && Array.isArray((data as Paginated<T>).results)) {
+    const page = data as Paginated<T>;
+    return {
+      count: typeof page.count === "number" ? page.count : page.results.length,
+      next: page.next ?? null,
+      previous: page.previous ?? null,
+      results: page.results,
+    };
+  }
+  return { count: 0, next: null, previous: null, results: [] };
+}
+
+/** Converte uma URL absoluta devolvida em `next` para o path relativo à API. */
+function relativeToApi(url: string): string {
+  try {
+    const parsed = new URL(url, API_URL);
+    const base = new URL(API_URL);
+    const path = parsed.pathname.startsWith(base.pathname)
+      ? parsed.pathname.slice(base.pathname.replace(/\/$/, "").length)
+      : parsed.pathname;
+    return `${path}${parsed.search}`;
+  } catch {
+    return url;
+  }
+}
+
+/**
+ * Busca uma página específica de um endpoint (funciona com arrays diretos também).
+ * `page` é 1-based; `pageSize` vira `page_size` quando informado.
+ */
+export async function apiPage<T>(
+  path: string,
+  params: { page?: number; pageSize?: number; search?: Record<string, string | number | undefined> } = {},
+): Promise<Paginated<T>> {
+  const query = new URLSearchParams();
+  if (params.page && params.page > 1) query.set("page", String(params.page));
+  if (params.pageSize) query.set("page_size", String(params.pageSize));
+  for (const [key, value] of Object.entries(params.search ?? {})) {
+    if (value !== undefined && value !== "") query.set(key, String(value));
+  }
+  const suffix = query.toString() ? `${path.includes("?") ? "&" : "?"}${query}` : "";
+  return toPage<T>(await apiRequest<unknown>(`${path}${suffix}`));
+}
+
+/**
+ * Busca todos os itens de um endpoint seguindo `next` até o fim.
+ * Aceita endpoints que retornam array direto (uma única "página").
+ */
+export async function apiListAll<T>(path: string, maxPages = 50): Promise<T[]> {
+  const items: T[] = [];
+  let nextPath: string | null = path;
+  let pages = 0;
+  while (nextPath && pages < maxPages) {
+    const page = toPage<T>(await apiRequest<unknown>(nextPath));
+    items.push(...page.results);
+    nextPath = page.next ? relativeToApi(page.next) : null;
+    pages += 1;
+  }
+  return items;
+}
