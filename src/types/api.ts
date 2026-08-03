@@ -108,10 +108,28 @@ export interface BidHistoryItem {
 export interface Me {
   id: number;
   username: string;
-  balance: string;
+  email: string;
+  cpf: string | null;
+  birth_date: string | null;
+  cellphone: string | null;
+  address: string | null;
+  town: string | null;
+  post_code: string | null;
+  country: string | null;
+  /** Créditos de lance (cada lance consome 1). */
+  lance_credits: number;
   bid_history: BidHistoryItem[];
-  players: Player[];
 }
+
+/** Campos editáveis via PATCH /users/me/. */
+export interface MeUpdate {
+  cellphone?: string;
+  address?: string;
+  town?: string;
+  post_code?: string;
+  country?: string;
+}
+
 
 export type TransactionType = "auction_payment" | "balance_recharge" | "refund" | "direct_purchase";
 
