@@ -23,6 +23,7 @@ import { Route as PlayersIndexRouteImport } from './routes/players.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as PlayersPlayerIdRouteImport } from './routes/players.$playerId'
 import { Route as AuctionsAuctionIdRouteImport } from './routes/auctions.$auctionId'
+import { Route as AdminCompetitionsRouteImport } from './routes/admin.competitions'
 import { Route as AdminAuctionsIndexRouteImport } from './routes/admin.auctions.index'
 import { Route as AdminAuctionsNewRouteImport } from './routes/admin.auctions.new'
 
@@ -96,6 +97,11 @@ const AuctionsAuctionIdRoute = AuctionsAuctionIdRouteImport.update({
   path: '/auctions/$auctionId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminCompetitionsRoute = AdminCompetitionsRouteImport.update({
+  id: '/admin/competitions',
+  path: '/admin/competitions',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminAuctionsIndexRoute = AdminAuctionsIndexRouteImport.update({
   id: '/admin/auctions/',
   path: '/admin/auctions/',
@@ -118,6 +124,7 @@ export interface FileRoutesByFullPath {
   '/social': typeof SocialRoute
   '/team': typeof TeamRoute
   '/terms': typeof TermsRoute
+  '/admin/competitions': typeof AdminCompetitionsRoute
   '/auctions/$auctionId': typeof AuctionsAuctionIdRoute
   '/players/$playerId': typeof PlayersPlayerIdRoute
   '/admin/': typeof AdminIndexRoute
@@ -136,6 +143,7 @@ export interface FileRoutesByTo {
   '/social': typeof SocialRoute
   '/team': typeof TeamRoute
   '/terms': typeof TermsRoute
+  '/admin/competitions': typeof AdminCompetitionsRoute
   '/auctions/$auctionId': typeof AuctionsAuctionIdRoute
   '/players/$playerId': typeof PlayersPlayerIdRoute
   '/admin': typeof AdminIndexRoute
@@ -155,6 +163,7 @@ export interface FileRoutesById {
   '/social': typeof SocialRoute
   '/team': typeof TeamRoute
   '/terms': typeof TermsRoute
+  '/admin/competitions': typeof AdminCompetitionsRoute
   '/auctions/$auctionId': typeof AuctionsAuctionIdRoute
   '/players/$playerId': typeof PlayersPlayerIdRoute
   '/admin/': typeof AdminIndexRoute
@@ -175,6 +184,7 @@ export interface FileRouteTypes {
     | '/social'
     | '/team'
     | '/terms'
+    | '/admin/competitions'
     | '/auctions/$auctionId'
     | '/players/$playerId'
     | '/admin/'
@@ -193,6 +203,7 @@ export interface FileRouteTypes {
     | '/social'
     | '/team'
     | '/terms'
+    | '/admin/competitions'
     | '/auctions/$auctionId'
     | '/players/$playerId'
     | '/admin'
@@ -211,6 +222,7 @@ export interface FileRouteTypes {
     | '/social'
     | '/team'
     | '/terms'
+    | '/admin/competitions'
     | '/auctions/$auctionId'
     | '/players/$playerId'
     | '/admin/'
@@ -230,6 +242,7 @@ export interface RootRouteChildren {
   SocialRoute: typeof SocialRoute
   TeamRoute: typeof TeamRoute
   TermsRoute: typeof TermsRoute
+  AdminCompetitionsRoute: typeof AdminCompetitionsRoute
   AuctionsAuctionIdRoute: typeof AuctionsAuctionIdRoute
   PlayersPlayerIdRoute: typeof PlayersPlayerIdRoute
   AdminIndexRoute: typeof AdminIndexRoute
@@ -338,6 +351,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuctionsAuctionIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/competitions': {
+      id: '/admin/competitions'
+      path: '/admin/competitions'
+      fullPath: '/admin/competitions'
+      preLoaderRoute: typeof AdminCompetitionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/auctions/': {
       id: '/admin/auctions/'
       path: '/admin/auctions'
@@ -366,6 +386,7 @@ const rootRouteChildren: RootRouteChildren = {
   SocialRoute: SocialRoute,
   TeamRoute: TeamRoute,
   TermsRoute: TermsRoute,
+  AdminCompetitionsRoute: AdminCompetitionsRoute,
   AuctionsAuctionIdRoute: AuctionsAuctionIdRoute,
   PlayersPlayerIdRoute: PlayersPlayerIdRoute,
   AdminIndexRoute: AdminIndexRoute,
