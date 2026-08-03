@@ -8,6 +8,7 @@ import { useAuction, useAuctionProduct, useBids, usePlaceBid } from "@/features/
 import { useAuth } from "@/features/auth/AuthContext";
 import { useMe, usePayAuction } from "@/features/me/hooks";
 import { useTeam } from "@/features/team/hooks";
+import { useAuctionRealtime } from "@/features/auction/useAuctionRealtime";
 
 import { formatCountdown, formatDateTime, formatMoney } from "@/lib/format";
 import { auctionStatus } from "@/lib/auction-status";
@@ -57,13 +58,14 @@ function useCountdown(timeEnding: string | undefined) {
 function AuctionPage() {
   const { auctionId } = Route.useParams();
   const { isAuthenticated } = useAuth();
-  const { data: auction, isLoading, isError, error } = useAuction(auctionId);
+  const { connected: liveConnected } = useAuctionRealtime(auctionId);
+  const { data: auction, isLoading, isError, error } = useAuction(auctionId, liveConnected);
   const { data: product } = useAuctionProduct(auction);
   const {
     data: bids,
     isLoading: bidsLoading,
     isError: bidsError,
-  } = useBids(auctionId, auctionStatus(auction) === "OPEN");
+  } = useBids(auctionId, auctionStatus(auction) === "OPEN", liveConnected);
   const { data: me } = useMe(isAuthenticated);
   const { data: team } = useTeam(isAuthenticated);
   const placeBid = usePlaceBid(auctionId);
