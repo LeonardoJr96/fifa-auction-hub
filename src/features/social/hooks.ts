@@ -1,12 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { apiRequest } from "@/lib/api";
+import { apiListAll, apiRequest } from "@/lib/api";
 import type { Conversation, ConversationMessages, Friend, Friendship, Message } from "@/types/api";
 
 export function useFriends(enabled = true) {
   return useQuery({
     queryKey: ["social", "friends"],
-    queryFn: () => apiRequest<Friend[]>("/social/friends/"),
+    queryFn: () => apiListAll<Friend>("/social/friends/"),
     enabled,
   });
 }
