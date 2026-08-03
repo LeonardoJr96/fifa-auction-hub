@@ -85,9 +85,13 @@ export interface Team {
   id: number;
   name: string;
   formation: Formation;
+  balance: string;
+  player_count: number;
   slots: TeamSlot[];
   formation_layout: FormationSlotLayout[];
+  updated_at?: string;
 }
+
 
 export interface Paginated<T> {
   count: number;
