@@ -20,8 +20,11 @@ import { Route as CompetitionsRouteImport } from './routes/competitions'
 import { Route as CampaignsRouteImport } from './routes/campaigns'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PlayersIndexRouteImport } from './routes/players.index'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as PlayersPlayerIdRouteImport } from './routes/players.$playerId'
 import { Route as AuctionsAuctionIdRouteImport } from './routes/auctions.$auctionId'
+import { Route as AdminCompetitionsRouteImport } from './routes/admin.competitions'
+import { Route as AdminCampaignsRouteImport } from './routes/admin.campaigns'
 import { Route as AdminAuctionsIndexRouteImport } from './routes/admin.auctions.index'
 import { Route as AdminAuctionsNewRouteImport } from './routes/admin.auctions.new'
 
@@ -80,6 +83,11 @@ const PlayersIndexRoute = PlayersIndexRouteImport.update({
   path: '/players/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/admin/',
+  path: '/admin/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PlayersPlayerIdRoute = PlayersPlayerIdRouteImport.update({
   id: '/players/$playerId',
   path: '/players/$playerId',
@@ -88,6 +96,16 @@ const PlayersPlayerIdRoute = PlayersPlayerIdRouteImport.update({
 const AuctionsAuctionIdRoute = AuctionsAuctionIdRouteImport.update({
   id: '/auctions/$auctionId',
   path: '/auctions/$auctionId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminCompetitionsRoute = AdminCompetitionsRouteImport.update({
+  id: '/admin/competitions',
+  path: '/admin/competitions',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminCampaignsRoute = AdminCampaignsRouteImport.update({
+  id: '/admin/campaigns',
+  path: '/admin/campaigns',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminAuctionsIndexRoute = AdminAuctionsIndexRouteImport.update({
@@ -112,8 +130,11 @@ export interface FileRoutesByFullPath {
   '/social': typeof SocialRoute
   '/team': typeof TeamRoute
   '/terms': typeof TermsRoute
+  '/admin/campaigns': typeof AdminCampaignsRoute
+  '/admin/competitions': typeof AdminCompetitionsRoute
   '/auctions/$auctionId': typeof AuctionsAuctionIdRoute
   '/players/$playerId': typeof PlayersPlayerIdRoute
+  '/admin/': typeof AdminIndexRoute
   '/players/': typeof PlayersIndexRoute
   '/admin/auctions/new': typeof AdminAuctionsNewRoute
   '/admin/auctions/': typeof AdminAuctionsIndexRoute
@@ -129,8 +150,11 @@ export interface FileRoutesByTo {
   '/social': typeof SocialRoute
   '/team': typeof TeamRoute
   '/terms': typeof TermsRoute
+  '/admin/campaigns': typeof AdminCampaignsRoute
+  '/admin/competitions': typeof AdminCompetitionsRoute
   '/auctions/$auctionId': typeof AuctionsAuctionIdRoute
   '/players/$playerId': typeof PlayersPlayerIdRoute
+  '/admin': typeof AdminIndexRoute
   '/players': typeof PlayersIndexRoute
   '/admin/auctions/new': typeof AdminAuctionsNewRoute
   '/admin/auctions': typeof AdminAuctionsIndexRoute
@@ -147,8 +171,11 @@ export interface FileRoutesById {
   '/social': typeof SocialRoute
   '/team': typeof TeamRoute
   '/terms': typeof TermsRoute
+  '/admin/campaigns': typeof AdminCampaignsRoute
+  '/admin/competitions': typeof AdminCompetitionsRoute
   '/auctions/$auctionId': typeof AuctionsAuctionIdRoute
   '/players/$playerId': typeof PlayersPlayerIdRoute
+  '/admin/': typeof AdminIndexRoute
   '/players/': typeof PlayersIndexRoute
   '/admin/auctions/new': typeof AdminAuctionsNewRoute
   '/admin/auctions/': typeof AdminAuctionsIndexRoute
@@ -166,8 +193,11 @@ export interface FileRouteTypes {
     | '/social'
     | '/team'
     | '/terms'
+    | '/admin/campaigns'
+    | '/admin/competitions'
     | '/auctions/$auctionId'
     | '/players/$playerId'
+    | '/admin/'
     | '/players/'
     | '/admin/auctions/new'
     | '/admin/auctions/'
@@ -183,8 +213,11 @@ export interface FileRouteTypes {
     | '/social'
     | '/team'
     | '/terms'
+    | '/admin/campaigns'
+    | '/admin/competitions'
     | '/auctions/$auctionId'
     | '/players/$playerId'
+    | '/admin'
     | '/players'
     | '/admin/auctions/new'
     | '/admin/auctions'
@@ -200,8 +233,11 @@ export interface FileRouteTypes {
     | '/social'
     | '/team'
     | '/terms'
+    | '/admin/campaigns'
+    | '/admin/competitions'
     | '/auctions/$auctionId'
     | '/players/$playerId'
+    | '/admin/'
     | '/players/'
     | '/admin/auctions/new'
     | '/admin/auctions/'
@@ -218,8 +254,11 @@ export interface RootRouteChildren {
   SocialRoute: typeof SocialRoute
   TeamRoute: typeof TeamRoute
   TermsRoute: typeof TermsRoute
+  AdminCampaignsRoute: typeof AdminCampaignsRoute
+  AdminCompetitionsRoute: typeof AdminCompetitionsRoute
   AuctionsAuctionIdRoute: typeof AuctionsAuctionIdRoute
   PlayersPlayerIdRoute: typeof PlayersPlayerIdRoute
+  AdminIndexRoute: typeof AdminIndexRoute
   PlayersIndexRoute: typeof PlayersIndexRoute
   AdminAuctionsNewRoute: typeof AdminAuctionsNewRoute
   AdminAuctionsIndexRoute: typeof AdminAuctionsIndexRoute
@@ -304,6 +343,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlayersIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/admin'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/players/$playerId': {
       id: '/players/$playerId'
       path: '/players/$playerId'
@@ -316,6 +362,20 @@ declare module '@tanstack/react-router' {
       path: '/auctions/$auctionId'
       fullPath: '/auctions/$auctionId'
       preLoaderRoute: typeof AuctionsAuctionIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/competitions': {
+      id: '/admin/competitions'
+      path: '/admin/competitions'
+      fullPath: '/admin/competitions'
+      preLoaderRoute: typeof AdminCompetitionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/campaigns': {
+      id: '/admin/campaigns'
+      path: '/admin/campaigns'
+      fullPath: '/admin/campaigns'
+      preLoaderRoute: typeof AdminCampaignsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/auctions/': {
@@ -346,8 +406,11 @@ const rootRouteChildren: RootRouteChildren = {
   SocialRoute: SocialRoute,
   TeamRoute: TeamRoute,
   TermsRoute: TermsRoute,
+  AdminCampaignsRoute: AdminCampaignsRoute,
+  AdminCompetitionsRoute: AdminCompetitionsRoute,
   AuctionsAuctionIdRoute: AuctionsAuctionIdRoute,
   PlayersPlayerIdRoute: PlayersPlayerIdRoute,
+  AdminIndexRoute: AdminIndexRoute,
   PlayersIndexRoute: PlayersIndexRoute,
   AdminAuctionsNewRoute: AdminAuctionsNewRoute,
   AdminAuctionsIndexRoute: AdminAuctionsIndexRoute,

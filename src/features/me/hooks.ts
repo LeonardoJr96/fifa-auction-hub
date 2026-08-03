@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { apiRequest, toList } from "@/lib/api";
+import { apiListAll, apiRequest } from "@/lib/api";
 import type { Me, MeUpdate, Transaction } from "@/types/api";
 
 export function useMe(enabled = true) {
@@ -14,7 +14,7 @@ export function useMe(enabled = true) {
 export function useTransactions(enabled = true) {
   return useQuery({
     queryKey: ["payments", "me"],
-    queryFn: async () => toList<Transaction>(await apiRequest<unknown>("/payments/me/")),
+    queryFn: () => apiListAll<Transaction>("/payments/me/"),
     enabled,
   });
 }

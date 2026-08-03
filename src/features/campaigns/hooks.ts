@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { apiRequest, toList } from "@/lib/api";
+import { apiListAll, apiRequest } from "@/lib/api";
 import type {
+  ListingType,
   Campaign,
   MarketWindow,
   MarketListing,
@@ -13,9 +14,8 @@ import type {
 export function useCampaigns() {
   return useQuery({
     queryKey: ["campaigns"],
-    queryFn: async () => {
-      const res = await apiRequest<unknown>("/campaigns/");
-      return toList<Campaign>(res);
+    queryFn: () => {
+      return apiListAll<Campaign>("/campaigns/");
     },
   });
 }
@@ -52,9 +52,8 @@ export function useJoinCampaign() {
 export function useMarketWindows() {
   return useQuery({
     queryKey: ["market-windows"],
-    queryFn: async () => {
-      const res = await apiRequest<unknown>("/campaigns/market-windows/");
-      return toList<MarketWindow>(res);
+    queryFn: () => {
+      return apiListAll<MarketWindow>("/campaigns/market-windows/");
     },
   });
 }
@@ -62,9 +61,8 @@ export function useMarketWindows() {
 export function useMarketListings() {
   return useQuery({
     queryKey: ["market-listings"],
-    queryFn: async () => {
-      const res = await apiRequest<unknown>("/campaigns/listings/");
-      return toList<MarketListing>(res);
+    queryFn: () => {
+      return apiListAll<MarketListing>("/campaigns/listings/");
     },
   });
 }
@@ -160,9 +158,8 @@ export function useMarketWindowAction() {
 export function useTransfers() {
   return useQuery({
     queryKey: ["transfers"],
-    queryFn: async () => {
-      const res = await apiRequest<unknown>("/campaigns/transfers/");
-      return toList<Transfer>(res);
+    queryFn: () => {
+      return apiListAll<Transfer>("/campaigns/transfers/");
     },
   });
 }
@@ -215,9 +212,8 @@ export function useRespondTransfer() {
 export function useCompetitions() {
   return useQuery({
     queryKey: ["competitions"],
-    queryFn: async () => {
-      const res = await apiRequest<unknown>("/competitions/");
-      return toList<Competition>(res);
+    queryFn: () => {
+      return apiListAll<Competition>("/competitions/");
     },
   });
 }
@@ -225,9 +221,8 @@ export function useCompetitions() {
 export function useMatches() {
   return useQuery({
     queryKey: ["matches"],
-    queryFn: async () => {
-      const res = await apiRequest<unknown>("/competitions/matches/");
-      return toList<Match>(res);
+    queryFn: () => {
+      return apiListAll<Match>("/competitions/matches/");
     },
   });
 }
@@ -241,5 +236,123 @@ export function useSimulateMatch() {
       queryClient.invalidateQueries({ queryKey: ["matches"] });
       queryClient.invalidateQueries({ queryKey: ["market-windows"] });
     },
+  });
+}
+
+// ===== ADMIN: COMPETIÇÕES =====
+export function useFinishCompetition() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (competitionId: number) =>
+      apiRequest<Competition>(`/competitions/${competitionId}/finish/`, { method: "POST" }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["competitions"] });
+      queryClient.invalidateQueries({ queryKey: ["matches"] });
+    },
+  });
+}
+
+export function useGenerateBracket() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (competitionId: number) =>
+      apiRequest<unknown>(`/competitions/${competitionId}/generate-bracket/`, { method: "POST" }),
+    onSuccess: (_data, competitionId) => {
+      queryClient.invalidateQueries({ queryKey: ["competitions", competitionId, "bracket"] });
+      queryClient.invalidateQueries({ queryKey: ["matches"] });
+    },
+  });
+}
+
+export interface BracketMatch {
+  id?: number;
+  round?: number | string;
+  home_team?: number | string | { id: number; name?: string } | null;
+  away_team?: number | string | { id: number; name?: string } | null;
+  home_score?: number | null;
+  away_score?: number | null;
+}
+
+export function useBracket(competitionId?: number) {
+  return useQuery({
+    queryKey: ["competitions", competitionId, "bracket"],
+    queryFn: () => apiListAll<BracketMatch>(`/competitions/${competitionId}/bracket/`),
+    enabled: competitionId !== undefined,
+    retry: false,
+  });
+}
+
+// ===== ADMIN: CAMPANHA =====
+export interface CampaignAdmin {
+  id: number;
+  user: number;
+  username?: string;
+}
+
+export function useCampaignAdmins(campaignId?: number) {
+  return useQuery({
+    queryKey: ["campaigns", campaignId, "admins"],
+    queryFn: () => apiListAll<CampaignAdmin>(`/campaigns/${campaignId}/admins/`),
+    enabled: campaignId !== undefined,
+    retry: false,
+  });
+}
+
+export function useAddCampaignAdmin() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ campaignId, userId }: { campaignId: number; userId: number }) =>
+      apiRequest<CampaignAdmin>(`/campaigns/${campaignId}/admins/`, {
+        method: "POST",
+        body: { user_id: userId },
+      }),
+    onSuccess: (_data, { campaignId }) =>
+      queryClient.invalidateQueries({ queryKey: ["campaigns", campaignId, "admins"] }),
+  });
+}
+
+export function useRemoveCampaignAdmin() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ campaignId, userId }: { campaignId: number; userId: number }) =>
+      apiRequest<unknown>(`/campaigns/${campaignId}/admins/${userId}/`, { method: "DELETE" }),
+    onSuccess: (_data, { campaignId }) =>
+      queryClient.invalidateQueries({ queryKey: ["campaigns", campaignId, "admins"] }),
+  });
+}
+
+// ===== ADMIN: LISTAGENS =====
+export function useUpdateListing() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      listingId,
+      price,
+      listingType,
+      isActive,
+    }: {
+      listingId: number;
+      price?: string;
+      listingType?: ListingType;
+      isActive?: boolean;
+    }) =>
+      apiRequest<MarketListing>(`/campaigns/listings/${listingId}/`, {
+        method: "PATCH",
+        body: {
+          ...(price !== undefined ? { price } : {}),
+          ...(listingType !== undefined ? { listing_type: listingType } : {}),
+          ...(isActive !== undefined ? { is_active: isActive } : {}),
+        },
+      }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["market-listings"] }),
+  });
+}
+
+export function useDeleteListing() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (listingId: number) =>
+      apiRequest<unknown>(`/campaigns/listings/${listingId}/`, { method: "DELETE" }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["market-listings"] }),
   });
 }

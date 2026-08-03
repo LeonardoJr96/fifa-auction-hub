@@ -8,6 +8,7 @@ import { useAuction, useAuctionProduct, useBids, usePlaceBid } from "@/features/
 import { useAuth } from "@/features/auth/AuthContext";
 import { useMe, usePayAuction } from "@/features/me/hooks";
 import { useTeam } from "@/features/team/hooks";
+import { useAuctionRealtime } from "@/features/auction/useAuctionRealtime";
 
 import { formatCountdown, formatDateTime, formatMoney } from "@/lib/format";
 import { auctionStatus } from "@/lib/auction-status";
@@ -57,13 +58,14 @@ function useCountdown(timeEnding: string | undefined) {
 function AuctionPage() {
   const { auctionId } = Route.useParams();
   const { isAuthenticated } = useAuth();
-  const { data: auction, isLoading, isError, error } = useAuction(auctionId);
+  const { connected: liveConnected } = useAuctionRealtime(auctionId);
+  const { data: auction, isLoading, isError, error } = useAuction(auctionId, liveConnected);
   const { data: product } = useAuctionProduct(auction);
   const {
     data: bids,
     isLoading: bidsLoading,
     isError: bidsError,
-  } = useBids(auctionId, auctionStatus(auction) === "OPEN");
+  } = useBids(auctionId, auctionStatus(auction) === "OPEN", liveConnected);
   const { data: me } = useMe(isAuthenticated);
   const { data: team } = useTeam(isAuthenticated);
   const placeBid = usePlaceBid(auctionId);
@@ -290,9 +292,23 @@ function AuctionPage() {
           </form>
 
           <div className="rounded-xl border border-border bg-card p-5">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-              Últimos lances
-            </h2>
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                Últimos lances
+              </h2>
+              <span
+                className={`flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide ${
+                  liveConnected ? "text-pitch" : "text-muted-foreground"
+                }`}
+              >
+                <span
+                  className={`h-2 w-2 rounded-full ${
+                    liveConnected ? "animate-pulse bg-pitch" : "bg-muted-foreground/50"
+                  }`}
+                />
+                {liveConnected ? "Ao vivo" : "Atualização periódica"}
+              </span>
+            </div>
             {bidsLoading ? (
               <div className="mt-3 space-y-2" aria-busy="true">
                 <div className="h-4 animate-pulse rounded bg-muted" />

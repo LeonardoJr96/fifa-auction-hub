@@ -1,14 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { ApiError, apiRequest, toList } from "@/lib/api";
+import { ApiError, apiListAll, apiRequest } from "@/lib/api";
 import type { Auction, Bid, Product } from "@/types/api";
 import { normalizeStatus } from "@/lib/auction-status";
 
-export function useAuction(id: string) {
+export function useAuction(id: string, realtime = false) {
   return useQuery({
     queryKey: ["auction", id],
     queryFn: () => apiRequest<Auction>(`/auctions/${id}/`),
-    refetchInterval: (query) => (normalizeStatus(query.state.data?.status) === "OPEN" ? 2000 : false),
+    // Com WebSocket ativo o polling é só um fallback lento.
+    refetchInterval: (query) =>
+      normalizeStatus(query.state.data?.status) === "OPEN" ? (realtime ? 20000 : 2000) : false,
   });
 }
 
@@ -16,11 +18,11 @@ export function useAuction(id: string) {
  * Lista pública de lances do leilão (todos os participantes).
  * Ordena por preço desc (empate: mais recente primeiro).
  */
-export function useBids(id: string, enabled = true) {
+export function useBids(id: string, enabled = true, realtime = false) {
   return useQuery({
     queryKey: ["auction", id, "bids"],
     queryFn: async () => {
-      const list = toList<Bid>(await apiRequest<unknown>(`/auctions/${id}/bids/`));
+      const list = await apiListAll<Bid>(`/auctions/${id}/bids/`);
       return [...list].sort((a, b) => {
         const diff = Number(b.price) - Number(a.price);
         if (diff !== 0) return diff;
@@ -33,7 +35,9 @@ export function useBids(id: string, enabled = true) {
       error instanceof ApiError && error.status === 404 ? false : failureCount < 2,
     refetchInterval: (query) =>
       enabled && !(query.state.error instanceof ApiError && query.state.error.status === 404)
-        ? 2000
+        ? realtime
+          ? 20000
+          : 2000
         : false,
   });
 }

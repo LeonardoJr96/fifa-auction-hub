@@ -1,14 +1,14 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 
-import { apiRequest, toList } from "@/lib/api";
+import { apiListAll, apiRequest } from "@/lib/api";
 import type { Auction, Player, Product } from "@/types/api";
 import { isOpenAuction } from "@/lib/auction-status";
 
 export const productsQueryOptions = () =>
   queryOptions({
     queryKey: ["products"],
-    queryFn: async () => toList<Product>(await apiRequest<unknown>("/products/")),
+    queryFn: () => apiListAll<Product>("/products/"),
     staleTime: 10 * 60 * 1000,
     gcTime: 24 * 60 * 60 * 1000,
     refetchOnWindowFocus: false,
@@ -33,7 +33,7 @@ export function usePlayer(id: string) {
 export function useAuctions() {
   return useQuery({
     queryKey: ["auctions"],
-    queryFn: async () => toList<Auction>(await apiRequest<unknown>("/auctions/")),
+    queryFn: () => apiListAll<Auction>("/auctions/"),
     refetchInterval: 15000,
   });
 }
