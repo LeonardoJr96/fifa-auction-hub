@@ -157,13 +157,8 @@ function SiteHeader() {
             </Link>
           ) : null}
           {isStaff ? (
-            <Link to="/admin/auctions" className={navLinkClass}>
-              Leilões (admin)
-            </Link>
-          ) : null}
-          {isStaff ? (
-            <Link to="/admin/auctions/new" className={navLinkClass}>
-              Novo leilão
+            <Link to="/admin" className={navLinkClass}>
+              Admin
             </Link>
           ) : null}
           {isAuthenticated ? (
