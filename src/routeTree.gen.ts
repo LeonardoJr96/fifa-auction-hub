@@ -16,6 +16,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as MeRouteImport } from './routes/me'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as SocialRouteImport } from './routes/social'
 import { Route as TeamRouteImport } from './routes/team'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AuctionsAuctionIdRouteImport } from './routes/auctions.$auctionId'
@@ -57,6 +58,11 @@ const RegisterRoute = RegisterRouteImport.update({
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SocialRoute = SocialRouteImport.update({
+  id: '/social',
+  path: '/social',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TeamRoute = TeamRouteImport.update({
@@ -103,6 +109,7 @@ export interface FileRoutesByFullPath {
   '/me': typeof MeRoute
   '/register': typeof RegisterRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/social': typeof SocialRoute
   '/team': typeof TeamRoute
   '/terms': typeof TermsRoute
   '/auctions/$auctionId': typeof AuctionsAuctionIdRoute
@@ -119,6 +126,7 @@ export interface FileRoutesByTo {
   '/me': typeof MeRoute
   '/register': typeof RegisterRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/social': typeof SocialRoute
   '/team': typeof TeamRoute
   '/terms': typeof TermsRoute
   '/auctions/$auctionId': typeof AuctionsAuctionIdRoute
@@ -136,6 +144,7 @@ export interface FileRoutesById {
   '/me': typeof MeRoute
   '/register': typeof RegisterRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/social': typeof SocialRoute
   '/team': typeof TeamRoute
   '/terms': typeof TermsRoute
   '/auctions/$auctionId': typeof AuctionsAuctionIdRoute
@@ -154,6 +163,7 @@ export interface FileRouteTypes {
     | '/me'
     | '/register'
     | '/sitemap.xml'
+    | '/social'
     | '/team'
     | '/terms'
     | '/auctions/$auctionId'
@@ -170,6 +180,7 @@ export interface FileRouteTypes {
     | '/me'
     | '/register'
     | '/sitemap.xml'
+    | '/social'
     | '/team'
     | '/terms'
     | '/auctions/$auctionId'
@@ -186,6 +197,7 @@ export interface FileRouteTypes {
     | '/me'
     | '/register'
     | '/sitemap.xml'
+    | '/social'
     | '/team'
     | '/terms'
     | '/auctions/$auctionId'
@@ -203,6 +215,7 @@ export interface RootRouteChildren {
   MeRoute: typeof MeRoute
   RegisterRoute: typeof RegisterRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  SocialRoute: typeof SocialRoute
   TeamRoute: typeof TeamRoute
   TermsRoute: typeof TermsRoute
   AuctionsAuctionIdRoute: typeof AuctionsAuctionIdRoute
@@ -261,6 +274,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/social': {
+      id: '/social'
+      path: '/social'
+      fullPath: '/social'
+      preLoaderRoute: typeof SocialRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/team': {
@@ -323,6 +343,7 @@ const rootRouteChildren: RootRouteChildren = {
   MeRoute: MeRoute,
   RegisterRoute: RegisterRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  SocialRoute: SocialRoute,
   TeamRoute: TeamRoute,
   TermsRoute: TermsRoute,
   AuctionsAuctionIdRoute: AuctionsAuctionIdRoute,

@@ -1,4 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/api";
 import { useCompetitions, useMatches, useSimulateMatch } from "@/features/campaigns/hooks";
 import { useAuth } from "@/features/auth/AuthContext";
 
@@ -17,6 +20,16 @@ function CompetitionsPage() {
   const { data: competitions, isLoading: loadingCompetitions } = useCompetitions();
   const { data: matches, isLoading: loadingMatches } = useMatches();
   const simulateMatchMutation = useSimulateMatch();
+  const [competitionName, setCompetitionName] = useState("");
+  const queryClient = useQueryClient();
+  const createCompetition = useMutation({
+    mutationFn: () => apiRequest("/competitions/", { method: "POST", body: { name: competitionName, competition_type: "league", is_active: true } }),
+    onSuccess: () => { setCompetitionName(""); queryClient.invalidateQueries({ queryKey: ["competitions"] }); },
+  });
+  const finishCompetition = useMutation({
+    mutationFn: (id: number) => apiRequest(`/competitions/${id}/finish/`, { method: "POST" }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["competitions"] }),
+  });
 
   const handleSimulate = (matchId: number) => {
     simulateMatchMutation.mutate(matchId);
@@ -30,6 +43,13 @@ function CompetitionsPage() {
           Ligas e Copas integradas com acionamento automático da janela de mercado após partidas.
         </p>
       </div>
+
+      {isStaff && (
+        <form onSubmit={(event) => { event.preventDefault(); if (competitionName.trim()) createCompetition.mutate(); }} className="flex flex-wrap gap-2 rounded-xl border border-border bg-card p-4">
+          <input required value={competitionName} onChange={(event) => setCompetitionName(event.target.value)} placeholder="Nome da nova competição" className="min-w-64 flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm" />
+          <button disabled={createCompetition.isPending} className="rounded-md bg-primary px-4 py-2 text-sm font-bold text-primary-foreground disabled:opacity-50">{createCompetition.isPending ? "Criando..." : "Criar competição"}</button>
+        </form>
+      )}
 
       {/* Ligas e Copas */}
       <section className="space-y-4">
@@ -53,6 +73,7 @@ function CompetitionsPage() {
                   </span>
                 </div>
                 <h3 className="text-lg font-bold text-foreground">{c.name}</h3>
+                {isStaff && c.is_active && <button onClick={() => finishCompetition.mutate(c.id)} disabled={finishCompetition.isPending} className="rounded border border-destructive/40 px-3 py-1.5 text-xs font-bold text-destructive hover:bg-destructive/10">Encerrar competição</button>}
               </div>
             ))}
           </div>

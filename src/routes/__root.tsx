@@ -147,6 +147,11 @@ function SiteHeader() {
             Competições
           </Link>
           {isAuthenticated ? (
+            <Link to="/social" className={navLinkClass}>
+              Comunidade
+            </Link>
+          ) : null}
+          {isAuthenticated ? (
             <Link to="/me" className={navLinkClass}>
               Minha conta
             </Link>

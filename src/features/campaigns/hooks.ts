@@ -109,7 +109,7 @@ export function useListPlayerForSale() {
     }) =>
       apiRequest<MarketListing>(`/campaigns/${campaignId}/list-player-for-sale/`, {
         method: "POST",
-        body: { player: playerId, listing_type: listingType, price },
+        body: { player_id: playerId, listing_type: listingType, price },
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["market-listings"] });
@@ -123,18 +123,20 @@ export function useCreateMarketWindow() {
   return useMutation({
     mutationFn: ({
       campaignId,
+      name,
       mode,
       playerCount,
       randomSelection,
     }: {
       campaignId: number;
+      name: string;
       mode: "auction" | "market" | "hybrid";
       playerCount?: number;
       randomSelection?: boolean;
     }) =>
       apiRequest<MarketWindow>(`/campaigns/${campaignId}/market-windows/create/`, {
         method: "POST",
-        body: { mode, player_count: playerCount, random_selection: randomSelection },
+        body: { name, mode, player_count: playerCount, random_selection: randomSelection },
       }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["market-windows"] }),
   });

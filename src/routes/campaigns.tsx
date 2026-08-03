@@ -42,6 +42,7 @@ function CampaignsPage() {
     "market_window_only",
   );
   const [windowMode, setWindowMode] = useState<"auction" | "market" | "hybrid">("hybrid");
+  const [windowName, setWindowName] = useState("Janela de mercado");
   const [windowCount, setWindowCount] = useState("10");
 
   const selectedCampaign = campaigns?.find((campaign) => campaign.id === selectedCampaignId);
@@ -224,6 +225,7 @@ function CampaignsPage() {
               createWindow.mutate(
                 {
                   campaignId: selectedCampaign.id,
+                  name: windowName,
                   mode: windowMode,
                   playerCount: Number(windowCount),
                   randomSelection: true,
