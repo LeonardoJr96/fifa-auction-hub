@@ -72,23 +72,40 @@ function MePage() {
     <div className="mx-auto w-full max-w-5xl px-4 py-8">
       <header className="rounded-xl border border-border bg-card p-6">
         <h1 className="text-2xl font-bold tracking-tight text-foreground">{me.username}</h1>
-        <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          Saldo disponível
-        </p>
-        <p className="text-4xl font-black tabular-nums text-pitch">{formatMoney(me.balance)}</p>
+        <p className="text-sm text-muted-foreground">{me.email}</p>
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Créditos de lance
+            </p>
+            <p className="text-4xl font-black tabular-nums text-pitch">{me.lance_credits ?? 0}</p>
+            <p className="mt-1 text-xs text-muted-foreground">Cada lance consome 1 crédito.</p>
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Saldo do time
+            </p>
+            <p className="text-4xl font-black tabular-nums text-foreground">
+              {formatMoney(team?.balance ?? 0)}
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Usado para pagar leilões e compras diretas.
+            </p>
+          </div>
+        </div>
       </header>
+
+      <ProfileCard me={me} />
 
       <ChangePasswordCard />
 
-
-
       <section className="mt-6 rounded-xl border border-border bg-card p-5">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-          Meus jogadores ({me.players?.length ?? 0})
+          Meus jogadores ({roster?.length ?? 0})
         </h2>
-        {me.players?.length ? (
+        {roster?.length ? (
           <ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {me.players.map((player) => (
+            {roster.map((player) => (
               <li key={player.id}>
                 <Link
                   to="/players/$playerId"
@@ -118,6 +135,7 @@ function MePage() {
           </p>
         )}
       </section>
+
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <section className="rounded-xl border border-border bg-card p-5">
