@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { apiRequest, toList } from "@/lib/api";
-import type { Me, Transaction } from "@/types/api";
+import type { Me, MeUpdate, Transaction } from "@/types/api";
 
 export function useMe(enabled = true) {
   return useQuery({
@@ -41,6 +41,17 @@ export function usePayAuction() {
         queryClient.invalidateQueries({ queryKey: ["team", "me"] }),
         queryClient.invalidateQueries({ queryKey: ["auction", String(auctionId)] }),
       ]);
+    },
+  });
+}
+
+export function useUpdateProfile() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: MeUpdate) =>
+      apiRequest<Me>("/users/me/", { method: "PATCH", body: payload }),
+    onSuccess: (data) => {
+      queryClient.setQueryData(["me"], data);
     },
   });
 }

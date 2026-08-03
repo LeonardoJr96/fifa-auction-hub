@@ -33,6 +33,7 @@ function NewAuctionPage() {
   const [pricingMode, setPricingMode] = useState<"player_value" | "manual">("player_value");
   const [manualPrice, setManualPrice] = useState("");
   const [duration, setDuration] = useState("10");
+  const [minIncrement, setMinIncrement] = useState("1000");
 
   const matches = useMemo(() => {
     const term = query.trim().toLowerCase();
@@ -68,6 +69,7 @@ function NewAuctionPage() {
       product: productId,
       pricing_mode: pricingMode,
       duration_minutes: Number(duration) || 10,
+      min_increment: Number(minIncrement) || 1,
       ...(pricingMode === "manual" ? { manual_price: Number(manualPrice) || 0 } : {}),
     });
     navigate({ to: "/auctions/$auctionId", params: { auctionId: String(auction.id) } });
@@ -165,6 +167,20 @@ function NewAuctionPage() {
             min={1}
             value={duration}
             onChange={(event) => setDuration(event.target.value)}
+            className={`${inputClass} mt-1`}
+          />
+        </div>
+
+        <div>
+          <label htmlFor="min_increment" className="text-sm font-medium text-foreground">
+            Incremento mínimo
+          </label>
+          <input
+            id="min_increment"
+            type="number"
+            min={1}
+            value={minIncrement}
+            onChange={(event) => setMinIncrement(event.target.value)}
             className={`${inputClass} mt-1`}
           />
         </div>

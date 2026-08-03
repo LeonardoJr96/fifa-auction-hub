@@ -7,6 +7,7 @@ import { StatBars } from "@/components/StatBars";
 import { useAuction, useAuctionProduct, useBids, usePlaceBid } from "@/features/auction/hooks";
 import { useAuth } from "@/features/auth/AuthContext";
 import { useMe, usePayAuction } from "@/features/me/hooks";
+import { useTeam } from "@/features/team/hooks";
 
 import { formatCountdown, formatDateTime, formatMoney } from "@/lib/format";
 import { auctionStatus } from "@/lib/auction-status";
@@ -64,6 +65,7 @@ function AuctionPage() {
     isError: bidsError,
   } = useBids(auctionId, auctionStatus(auction) === "OPEN");
   const { data: me } = useMe(isAuthenticated);
+  const { data: team } = useTeam(isAuthenticated);
   const placeBid = usePlaceBid(auctionId);
   const payAuction = usePayAuction();
   const isWinner =
@@ -210,7 +212,7 @@ function AuctionPage() {
               {isWinner ? (
                 <>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Seu saldo: {formatMoney(me?.balance ?? 0)} · valor a pagar:{" "}
+                    Saldo do time: {formatMoney(team?.balance ?? 0)} · valor a pagar:{" "}
                     {formatMoney(auction.current_price)}
                   </p>
                   <button

@@ -4,7 +4,9 @@ import { useState } from "react";
 
 import { PlayerPhoto } from "@/components/PlayerPhoto";
 import { useAuth } from "@/features/auth/AuthContext";
-import { useChangePassword, useMe, useTransactions } from "@/features/me/hooks";
+import { useChangePassword, useMe, useTransactions, useUpdateProfile } from "@/features/me/hooks";
+import { useRoster, useTeam } from "@/features/team/hooks";
+import type { Me } from "@/types/api";
 import { ApiError } from "@/lib/api";
 import { formatDateTime, formatMoney } from "@/lib/format";
 
@@ -36,6 +38,8 @@ function MePage() {
   const { isAuthenticated } = useAuth();
   const { data: me, isLoading, isError } = useMe(isAuthenticated);
   const { data: transactions } = useTransactions(isAuthenticated);
+  const { data: team } = useTeam(isAuthenticated);
+  const { data: roster } = useRoster(isAuthenticated);
 
   if (!isAuthenticated) {
     return (
@@ -72,23 +76,40 @@ function MePage() {
     <div className="mx-auto w-full max-w-5xl px-4 py-8">
       <header className="rounded-xl border border-border bg-card p-6">
         <h1 className="text-2xl font-bold tracking-tight text-foreground">{me.username}</h1>
-        <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          Saldo disponível
-        </p>
-        <p className="text-4xl font-black tabular-nums text-pitch">{formatMoney(me.balance)}</p>
+        <p className="text-sm text-muted-foreground">{me.email}</p>
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Créditos de lance
+            </p>
+            <p className="text-4xl font-black tabular-nums text-pitch">{me.lance_credits ?? 0}</p>
+            <p className="mt-1 text-xs text-muted-foreground">Cada lance consome 1 crédito.</p>
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Saldo do time
+            </p>
+            <p className="text-4xl font-black tabular-nums text-foreground">
+              {formatMoney(team?.balance ?? 0)}
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Usado para pagar leilões e compras diretas.
+            </p>
+          </div>
+        </div>
       </header>
+
+      <ProfileCard me={me} />
 
       <ChangePasswordCard />
 
-
-
       <section className="mt-6 rounded-xl border border-border bg-card p-5">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-          Meus jogadores ({me.players?.length ?? 0})
+          Meus jogadores ({roster?.length ?? 0})
         </h2>
-        {me.players?.length ? (
+        {roster?.length ? (
           <ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {me.players.map((player) => (
+            {roster.map((player) => (
               <li key={player.id}>
                 <Link
                   to="/players/$playerId"
@@ -118,6 +139,7 @@ function MePage() {
           </p>
         )}
       </section>
+
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <section className="rounded-xl border border-border bg-card p-5">
@@ -181,6 +203,89 @@ function MePage() {
         </section>
       </div>
     </div>
+  );
+}
+
+const PROFILE_FIELDS = [
+  { key: "cellphone", label: "Celular" },
+  { key: "address", label: "Endereço" },
+  { key: "town", label: "Cidade" },
+  { key: "post_code", label: "CEP" },
+  { key: "country", label: "País" },
+] as const;
+
+function ProfileCard({ me }: { me: Me }) {
+  const updateProfile = useUpdateProfile();
+  const [form, setForm] = useState<Record<string, string>>(() =>
+    Object.fromEntries(PROFILE_FIELDS.map((field) => [field.key, me[field.key] ?? ""])),
+  );
+  const [saved, setSaved] = useState(false);
+
+  const inputClass =
+    "mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring";
+
+  async function handleSubmit(event: React.FormEvent) {
+    event.preventDefault();
+    setSaved(false);
+    await updateProfile.mutateAsync(form);
+    setSaved(true);
+  }
+
+  return (
+    <section className="mt-6 rounded-xl border border-border bg-card p-5">
+      <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+        Meus dados
+      </h2>
+      <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-3">
+        <div>
+          <dt className="text-xs text-muted-foreground">CPF</dt>
+          <dd className="font-medium text-foreground">{me.cpf ?? "—"}</dd>
+        </div>
+        <div>
+          <dt className="text-xs text-muted-foreground">Nascimento</dt>
+          <dd className="font-medium text-foreground">{me.birth_date ?? "—"}</dd>
+        </div>
+        <div>
+          <dt className="text-xs text-muted-foreground">E-mail</dt>
+          <dd className="truncate font-medium text-foreground">{me.email}</dd>
+        </div>
+      </dl>
+
+      <form onSubmit={handleSubmit} className="mt-5 grid gap-4 sm:grid-cols-2">
+        {PROFILE_FIELDS.map((field) => (
+          <div key={field.key}>
+            <label htmlFor={field.key} className="text-sm font-medium text-foreground">
+              {field.label}
+            </label>
+            <input
+              id={field.key}
+              value={form[field.key] ?? ""}
+              onChange={(event) =>
+                setForm((prev) => ({ ...prev, [field.key]: event.target.value }))
+              }
+              className={inputClass}
+            />
+          </div>
+        ))}
+        <div className="sm:col-span-2 flex items-center gap-3">
+          <button
+            type="submit"
+            disabled={updateProfile.isPending}
+            className="rounded-md bg-pitch px-4 py-2 text-sm font-bold text-pitch-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
+          >
+            {updateProfile.isPending ? "Salvando…" : "Salvar dados"}
+          </button>
+          {saved ? <span className="text-xs font-medium text-pitch">Dados atualizados.</span> : null}
+          {updateProfile.isError ? (
+            <span role="alert" className="text-xs font-medium text-destructive">
+              {updateProfile.error instanceof Error
+                ? updateProfile.error.message
+                : "Não foi possível salvar."}
+            </span>
+          ) : null}
+        </div>
+      </form>
+    </section>
   );
 }
 
