@@ -292,9 +292,23 @@ function AuctionPage() {
           </form>
 
           <div className="rounded-xl border border-border bg-card p-5">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-              Últimos lances
-            </h2>
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                Últimos lances
+              </h2>
+              <span
+                className={`flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide ${
+                  liveConnected ? "text-pitch" : "text-muted-foreground"
+                }`}
+              >
+                <span
+                  className={`h-2 w-2 rounded-full ${
+                    liveConnected ? "animate-pulse bg-pitch" : "bg-muted-foreground/50"
+                  }`}
+                />
+                {liveConnected ? "Ao vivo" : "Atualização periódica"}
+              </span>
+            </div>
             {bidsLoading ? (
               <div className="mt-3 space-y-2" aria-busy="true">
                 <div className="h-4 animate-pulse rounded bg-muted" />
