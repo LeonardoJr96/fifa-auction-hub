@@ -24,7 +24,7 @@ def _parse_stats_payload(stats_payload, match: Match) -> list[dict]:
     if not stats_payload:
         return []
     from fifa_data.models import Player
-    from team.models import Team
+    from team.models import RosterEntry, Team
 
     parsed = []
     for stat in stats_payload:
@@ -32,11 +32,17 @@ def _parse_stats_payload(stats_payload, match: Match) -> list[dict]:
         team_id = stat.get("team")
         if not player_id or not team_id:
             raise ValidationError("Cada estatística precisa de player e team.")
-        team = Team.objects.get(pk=team_id)
+        try:
+            team = Team.objects.get(pk=team_id)
+            player = Player.objects.get(pk=player_id)
+        except (Team.DoesNotExist, Player.DoesNotExist) as exc:
+            raise ValidationError("Jogador ou time da estatistica nao foi encontrado.") from exc
         if team not in (match.home_team, match.away_team):
             raise ValidationError("Time da estatística não participa desta partida.")
+        if not RosterEntry.objects.filter(team=team, player=player).exists():
+            raise ValidationError("O jogador informado nao faz parte desse time.")
         parsed.append({
-            "player": Player.objects.get(pk=player_id),
+            "player": player,
             "team": team,
             "goals": int(stat.get("goals", 0)),
             "assists": int(stat.get("assists", 0)),

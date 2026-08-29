@@ -10,7 +10,7 @@ from campaigns import services as campaign_services
 from fifa_data.models import Player
 from team.models import RosterEntry
 
-from .league_points import _advance_winner, rebuild_league_points
+from .league_points import _advance_winner, _apply_match_points, rebuild_league_points
 
 
 def register_manual_result(match, home_score, away_score, stats=None):

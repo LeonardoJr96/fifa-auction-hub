@@ -247,7 +247,7 @@ class GenerateLeagueFixturesView(APIView):
     def post(self, request, pk):
         competition = get_object_or_404(Competition, pk=pk)
         try:
-            matches = competition_services.generate_league_fixtures(competition)
+            matches = competition_services.generate_league_fixtures(request.user, competition)
         except DjangoValidationError as exc:
             return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
         return Response(MatchSerializer(matches, many=True).data, status=status.HTTP_201_CREATED)

@@ -11,11 +11,13 @@ import type { CompetitionMatch, MatchResultPayload } from "@/types/api";
 function MatchResultForm({
   competitionId,
   match,
-  isStaff,
+  canReportResults,
+  canSimulate,
 }: {
   competitionId: string;
   match: CompetitionMatch;
-  isStaff: boolean;
+  canReportResults: boolean;
+  canSimulate: boolean;
 }) {
   const { data: rosters } = useCompetitionRosters(competitionId);
   const registerResult = useRegisterMatchResult(competitionId);
@@ -27,7 +29,7 @@ function MatchResultForm({
     Array<{ player: string; team: string; goals: string; assists: string }>
   >([{ player: "", team: String(match.home_team ?? ""), goals: "0", assists: "0" }]);
 
-  if (!isStaff || match.status === "played") {
+  if (!canReportResults || match.status === "played") {
     return null;
   }
 
@@ -170,14 +172,14 @@ function MatchResultForm({
         >
           {registerResult.isPending ? "Salvando…" : "Registrar resultado"}
         </button>
-        <button
+        {canSimulate ? <button
           type="button"
           disabled={simulate.isPending}
           onClick={() => simulate.mutate(match.id)}
           className="rounded-md border border-input px-4 py-2 text-sm disabled:opacity-60"
         >
           {simulate.isPending ? "Simulando…" : "Simular"}
-        </button>
+        </button> : null}
       </div>
     </form>
   );
@@ -198,10 +200,12 @@ function MatchStats({ match }: { match: CompetitionMatch }) {
 
 export function CompetitionMatchesPanel({
   competitionId,
-  isStaff,
+  canReportResults,
+  canSimulate,
 }: {
   competitionId: string;
-  isStaff: boolean;
+  canReportResults: boolean;
+  canSimulate: boolean;
 }) {
   const { data: matches, isLoading, isError } = useCompetitionMatches(competitionId);
 
@@ -242,7 +246,12 @@ export function CompetitionMatchesPanel({
                   </div>
                 </div>
                 <MatchStats match={match} />
-                <MatchResultForm competitionId={competitionId} match={match} isStaff={isStaff} />
+                <MatchResultForm
+                  competitionId={competitionId}
+                  match={match}
+                  canReportResults={canReportResults}
+                  canSimulate={canSimulate}
+                />
               </li>
             ))}
           </ul>

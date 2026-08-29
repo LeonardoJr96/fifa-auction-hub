@@ -125,7 +125,12 @@ export function CompetitionDraftPanel({
                         onClick={() => draftPick.mutate(product.player.id)}
                         className="flex w-full items-center gap-3 rounded-md border border-border px-3 py-2 text-left transition-colors hover:border-primary/50 disabled:opacity-60"
                       >
-                        <PlayerPhoto player={product.player} className="h-10 w-10" />
+                        <PlayerPhoto
+                          src={product.player.photo_data_uri ?? product.player.photo_url}
+                          alt={product.player.common_name}
+                          className="h-10 w-10"
+                          size={40}
+                        />
                         <span className="text-sm font-medium text-foreground">{product.title}</span>
                         <span className="ml-auto text-xs text-muted-foreground">
                           OVR {product.player.overall_rating}

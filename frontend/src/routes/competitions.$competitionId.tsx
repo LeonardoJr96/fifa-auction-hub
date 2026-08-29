@@ -142,7 +142,11 @@ function CompetitionDetailPage() {
         ) : null}
         {tab === "standings" ? <CompetitionStandingsPanel competitionId={competitionId} /> : null}
         {tab === "matches" ? (
-          <CompetitionMatchesPanel competitionId={competitionId} isStaff={isStaff} />
+          <CompetitionMatchesPanel
+            competitionId={competitionId}
+            canReportResults={isStaff || competition.is_joined}
+            canSimulate={isStaff}
+          />
         ) : null}
         {tab === "bracket" ? <CompetitionBracketPanel competitionId={competitionId} /> : null}
       </div>

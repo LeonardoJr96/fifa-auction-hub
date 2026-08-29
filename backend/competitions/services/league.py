@@ -2,6 +2,7 @@ from django.core.exceptions import ValidationError
 from django.db import transaction
 
 from ..models import Competition, CompetitionEntry, Match, Participant
+from .permissions import require_competition_admin
 
 
 def ensure_competition_entries(competition: Competition) -> None:
@@ -32,7 +33,13 @@ def _round_robin_pairings(team_ids: list[int]) -> list[list[tuple[int, int]]]:
     return rounds
 
 
-def generate_league_fixtures(competition: Competition, *, double_round: bool | None = None) -> list[Match]:
+def generate_league_fixtures(
+    user,
+    competition: Competition,
+    *,
+    double_round: bool | None = None,
+) -> list[Match]:
+    require_competition_admin(user, competition)
     if competition.competition_type != Competition.CompetitionType.LEAGUE:
         raise ValidationError("Esta competição não é do tipo liga.")
     if competition.matches.exists():

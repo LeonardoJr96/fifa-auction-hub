@@ -1,3 +1,6 @@
+from ..models import CompetitionEntry
+
+
 def _advance_winner(match):
     if match.next_match_id is None or match.home_score == match.away_score:
         return
