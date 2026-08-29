@@ -33,13 +33,12 @@ def _round_robin_pairings(team_ids: list[int]) -> list[list[tuple[int, int]]]:
     return rounds
 
 
-def generate_league_fixtures(
-    user,
+def create_league_fixtures(
     competition: Competition,
     *,
     double_round: bool | None = None,
 ) -> list[Match]:
-    require_competition_admin(user, competition)
+    """Cria as rodadas da liga sem checagem de permissão (uso interno/automático)."""
     if competition.competition_type != Competition.CompetitionType.LEAGUE:
         raise ValidationError("Esta competição não é do tipo liga.")
     if competition.matches.exists():
@@ -54,6 +53,7 @@ def generate_league_fixtures(
     ensure_competition_entries(competition)
     use_double = competition.league_double_round if double_round is None else double_round
     pairings = _round_robin_pairings(team_ids)
+
     if use_double:
         return_pairings = []
         for round_pairs in pairings:
@@ -75,6 +75,18 @@ def generate_league_fixtures(
         competition.status = Competition.Status.ACTIVE
         competition.save(update_fields=["status"])
     return created
+
+
+def generate_league_fixtures(
+    user,
+    competition: Competition,
+    *,
+    double_round: bool | None = None,
+) -> list[Match]:
+    require_competition_admin(user, competition)
+    return create_league_fixtures(competition, double_round=double_round)
+
+
 
 
 def _team_match_stats(team_id: int, matches) -> dict:

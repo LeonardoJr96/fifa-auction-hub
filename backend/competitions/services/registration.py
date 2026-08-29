@@ -4,6 +4,8 @@ from django.db import transaction
 from team.services import get_or_create_team
 
 from ..models import Competition, Participant
+from .autogen import auto_generate_fixtures
+
 
 
 def create_competition(
@@ -58,11 +60,14 @@ def join_competition(user, competition: Competition) -> Participant:
         if not team.name:
             team.name = user.username
             team.save(update_fields=["name"])
-        return Participant.objects.create(
+        participant = Participant.objects.create(
             competition=competition,
             user=user,
             team=team,
         )
+        if competition.participants.count() >= competition.max_participants:
+            auto_generate_fixtures(competition)
+        return participant
 
 
 def activate_without_draft(user, competition: Competition) -> Competition:
@@ -74,6 +79,9 @@ def activate_without_draft(user, competition: Competition) -> Competition:
         raise ValidationError("A competição já foi iniciada.")
     if competition.participants.count() < 2:
         raise ValidationError("São necessários pelo menos 2 participantes.")
-    competition.status = Competition.Status.ACTIVE
-    competition.save(update_fields=["status"])
+    with transaction.atomic():
+        competition.status = Competition.Status.ACTIVE
+        competition.save(update_fields=["status"])
+        auto_generate_fixtures(competition)
     return competition
+

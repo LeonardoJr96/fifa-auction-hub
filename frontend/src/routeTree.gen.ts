@@ -9,51 +9,26 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as BolsaRouteImport } from './routes/bolsa'
-import { Route as CompetitionsRouteImport } from './routes/competitions'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as MeRouteImport } from './routes/me'
-import { Route as RegisterRouteImport } from './routes/register'
-import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as TermsRouteImport } from './routes/terms'
-import { Route as AdminIndexRouteImport } from './routes/admin.index'
-import { Route as AuctionsAuctionIdRouteImport } from './routes/auctions.$auctionId'
-import { Route as CompetitionsCompetitionIdRouteImport } from './routes/competitions.$competitionId'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as RegisterRouteImport } from './routes/register'
+import { Route as MeRouteImport } from './routes/me'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as CompetitionsRouteImport } from './routes/competitions'
+import { Route as BolsaRouteImport } from './routes/bolsa'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as PlayersIndexRouteImport } from './routes/players.index'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as PlayersPlayerIdRouteImport } from './routes/players.$playerId'
+import { Route as CompetitionsCompetitionIdRouteImport } from './routes/competitions.$competitionId'
+import { Route as AuctionsAuctionIdRouteImport } from './routes/auctions.$auctionId'
 import { Route as AdminAuctionsIndexRouteImport } from './routes/admin.auctions.index'
-import { Route as AdminAuctionsNewRouteImport } from './routes/admin.auctions.new'
 import { Route as AdminCompetitionsNewRouteImport } from './routes/admin.competitions.new'
+import { Route as AdminAuctionsNewRouteImport } from './routes/admin.auctions.new'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const BolsaRoute = BolsaRouteImport.update({
-  id: '/bolsa',
-  path: '/bolsa',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CompetitionsRoute = CompetitionsRouteImport.update({
-  id: '/competitions',
-  path: '/competitions',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MeRoute = MeRouteImport.update({
-  id: '/me',
-  path: '/me',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RegisterRoute = RegisterRouteImport.update({
-  id: '/register',
-  path: '/register',
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -61,9 +36,39 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
-const TermsRoute = TermsRouteImport.update({
-  id: '/terms',
-  path: '/terms',
+const RegisterRoute = RegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MeRoute = MeRouteImport.update({
+  id: '/me',
+  path: '/me',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CompetitionsRoute = CompetitionsRouteImport.update({
+  id: '/competitions',
+  path: '/competitions',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BolsaRoute = BolsaRouteImport.update({
+  id: '/bolsa',
+  path: '/bolsa',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlayersIndexRoute = PlayersIndexRouteImport.update({
+  id: '/players/',
+  path: '/players/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
@@ -71,9 +76,9 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   path: '/admin/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuctionsAuctionIdRoute = AuctionsAuctionIdRouteImport.update({
-  id: '/auctions/$auctionId',
-  path: '/auctions/$auctionId',
+const PlayersPlayerIdRoute = PlayersPlayerIdRouteImport.update({
+  id: '/players/$playerId',
+  path: '/players/$playerId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CompetitionsCompetitionIdRoute =
@@ -82,14 +87,9 @@ const CompetitionsCompetitionIdRoute =
     path: '/$competitionId',
     getParentRoute: () => CompetitionsRoute,
   } as any)
-const PlayersIndexRoute = PlayersIndexRouteImport.update({
-  id: '/players/',
-  path: '/players/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PlayersPlayerIdRoute = PlayersPlayerIdRouteImport.update({
-  id: '/players/$playerId',
-  path: '/players/$playerId',
+const AuctionsAuctionIdRoute = AuctionsAuctionIdRouteImport.update({
+  id: '/auctions/$auctionId',
+  path: '/auctions/$auctionId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminAuctionsIndexRoute = AdminAuctionsIndexRouteImport.update({
@@ -97,14 +97,14 @@ const AdminAuctionsIndexRoute = AdminAuctionsIndexRouteImport.update({
   path: '/admin/auctions/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminAuctionsNewRoute = AdminAuctionsNewRouteImport.update({
-  id: '/admin/auctions/new',
-  path: '/admin/auctions/new',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AdminCompetitionsNewRoute = AdminCompetitionsNewRouteImport.update({
   id: '/admin/competitions/new',
   path: '/admin/competitions/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminAuctionsNewRoute = AdminAuctionsNewRouteImport.update({
+  id: '/admin/auctions/new',
+  path: '/admin/auctions/new',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -240,46 +240,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/bolsa': {
-      id: '/bolsa'
-      path: '/bolsa'
-      fullPath: '/bolsa'
-      preLoaderRoute: typeof BolsaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/competitions': {
-      id: '/competitions'
-      path: '/competitions'
-      fullPath: '/competitions'
-      preLoaderRoute: typeof CompetitionsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/me': {
-      id: '/me'
-      path: '/me'
-      fullPath: '/me'
-      preLoaderRoute: typeof MeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/register': {
-      id: '/register'
-      path: '/register'
-      fullPath: '/register'
-      preLoaderRoute: typeof RegisterRouteImport
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sitemap.xml': {
@@ -289,11 +254,53 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/terms': {
-      id: '/terms'
-      path: '/terms'
-      fullPath: '/terms'
-      preLoaderRoute: typeof TermsRouteImport
+    '/register': {
+      id: '/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/me': {
+      id: '/me'
+      path: '/me'
+      fullPath: '/me'
+      preLoaderRoute: typeof MeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/competitions': {
+      id: '/competitions'
+      path: '/competitions'
+      fullPath: '/competitions'
+      preLoaderRoute: typeof CompetitionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bolsa': {
+      id: '/bolsa'
+      path: '/bolsa'
+      fullPath: '/bolsa'
+      preLoaderRoute: typeof BolsaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/players/': {
+      id: '/players/'
+      path: '/players'
+      fullPath: '/players/'
+      preLoaderRoute: typeof PlayersIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/': {
@@ -303,11 +310,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/auctions/$auctionId': {
-      id: '/auctions/$auctionId'
-      path: '/auctions/$auctionId'
-      fullPath: '/auctions/$auctionId'
-      preLoaderRoute: typeof AuctionsAuctionIdRouteImport
+    '/players/$playerId': {
+      id: '/players/$playerId'
+      path: '/players/$playerId'
+      fullPath: '/players/$playerId'
+      preLoaderRoute: typeof PlayersPlayerIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/competitions/$competitionId': {
@@ -317,18 +324,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CompetitionsCompetitionIdRouteImport
       parentRoute: typeof CompetitionsRoute
     }
-    '/players/': {
-      id: '/players/'
-      path: '/players'
-      fullPath: '/players/'
-      preLoaderRoute: typeof PlayersIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/players/$playerId': {
-      id: '/players/$playerId'
-      path: '/players/$playerId'
-      fullPath: '/players/$playerId'
-      preLoaderRoute: typeof PlayersPlayerIdRouteImport
+    '/auctions/$auctionId': {
+      id: '/auctions/$auctionId'
+      path: '/auctions/$auctionId'
+      fullPath: '/auctions/$auctionId'
+      preLoaderRoute: typeof AuctionsAuctionIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/auctions/': {
@@ -338,18 +338,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAuctionsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin/auctions/new': {
-      id: '/admin/auctions/new'
-      path: '/admin/auctions/new'
-      fullPath: '/admin/auctions/new'
-      preLoaderRoute: typeof AdminAuctionsNewRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/admin/competitions/new': {
       id: '/admin/competitions/new'
       path: '/admin/competitions/new'
       fullPath: '/admin/competitions/new'
       preLoaderRoute: typeof AdminCompetitionsNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/auctions/new': {
+      id: '/admin/auctions/new'
+      path: '/admin/auctions/new'
+      fullPath: '/admin/auctions/new'
+      preLoaderRoute: typeof AdminAuctionsNewRouteImport
       parentRoute: typeof rootRouteImport
     }
   }

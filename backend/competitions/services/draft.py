@@ -129,7 +129,12 @@ def make_pick(user, competition: Competition, player_id: int) -> DraftPick:
             if competition.competition_type == Competition.CompetitionType.DRAFT:
                 competition.status = Competition.Status.ACTIVE
                 competition.save(update_fields=["status"])
+            else:
+                from .autogen import auto_generate_fixtures
+
+                auto_generate_fixtures(competition)
         session.save(update_fields=["current_pick_index", "status", "finished_at"])
+
 
     transaction.on_commit(lambda: _broadcast_draft_state(competition))
     return pick
