@@ -77,6 +77,18 @@ def create_league_fixtures(
     return created
 
 
+def generate_league_fixtures(
+    user,
+    competition: Competition,
+    *,
+    double_round: bool | None = None,
+) -> list[Match]:
+    require_competition_admin(user, competition)
+    return create_league_fixtures(competition, double_round=double_round)
+
+
+
+
 def _team_match_stats(team_id: int, matches) -> dict:
     played = wins = draws = losses = goals_for = goals_against = 0
     for match in matches:
