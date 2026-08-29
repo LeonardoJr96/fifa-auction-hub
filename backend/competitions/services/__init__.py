@@ -19,6 +19,9 @@ from .registration import activate_without_draft, create_competition, join_compe
 
 __all__ = [
     "activate_without_draft",
+    "auto_generate_fixtures",
+    "can_auto_generate",
+
     "build_pick_order",
     "create_competition",
     "finish_competition",
