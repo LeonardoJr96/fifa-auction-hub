@@ -4,6 +4,8 @@ from django.db import transaction
 from team.services import get_or_create_team
 
 from ..models import Competition, Participant
+from .autogen import auto_generate_fixtures
+
 
 
 def create_competition(
