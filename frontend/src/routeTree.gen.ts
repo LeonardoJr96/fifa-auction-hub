@@ -23,6 +23,7 @@ import { Route as PlayersPlayerIdRouteImport } from './routes/players.$playerId'
 import { Route as CompetitionsCompetitionIdRouteImport } from './routes/competitions.$competitionId'
 import { Route as AuctionsAuctionIdRouteImport } from './routes/auctions.$auctionId'
 import { Route as AdminAuctionsIndexRouteImport } from './routes/admin.auctions.index'
+import { Route as ApiPublicHealthRouteImport } from './routes/api/public/health'
 import { Route as AdminCompetitionsNewRouteImport } from './routes/admin.competitions.new'
 import { Route as AdminAuctionsNewRouteImport } from './routes/admin.auctions.new'
 
@@ -97,6 +98,11 @@ const AdminAuctionsIndexRoute = AdminAuctionsIndexRouteImport.update({
   path: '/admin/auctions/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicHealthRoute = ApiPublicHealthRouteImport.update({
+  id: '/api/public/health',
+  path: '/api/public/health',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminCompetitionsNewRoute = AdminCompetitionsNewRouteImport.update({
   id: '/admin/competitions/new',
   path: '/admin/competitions/new',
@@ -124,6 +130,7 @@ export interface FileRoutesByFullPath {
   '/players/': typeof PlayersIndexRoute
   '/admin/auctions/new': typeof AdminAuctionsNewRoute
   '/admin/competitions/new': typeof AdminCompetitionsNewRoute
+  '/api/public/health': typeof ApiPublicHealthRoute
   '/admin/auctions/': typeof AdminAuctionsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -142,6 +149,7 @@ export interface FileRoutesByTo {
   '/players': typeof PlayersIndexRoute
   '/admin/auctions/new': typeof AdminAuctionsNewRoute
   '/admin/competitions/new': typeof AdminCompetitionsNewRoute
+  '/api/public/health': typeof ApiPublicHealthRoute
   '/admin/auctions': typeof AdminAuctionsIndexRoute
 }
 export interface FileRoutesById {
@@ -161,6 +169,7 @@ export interface FileRoutesById {
   '/players/': typeof PlayersIndexRoute
   '/admin/auctions/new': typeof AdminAuctionsNewRoute
   '/admin/competitions/new': typeof AdminCompetitionsNewRoute
+  '/api/public/health': typeof ApiPublicHealthRoute
   '/admin/auctions/': typeof AdminAuctionsIndexRoute
 }
 export interface FileRouteTypes {
@@ -181,6 +190,7 @@ export interface FileRouteTypes {
     | '/players/'
     | '/admin/auctions/new'
     | '/admin/competitions/new'
+    | '/api/public/health'
     | '/admin/auctions/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -199,6 +209,7 @@ export interface FileRouteTypes {
     | '/players'
     | '/admin/auctions/new'
     | '/admin/competitions/new'
+    | '/api/public/health'
     | '/admin/auctions'
   id:
     | '__root__'
@@ -217,6 +228,7 @@ export interface FileRouteTypes {
     | '/players/'
     | '/admin/auctions/new'
     | '/admin/competitions/new'
+    | '/api/public/health'
     | '/admin/auctions/'
   fileRoutesById: FileRoutesById
 }
@@ -235,6 +247,7 @@ export interface RootRouteChildren {
   PlayersIndexRoute: typeof PlayersIndexRoute
   AdminAuctionsNewRoute: typeof AdminAuctionsNewRoute
   AdminCompetitionsNewRoute: typeof AdminCompetitionsNewRoute
+  ApiPublicHealthRoute: typeof ApiPublicHealthRoute
   AdminAuctionsIndexRoute: typeof AdminAuctionsIndexRoute
 }
 
@@ -338,6 +351,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAuctionsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/health': {
+      id: '/api/public/health'
+      path: '/api/public/health'
+      fullPath: '/api/public/health'
+      preLoaderRoute: typeof ApiPublicHealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/competitions/new': {
       id: '/admin/competitions/new'
       path: '/admin/competitions/new'
@@ -382,6 +402,7 @@ const rootRouteChildren: RootRouteChildren = {
   PlayersIndexRoute: PlayersIndexRoute,
   AdminAuctionsNewRoute: AdminAuctionsNewRoute,
   AdminCompetitionsNewRoute: AdminCompetitionsNewRoute,
+  ApiPublicHealthRoute: ApiPublicHealthRoute,
   AdminAuctionsIndexRoute: AdminAuctionsIndexRoute,
 }
 export const routeTree = rootRouteImport
