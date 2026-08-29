@@ -1,5 +1,7 @@
+from .autogen import auto_generate_fixtures, can_auto_generate
 from .cup import generate_cup_bracket
 from .draft import build_pick_order, get_draft_state, make_pick, start_draft
+
 from .draft_order import set_draft_order
 from .legacy import (
     finish_competition,
