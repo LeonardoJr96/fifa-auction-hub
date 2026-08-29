@@ -34,7 +34,7 @@ export function useDraftRealtime(competitionId: string, enabled = true) {
       socket.onmessage = (event) => {
         const payload = parseSocketPayload(event.data);
         if (!payload || payload.competition_id === undefined) return;
-        queryClient.setQueryData<DraftState>(["competition", competitionId, "draft"], payload as DraftState);
+        queryClient.setQueryData<DraftState>(["competition", competitionId, "draft"], payload as unknown as DraftState);
         void queryClient.invalidateQueries({ queryKey: ["competition", competitionId] });
       };
 
