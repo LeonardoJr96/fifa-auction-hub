@@ -1,0 +1,93 @@
+x-backend-app: &backend-app
+  build:
+    context: ./backend
+  env_file:
+    - .env
+  environment:
+    DJANGO_SETTINGS_MODULE: core.settings.production
+    DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+    REDIS_URL: redis://redis:6379/0
+    CELERY_BROKER_URL: redis://redis:6379/0
+    SEED_DIR: /setups/seed
+    SEED_ON_START: ${SEED_ON_START:-true}
+  volumes:
+    - staticfiles:/app/staticfiles
+    - media:/app/media
+    - ./setups:/setups:ro
+  depends_on:
+    db:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-fifa_auction_hub}
+      POSTGRES_USER: ${POSTGRES_USER:-fifa}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-fifa}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-fifa} -d ${POSTGRES_DB:-fifa_auction_hub}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    <<: *backend-app
+    command: >
+      sh -c "python manage.py migrate --noinput &&
+             if [ \"$$SEED_ON_START\" = \"true\" ]; then python manage.py seed_demo --if-empty; fi &&
+             python manage.py collectstatic --noinput &&
+             daphne -b 0.0.0.0 -p 8000 core.asgi:application"
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/admin/login/')\""]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 40s
+
+  celery_worker:
+    <<: *backend-app
+    command: celery -A core worker -l info
+
+  celery_beat:
+    <<: *backend-app
+    command: celery -A core beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        # Caminhos relativos: mesma origem via nginx (padrão monorepo).
+        VITE_API_URL: ${VITE_API_URL:-/api/v1}
+        VITE_WS_URL: ${VITE_WS_URL:-}
+    depends_on:
+      - backend
+
+  nginx:
+    image: nginx:1.27-alpine
+    ports:
+      - "${NGINX_PORT:-8080}:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - staticfiles:/var/www/static:ro
+      - media:/var/www/media:ro
+    depends_on:
+      - backend
+      - frontend
+
+volumes:
+  pgdata:
+  staticfiles:
+  media:

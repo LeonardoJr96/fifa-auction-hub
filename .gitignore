@@ -1,5 +1,5 @@
 # Logs
-logs
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -7,27 +7,67 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-.output
-.vinxi
-.tanstack/**
-.nitro
+# Node / frontend
+node_modules/
+frontend/node_modules/
+dist/
+dist-ssr/
+frontend/.output/
+frontend/.vinxi/
+frontend/.tanstack/
+frontend/.nitro/
 *.local
+frontend/.wrangler/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+backend/.venv/
+backend/staticfiles/
+backend/test_db.sqlite3
+backend/db.sqlite3
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+
+# Uploads locais (não versionar — use Docker volume em produção)
+# Use /* (não /**): ignora a pasta inteira sem varrer dezenas de milhares de arquivos.
+backend/media/*
+!backend/media/.gitignore
+!backend/media/.gitkeep
+
+# Backups e env
+backups/
+setups/seed/*
+!setups/seed/.gitignore
+!setups/seed/.gitkeep
+setups/test-users.txt
+.env
+.env.*
+!.env.example
+frontend/.env
+!frontend/.env.example
 
 # Wrangler / Cloudflare
 .wrangler/
 .dev.vars
 
-# Editor directories and files
+# Editor
 .vscode/*
 !.vscode/extensions.json
-.idea
+.idea/
 .DS_Store
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
-.env
+
+# Legado na raiz do monorepo
+/media/
+/node_modules/

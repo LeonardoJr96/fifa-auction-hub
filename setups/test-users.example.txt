@@ -1,0 +1,14 @@
+# Contas de teste — FIFA Auction Hub
+# Copie para setups/test-users.txt (ou use este arquivo diretamente).
+# Senha padrão para todas: Test@1234
+
+user01 | user01@test.local | Test@1234
+user02 | user02@test.local | Test@1234
+user03 | user03@test.local | Test@1234
+user04 | user04@test.local | Test@1234
+user05 | user05@test.local | Test@1234
+user06 | user06@test.local | Test@1234
+user07 | user07@test.local | Test@1234
+user08 | user08@test.local | Test@1234
+user09 | user09@test.local | Test@1234
+user10 | user10@test.local | Test@1234
