@@ -57,9 +57,12 @@ function AdminHomePage() {
           </Link>
         ))}
       </div>
+
+      <BracketStatusPanel />
     </div>
   );
 }
+
 
 export function RestrictedNotice() {
   return (
