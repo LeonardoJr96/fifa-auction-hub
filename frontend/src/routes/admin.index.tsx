@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 
 import { useAuth } from "@/features/auth/AuthContext";
+import { BracketStatusPanel } from "@/features/competitions/BracketStatusPanel";
+
 
 export const Route = createFileRoute("/admin/")({
   head: () => ({
@@ -55,9 +57,12 @@ function AdminHomePage() {
           </Link>
         ))}
       </div>
+
+      <BracketStatusPanel />
     </div>
   );
 }
+
 
 export function RestrictedNotice() {
   return (

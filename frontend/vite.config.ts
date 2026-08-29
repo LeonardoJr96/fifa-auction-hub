@@ -16,18 +16,20 @@ export default defineConfig({
     // Um único .env na raiz do monorepo (padrão Mega8Lance).
     envDir: repoRoot,
     server: {
-      port: 5173,
-      strictPort: true,
+      // NÃO fixar port/strictPort: o preview do sandbox escolhe a porta.
+      // Fixar 5173 com strictPort fazia o dev server morrer no boot (porta ocupada)
+      // e estourar o timeout de 45s de inicialização.
       proxy: {
+        // Apenas prefixos do Django. /login, /admin e /me são rotas do próprio app.
         "/api": { target: "http://127.0.0.1:8000", changeOrigin: true },
         "/ws": { target: "ws://127.0.0.1:8000", ws: true, changeOrigin: true },
-        "/admin": { target: "http://127.0.0.1:8000", changeOrigin: true },
+        "/django-admin": { target: "http://127.0.0.1:8000", changeOrigin: true },
         "/static": { target: "http://127.0.0.1:8000", changeOrigin: true },
-        "/login": { target: "http://127.0.0.1:8000", changeOrigin: true },
         "/media": { target: "http://127.0.0.1:8000", changeOrigin: true },
       },
     },
   },
+
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
     // nitro/vite builds from this
