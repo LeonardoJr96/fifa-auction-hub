@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 
 import { useAuth } from "@/features/auth/AuthContext";
+import { BracketStatusPanel } from "@/features/competitions/BracketStatusPanel";
+
 
 export const Route = createFileRoute("/admin/")({
   head: () => ({
