@@ -75,11 +75,10 @@ function PlayersPage() {
 
   return (
     <div className="page-container">
-      <PageHeader eyebrow="Base FIFA / EA" title="Todos os jogadores" description={
-              {isLoading
-                ? "Carregando lista de jogadores..."
-                : `${total} jogadores encontrados · 24 por página.`} as unknown as string
-          } actions={
+      <PageHeader eyebrow="Base FIFA / EA" title="Todos os jogadores" description={isLoading
+        ? "Carregando lista de jogadores..."
+        : `${total} jogadores encontrados · 24 por página.`
+      } actions={
         <Link
           to="/"
           className="inline-flex shrink-0 items-center gap-2 text-sm font-semibold text-primary"

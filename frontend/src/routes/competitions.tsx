@@ -76,27 +76,22 @@ function CompetitionCard({ competition }: { competition: import("@/types/api").C
     <article className="group overflow-hidden rounded-lg border border-border bg-card transition-colors hover:border-primary/50">
       <div className="h-1 bg-primary" />
       <div className="p-5">
-      <div className="flex items-start gap-4">
-        <span className="club-mark"><Trophy /></span>
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2"><span className="status-dot"><Radio />{STATUS_LABEL[competition.status] ?? competition.status}</span><span className="text-[10px] font-bold uppercase text-muted-foreground">{TYPE_LABEL[competition.competition_type] ?? competition.competition_type}</span></div>
-          <h2 className="mt-3 font-display text-xl font-bold text-foreground">{competition.name}</h2>
-          {competition.description ? (
-            <p className="mt-1 text-sm text-muted-foreground">{competition.description}</p>
-          ) : null}
-          <div className="mt-4 flex flex-wrap gap-2 text-xs">
-            <span className="rounded bg-secondary px-2.5 py-1 text-muted-foreground">
-              {DRAFT_MODE_LABEL[competition.draft_mode] ?? competition.draft_mode}
-            </span>
-            <span className="inline-flex items-center gap-1 rounded bg-secondary px-2.5 py-1 text-muted-foreground"><UsersRound className="size-3.5" />
-              {competition.participant_count}/{competition.max_participants} times
-            </span><span className="rounded bg-secondary px-2.5 py-1 text-muted-foreground">
-              {competition.draft_rounds} rodadas
-            </span>
+        <div className="flex items-start gap-4">
+          <span className="club-mark"><Trophy /></span>
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="status-dot"><Radio />{STATUS_LABEL[competition.status] ?? competition.status}</span>
+              <span className="text-[10px] font-bold uppercase text-muted-foreground">{TYPE_LABEL[competition.competition_type] ?? competition.competition_type}</span>
+            </div>
+            <h2 className="mt-3 font-display text-xl font-bold text-foreground">{competition.name}</h2>
+            {competition.description ? <p className="mt-1 text-sm text-muted-foreground">{competition.description}</p> : null}
+            <div className="mt-4 flex flex-wrap gap-2 text-xs">
+              <span className="rounded bg-secondary px-2.5 py-1 text-muted-foreground">{DRAFT_MODE_LABEL[competition.draft_mode] ?? competition.draft_mode}</span>
+              <span className="inline-flex items-center gap-1 rounded bg-secondary px-2.5 py-1 text-muted-foreground"><UsersRound className="size-3.5" />{competition.participant_count}/{competition.max_participants} times</span>
+              <span className="rounded bg-secondary px-2.5 py-1 text-muted-foreground">{competition.draft_rounds} rodadas</span>
+            </div>
           </div>
         </div>
-
-        </div></div>
         <div className="mt-5 flex flex-wrap gap-2 border-t border-border pt-4">
           {canJoin ? (
             <Button
@@ -119,12 +114,8 @@ function CompetitionCard({ competition }: { competition: import("@/types/api").C
             {competition.status === "draft" ? "Entrar no draft" : "Abrir central"}<ArrowRight className="size-4" />
           </Link>
         </div>
-      </div></div>
-      {join.isError ? (
-        <p className="mt-3 text-sm text-destructive">
-          {(join.error as Error)?.message ?? "Erro ao inscrever-se."}
-        </p>
-      ) : null}
+        {join.isError ? <p className="mt-3 text-sm text-destructive">{(join.error as Error)?.message ?? "Erro ao inscrever-se."}</p> : null}
+      </div>
     </article>
   );
 }
