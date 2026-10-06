@@ -1,5 +1,5 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Radio, Trophy, UsersRound } from "lucide-react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { ChevronRight, Radio, Trophy, UsersRound } from "lucide-react";
 
 import { useCompetitions, useJoinCompetition } from "@/features/competitions/hooks";
 import { useAuth } from "@/features/auth/AuthContext";
@@ -28,12 +28,6 @@ const STATUS_LABEL: Record<string, string> = {
   finished: "Encerrada",
 };
 
-const DRAFT_MODE_LABEL: Record<string, string> = {
-  snake: "Snake",
-  reverse: "Reverse",
-  linear: "Linear",
-};
-
 const TYPE_LABEL: Record<string, string> = {
   draft: "Draft",
   league: "Liga",
@@ -45,7 +39,11 @@ function CompetitionsPage() {
 
   return (
     <div className="page-container">
-      <PageHeader eyebrow="Temporadas e torneios" title="Competições" description="Acompanhe ligas, copas e drafts do início das inscrições ao último apito." />
+      <PageHeader
+        eyebrow="Temporadas e torneios"
+        title="Competições"
+        description="Clique em uma competição para ver tabela, partidas e times."
+      />
 
       {isLoading ? (
         <StatePanel kind="loading" title="Carregando competições" />
@@ -62,7 +60,6 @@ function CompetitionsPage() {
                 <th className="px-4 py-3">Tipo</th>
                 <th className="px-4 py-3">Status</th>
                 <th className="px-4 py-3">Times</th>
-                <th className="px-4 py-3">Rodadas</th>
                 <th className="px-4 py-3 text-right">Ação</th>
               </tr>
             </thead>
@@ -80,6 +77,7 @@ function CompetitionsPage() {
 
 function CompetitionRow({ competition }: { competition: import("@/types/api").Competition }) {
   const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const join = useJoinCompetition(String(competition.id));
   const canJoin =
     isAuthenticated &&
@@ -87,21 +85,31 @@ function CompetitionRow({ competition }: { competition: import("@/types/api").Co
     !competition.is_joined &&
     competition.participant_count < competition.max_participants;
 
+  const openCompetition = () =>
+    navigate({ to: "/competitions/$competitionId", params: { competitionId: String(competition.id) } });
+
   return (
-    <tr className="border-t border-border hover:bg-secondary/50">
+    <tr
+      className="cursor-pointer border-t border-border hover:bg-secondary/50"
+      onClick={openCompetition}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          openCompetition();
+        }
+      }}
+      tabIndex={0}
+      role="link"
+      aria-label={`Abrir ${competition.name}`}
+    >
       <td className="px-4 py-3">
-        <Link
-          to="/competitions/$competitionId"
-          params={{ competitionId: String(competition.id) }}
-          className="inline-flex items-center gap-2 font-semibold text-foreground hover:text-primary"
-        >
+        <span className="inline-flex items-center gap-2 font-semibold text-foreground">
           <Trophy className="size-4 text-primary" />
           {competition.name}
-        </Link>
+        </span>
       </td>
       <td className="px-4 py-3 text-muted-foreground">
-        {TYPE_LABEL[competition.competition_type] ?? competition.competition_type} ·{" "}
-        {DRAFT_MODE_LABEL[competition.draft_mode] ?? competition.draft_mode}
+        {TYPE_LABEL[competition.competition_type] ?? competition.competition_type}
       </td>
       <td className="px-4 py-3">
         <span className="status-dot"><Radio />{STATUS_LABEL[competition.status] ?? competition.status}</span>
@@ -109,23 +117,24 @@ function CompetitionRow({ competition }: { competition: import("@/types/api").Co
       <td className="px-4 py-3 tabular-nums text-muted-foreground">
         <span className="inline-flex items-center gap-1"><UsersRound className="size-3.5" />{competition.participant_count}/{competition.max_participants}</span>
       </td>
-      <td className="px-4 py-3 tabular-nums text-muted-foreground">{competition.draft_rounds}</td>
       <td className="px-4 py-3">
         <div className="flex items-center justify-end gap-2">
           {canJoin ? (
-            <Button type="button" size="sm" disabled={join.isPending} onClick={() => join.mutate()}>
+            <Button
+              type="button"
+              size="sm"
+              disabled={join.isPending}
+              onClick={(event) => {
+                event.stopPropagation();
+                join.mutate();
+              }}
+            >
               {join.isPending ? "Inscrevendo…" : "Inscrever-se"}
             </Button>
           ) : competition.is_joined ? (
             <span className="text-xs text-muted-foreground">Inscrito</span>
           ) : null}
-          <Link
-            to="/competitions/$competitionId"
-            params={{ competitionId: String(competition.id) }}
-            className="inline-flex items-center gap-1 text-sm font-semibold text-primary"
-          >
-            Ver tabela<ArrowRight className="size-4" />
-          </Link>
+          <ChevronRight className="size-4 text-muted-foreground" />
         </div>
         {join.isError ? <p className="mt-1 text-right text-xs text-destructive">{(join.error as Error)?.message ?? "Erro ao inscrever-se."}</p> : null}
       </td>
