@@ -20,7 +20,7 @@ async function forward({ request, params }: { request: Request; params: { _splat
     return new Response(res.body, { status: res.status, headers: res.headers });
   } catch (err) {
     console.warn("[api proxy] backend indisponível:", (err as Error).message);
-    return Response.json({ detail: "Backend indisponível" }, { status: 503 });
+    return Response.json({ detail: "Backend indisponível" }, { status: 424, headers: { "X-Backend-Offline": "1" } });
   }
 }
 
