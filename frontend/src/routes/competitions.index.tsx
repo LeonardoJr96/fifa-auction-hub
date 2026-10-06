@@ -7,7 +7,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { StatePanel } from "@/components/StatePanel";
 import { Button } from "@/components/ui/button";
 
-export const Route = createFileRoute("/competitions")({
+export const Route = createFileRoute("/competitions/")({
   head: () => ({
     meta: [
       { title: "Competições · ReverseDraft" },
