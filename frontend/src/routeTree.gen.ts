@@ -23,6 +23,7 @@ import { Route as PlayersPlayerIdRouteImport } from './routes/players.$playerId'
 import { Route as CompetitionsCompetitionIdRouteImport } from './routes/competitions.$competitionId'
 import { Route as AuctionsAuctionIdRouteImport } from './routes/auctions.$auctionId'
 import { Route as AdminAuctionsIndexRouteImport } from './routes/admin.auctions.index'
+import { Route as ApiV1SplatRouteImport } from './routes/api/v1/$'
 import { Route as ApiPublicHealthRouteImport } from './routes/api/public/health'
 import { Route as AdminCompetitionsNewRouteImport } from './routes/admin.competitions.new'
 import { Route as AdminAuctionsNewRouteImport } from './routes/admin.auctions.new'
@@ -98,6 +99,11 @@ const AdminAuctionsIndexRoute = AdminAuctionsIndexRouteImport.update({
   path: '/admin/auctions/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiV1SplatRoute = ApiV1SplatRouteImport.update({
+  id: '/api/v1/$',
+  path: '/api/v1/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicHealthRoute = ApiPublicHealthRouteImport.update({
   id: '/api/public/health',
   path: '/api/public/health',
@@ -131,6 +137,7 @@ export interface FileRoutesByFullPath {
   '/admin/auctions/new': typeof AdminAuctionsNewRoute
   '/admin/competitions/new': typeof AdminCompetitionsNewRoute
   '/api/public/health': typeof ApiPublicHealthRoute
+  '/api/v1/$': typeof ApiV1SplatRoute
   '/admin/auctions/': typeof AdminAuctionsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -150,6 +157,7 @@ export interface FileRoutesByTo {
   '/admin/auctions/new': typeof AdminAuctionsNewRoute
   '/admin/competitions/new': typeof AdminCompetitionsNewRoute
   '/api/public/health': typeof ApiPublicHealthRoute
+  '/api/v1/$': typeof ApiV1SplatRoute
   '/admin/auctions': typeof AdminAuctionsIndexRoute
 }
 export interface FileRoutesById {
@@ -170,6 +178,7 @@ export interface FileRoutesById {
   '/admin/auctions/new': typeof AdminAuctionsNewRoute
   '/admin/competitions/new': typeof AdminCompetitionsNewRoute
   '/api/public/health': typeof ApiPublicHealthRoute
+  '/api/v1/$': typeof ApiV1SplatRoute
   '/admin/auctions/': typeof AdminAuctionsIndexRoute
 }
 export interface FileRouteTypes {
@@ -191,6 +200,7 @@ export interface FileRouteTypes {
     | '/admin/auctions/new'
     | '/admin/competitions/new'
     | '/api/public/health'
+    | '/api/v1/$'
     | '/admin/auctions/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -210,6 +220,7 @@ export interface FileRouteTypes {
     | '/admin/auctions/new'
     | '/admin/competitions/new'
     | '/api/public/health'
+    | '/api/v1/$'
     | '/admin/auctions'
   id:
     | '__root__'
@@ -229,6 +240,7 @@ export interface FileRouteTypes {
     | '/admin/auctions/new'
     | '/admin/competitions/new'
     | '/api/public/health'
+    | '/api/v1/$'
     | '/admin/auctions/'
   fileRoutesById: FileRoutesById
 }
@@ -248,6 +260,7 @@ export interface RootRouteChildren {
   AdminAuctionsNewRoute: typeof AdminAuctionsNewRoute
   AdminCompetitionsNewRoute: typeof AdminCompetitionsNewRoute
   ApiPublicHealthRoute: typeof ApiPublicHealthRoute
+  ApiV1SplatRoute: typeof ApiV1SplatRoute
   AdminAuctionsIndexRoute: typeof AdminAuctionsIndexRoute
 }
 
@@ -351,6 +364,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAuctionsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/v1/$': {
+      id: '/api/v1/$'
+      path: '/api/v1/$'
+      fullPath: '/api/v1/$'
+      preLoaderRoute: typeof ApiV1SplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/health': {
       id: '/api/public/health'
       path: '/api/public/health'
@@ -403,6 +423,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminAuctionsNewRoute: AdminAuctionsNewRoute,
   AdminCompetitionsNewRoute: AdminCompetitionsNewRoute,
   ApiPublicHealthRoute: ApiPublicHealthRoute,
+  ApiV1SplatRoute: ApiV1SplatRoute,
   AdminAuctionsIndexRoute: AdminAuctionsIndexRoute,
 }
 export const routeTree = rootRouteImport
