@@ -12,6 +12,8 @@ export const Route = createFileRoute("/videos")({
     { name: "description", content: "Melhores momentos, análises e conteúdo das competições ReverseDraft." },
     { property: "og:title", content: "Vídeos de futebol · ReverseDraft" },
     { property: "og:description", content: "Melhores momentos, análises e conteúdo das competições ReverseDraft." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
   ] }), component: VideosPage,
 });
 

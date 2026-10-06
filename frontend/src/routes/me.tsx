@@ -25,6 +25,8 @@ export const Route = createFileRoute("/me")({
         property: "og:description",
         content: "Acompanhe seu saldo, lances e elenco comprado no ReverseDraft.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: MePage,

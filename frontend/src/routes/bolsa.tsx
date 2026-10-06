@@ -27,6 +27,8 @@ export const Route = createFileRoute("/bolsa")({
       },
       { property: "og:title", content: "Minha bolsa · ReverseDraft" },
       { property: "og:description", content: "Gerencie jogadores, leilões e propostas diretas." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: BolsaPage,

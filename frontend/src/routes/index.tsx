@@ -36,6 +36,8 @@ export const Route = createFileRoute("/")({
         property: "og:description",
         content: "Explore jogadores, compare atributos e entre nos leilões ao vivo.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: CatalogPage,

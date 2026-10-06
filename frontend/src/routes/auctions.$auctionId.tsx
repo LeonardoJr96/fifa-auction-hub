@@ -27,6 +27,8 @@ export const Route = createFileRoute("/auctions/$auctionId")({
       },
       { property: "og:title", content: "Leilão ao vivo · ReverseDraft" },
       { property: "og:description", content: "Preço atual, cronômetro e lances em tempo real." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: AuctionPage,

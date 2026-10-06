@@ -32,6 +32,8 @@ export const Route = createFileRoute("/players/")({
         property: "og:description",
         content: "Veja todos os jogadores disponíveis no ReverseDraft.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: PlayersPage,

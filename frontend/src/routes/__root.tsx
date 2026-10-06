@@ -129,7 +129,7 @@ function SiteHeader() {
         <p className="truncate font-display text-sm font-semibold text-foreground">Central de competição</p>
         <p className="hidden text-[11px] text-muted-foreground sm:block">Operação, performance e mercado em tempo real</p>
       </div>
-      <span className="hidden items-center gap-2 rounded-full border border-live/20 bg-live/10 px-3 py-1.5 text-[11px] font-bold text-live sm:flex"><Wifi className="size-3.5" /> Sistema online</span>
+      <span className="hidden items-center gap-2 rounded-full border border-live/20 bg-live/10 px-3 py-1.5 text-[11px] font-bold text-live sm:flex"><Wifi className="size-3.5" /> Central ativa</span>
       {isAuthenticated ? <Link to="/me" className="grid size-9 place-items-center rounded-full border border-border bg-secondary font-display text-xs font-bold text-foreground" aria-label="Abrir minha conta">{user?.username?.slice(0, 2).toUpperCase()}</Link> : <Link to="/login" className="text-sm font-semibold text-primary">Entrar</Link>}
       <CircleHelp className="hidden size-4 text-muted-foreground lg:block" aria-hidden="true" />
     </header>

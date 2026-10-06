@@ -14,6 +14,8 @@ export const Route = createFileRoute("/competitions")({
       { name: "description", content: "Participe de drafts e monte seu time para competições." },
       { property: "og:title", content: "Competições de futebol · ReverseDraft" },
       { property: "og:description", content: "Ligas, copas e drafts com partidas, tabelas e estatísticas." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: CompetitionsPage,

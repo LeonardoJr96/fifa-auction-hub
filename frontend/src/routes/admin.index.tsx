@@ -13,6 +13,8 @@ export const Route = createFileRoute("/admin/")({
       { name: "description", content: "Administração de leilões da plataforma." },
       { property: "og:title", content: "Administração · ReverseDraft" },
       { property: "og:description", content: "Operação de leilões e competições da plataforma." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex" },
     ],
   }),

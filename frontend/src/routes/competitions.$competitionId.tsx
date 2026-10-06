@@ -23,6 +23,8 @@ export const Route = createFileRoute("/competitions/$competitionId")({
       { name: "description", content: "Acompanhe draft, tabela, partidas e chaveamento." },
       { property: "og:title", content: "Central de competição · ReverseDraft" },
       { property: "og:description", content: "Tabela, partidas, times, jogadores e estatísticas da competição." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: CompetitionDetailPage,
