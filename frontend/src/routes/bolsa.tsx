@@ -14,6 +14,8 @@ import { playerPhotoSrc } from "@/lib/player-photo";
 import { formatDateTime, formatMoney } from "@/lib/format";
 import type { Player, PortfolioListing } from "@/types/api";
 import { ApiError } from "@/lib/api";
+import { PageHeader } from "@/components/PageHeader";
+import { StatePanel } from "@/components/StatePanel";
 
 export const Route = createFileRoute("/bolsa")({
   head: () => ({
@@ -23,6 +25,8 @@ export const Route = createFileRoute("/bolsa")({
         name: "description",
         content: "Gerencie seus jogadores adquiridos, coloque à venda em leilão ou venda direta.",
       },
+      { property: "og:title", content: "Minha bolsa · ReverseDraft" },
+      { property: "og:description", content: "Gerencie jogadores, leilões e propostas diretas." },
     ],
   }),
   component: BolsaPage,
@@ -48,33 +52,22 @@ function BolsaPage() {
 
   if (isLoading) {
     return (
-      <div className="mx-auto w-full max-w-5xl px-4 py-10">
-        <div className="h-32 animate-pulse rounded-xl bg-muted" />
-        <div className="mt-6 h-64 animate-pulse rounded-xl bg-muted" />
-      </div>
+      <div className="page-container"><StatePanel kind="loading" title="Carregando sua bolsa" /></div>
     );
   }
 
   if (isError || !data) {
     return (
-      <p role="alert" className="mx-auto max-w-5xl px-4 py-10 text-sm text-destructive">
-        Não foi possível carregar sua bolsa.
-      </p>
+      <div className="page-container"><StatePanel kind="error" title="Bolsa indisponível" description="Não foi possível carregar seus jogadores e propostas." /></div>
     );
   }
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-4 py-8">
-      <header className="mb-6">
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">Minha bolsa</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Jogadores adquiridos nos leilões. Coloque à venda em leilão ou ofereça diretamente a outro
-          jogador.
-        </p>
-      </header>
+    <div className="page-container">
+      <PageHeader eyebrow="Mercado do clube" title="Minha bolsa" description="Gerencie jogadores adquiridos e negocie por leilão ou proposta direta." />
 
       {data.incoming_offers.length > 0 ? (
-        <section className="mb-6 rounded-xl border border-gold/40 bg-gold/5 p-5">
+        <section className="surface-panel mb-6 border-gold/40 bg-gold/5">
           <h2 className="text-sm font-semibold uppercase tracking-wide text-foreground">
             Propostas recebidas ({data.incoming_offers.length})
           </h2>
@@ -87,7 +80,7 @@ function BolsaPage() {
       ) : null}
 
       {data.my_listings.length > 0 ? (
-        <section className="mb-6 rounded-xl border border-border bg-card p-5">
+        <section className="surface-panel mb-6">
           <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
             À venda ({data.my_listings.length})
           </h2>
@@ -99,7 +92,7 @@ function BolsaPage() {
         </section>
       ) : null}
 
-      <section className="rounded-xl border border-border bg-card p-5">
+      <section className="surface-panel">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
           Jogadores disponíveis ({data.players.length})
         </h2>
