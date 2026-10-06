@@ -7,7 +7,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { StatePanel } from "@/components/StatePanel";
 import { Button } from "@/components/ui/button";
 
-export const Route = createFileRoute("/competitions")({
+export const Route = createFileRoute("/competitions/")({
   head: () => ({
     meta: [
       { title: "Competições · ReverseDraft" },
@@ -54,20 +54,33 @@ function CompetitionsPage() {
       ) : !competitions?.length ? (
         <StatePanel kind="empty" title="Nenhuma competição aberta" description="Novas temporadas aparecerão aqui quando forem publicadas." />
       ) : (
-        <div className="grid gap-4 lg:grid-cols-2">
-          {competitions.map((competition) => (
-            <CompetitionCard key={competition.id} competition={competition} />
-          ))}
+        <div className="overflow-x-auto rounded-lg border border-border bg-card">
+          <table className="premium-table w-full text-sm">
+            <thead>
+              <tr className="text-left text-xs uppercase text-muted-foreground">
+                <th className="px-4 py-3">Competição</th>
+                <th className="px-4 py-3">Tipo</th>
+                <th className="px-4 py-3">Status</th>
+                <th className="px-4 py-3">Times</th>
+                <th className="px-4 py-3">Rodadas</th>
+                <th className="px-4 py-3 text-right">Ação</th>
+              </tr>
+            </thead>
+            <tbody>
+              {competitions.map((competition) => (
+                <CompetitionRow key={competition.id} competition={competition} />
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
     </div>
   );
 }
 
-function CompetitionCard({ competition }: { competition: import("@/types/api").Competition }) {
+function CompetitionRow({ competition }: { competition: import("@/types/api").Competition }) {
   const { isAuthenticated } = useAuth();
   const join = useJoinCompetition(String(competition.id));
-
   const canJoin =
     isAuthenticated &&
     competition.status === "registration" &&
@@ -75,49 +88,47 @@ function CompetitionCard({ competition }: { competition: import("@/types/api").C
     competition.participant_count < competition.max_participants;
 
   return (
-    <article className="group overflow-hidden rounded-lg border border-border bg-card transition-colors hover:border-primary/50">
-      <div className="h-1 bg-primary" />
-      <div className="p-5">
-        <div className="flex items-start gap-4">
-          <span className="club-mark"><Trophy /></span>
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="status-dot"><Radio />{STATUS_LABEL[competition.status] ?? competition.status}</span>
-              <span className="text-[10px] font-bold uppercase text-muted-foreground">{TYPE_LABEL[competition.competition_type] ?? competition.competition_type}</span>
-            </div>
-            <h2 className="mt-3 font-display text-xl font-bold text-foreground">{competition.name}</h2>
-            {competition.description ? <p className="mt-1 text-sm text-muted-foreground">{competition.description}</p> : null}
-            <div className="mt-4 flex flex-wrap gap-2 text-xs">
-              <span className="rounded bg-secondary px-2.5 py-1 text-muted-foreground">{DRAFT_MODE_LABEL[competition.draft_mode] ?? competition.draft_mode}</span>
-              <span className="inline-flex items-center gap-1 rounded bg-secondary px-2.5 py-1 text-muted-foreground"><UsersRound className="size-3.5" />{competition.participant_count}/{competition.max_participants} times</span>
-              <span className="rounded bg-secondary px-2.5 py-1 text-muted-foreground">{competition.draft_rounds} rodadas</span>
-            </div>
-          </div>
-        </div>
-        <div className="mt-5 flex flex-wrap gap-2 border-t border-border pt-4">
+    <tr className="border-t border-border hover:bg-secondary/50">
+      <td className="px-4 py-3">
+        <Link
+          to="/competitions/$competitionId"
+          params={{ competitionId: String(competition.id) }}
+          className="inline-flex items-center gap-2 font-semibold text-foreground hover:text-primary"
+        >
+          <Trophy className="size-4 text-primary" />
+          {competition.name}
+        </Link>
+      </td>
+      <td className="px-4 py-3 text-muted-foreground">
+        {TYPE_LABEL[competition.competition_type] ?? competition.competition_type} ·{" "}
+        {DRAFT_MODE_LABEL[competition.draft_mode] ?? competition.draft_mode}
+      </td>
+      <td className="px-4 py-3">
+        <span className="status-dot"><Radio />{STATUS_LABEL[competition.status] ?? competition.status}</span>
+      </td>
+      <td className="px-4 py-3 tabular-nums text-muted-foreground">
+        <span className="inline-flex items-center gap-1"><UsersRound className="size-3.5" />{competition.participant_count}/{competition.max_participants}</span>
+      </td>
+      <td className="px-4 py-3 tabular-nums text-muted-foreground">{competition.draft_rounds}</td>
+      <td className="px-4 py-3">
+        <div className="flex items-center justify-end gap-2">
           {canJoin ? (
-            <Button
-              type="button"
-              disabled={join.isPending}
-              onClick={() => join.mutate()}
-            >
+            <Button type="button" size="sm" disabled={join.isPending} onClick={() => join.mutate()}>
               {join.isPending ? "Inscrevendo…" : "Inscrever-se"}
             </Button>
           ) : competition.is_joined ? (
-            <span className="rounded-md border border-border px-4 py-2 text-sm text-muted-foreground">
-              Você está inscrito
-            </span>
+            <span className="text-xs text-muted-foreground">Inscrito</span>
           ) : null}
           <Link
             to="/competitions/$competitionId"
             params={{ competitionId: String(competition.id) }}
-            className="ml-auto inline-flex items-center gap-2 text-sm font-semibold text-foreground hover:text-primary"
+            className="inline-flex items-center gap-1 text-sm font-semibold text-primary"
           >
-            {competition.status === "draft" ? "Entrar no draft" : "Abrir central"}<ArrowRight className="size-4" />
+            Ver tabela<ArrowRight className="size-4" />
           </Link>
         </div>
-        {join.isError ? <p className="mt-3 text-sm text-destructive">{(join.error as Error)?.message ?? "Erro ao inscrever-se."}</p> : null}
-      </div>
-    </article>
+        {join.isError ? <p className="mt-1 text-right text-xs text-destructive">{(join.error as Error)?.message ?? "Erro ao inscrever-se."}</p> : null}
+      </td>
+    </tr>
   );
 }

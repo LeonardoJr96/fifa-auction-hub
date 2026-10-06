@@ -50,7 +50,7 @@ function CompetitionDetailPage() {
   const { isAuthenticated, isStaff } = useAuth();
   const { data: competition, isLoading } = useCompetition(competitionId);
   const join = useJoinCompetition(competitionId);
-  const [tab, setTab] = useState<Tab>("overview");
+  const [tab, setTab] = useState<Tab>("standings");
 
   if (isLoading) {
     return <div className="page-container"><StatePanel kind="loading" title="Carregando competição" description="Preparando tabela, partidas e informações do torneio." /></div>;
