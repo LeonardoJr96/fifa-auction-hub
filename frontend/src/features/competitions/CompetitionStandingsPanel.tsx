@@ -1,22 +1,23 @@
 import { useCompetitionStandings } from "@/features/competitions/hooks";
+import { StatePanel } from "@/components/StatePanel";
 
 export function CompetitionStandingsPanel({ competitionId }: { competitionId: string }) {
   const { data: standings, isLoading, isError } = useCompetitionStandings(competitionId);
 
   if (isLoading) {
-    return <p className="text-sm text-muted-foreground">Carregando tabela…</p>;
+    return <StatePanel kind="loading" title="Carregando classificação" />;
   }
   if (isError) {
-    return <p className="text-sm text-destructive">Não foi possível carregar a tabela.</p>;
+    return <StatePanel kind="error" title="Classificação indisponível" description="Não foi possível carregar a tabela." />;
   }
   if (!standings?.length) {
-    return <p className="text-sm text-muted-foreground">Nenhum resultado registrado ainda.</p>;
+    return <StatePanel kind="empty" title="Classificação ainda vazia" description="A tabela será atualizada após os primeiros resultados." />;
   }
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-border bg-card">
-      <table className="min-w-full text-sm">
-        <thead className="border-b border-border bg-muted/40 text-left text-xs uppercase tracking-wide text-muted-foreground">
+    <div className="overflow-x-auto rounded-lg border border-border bg-card">
+      <table className="premium-table min-w-full">
+        <thead>
           <tr>
             <th className="px-4 py-3">#</th>
             <th className="px-4 py-3">Time</th>
@@ -32,20 +33,14 @@ export function CompetitionStandingsPanel({ competitionId }: { competitionId: st
         </thead>
         <tbody>
           {standings.map((row) => (
-            <tr key={row.team_id} className="border-b border-border/60 last:border-0">
-              <td className="px-4 py-3 font-medium text-foreground">{row.position}</td>
-              <td className="px-4 py-3">
+            <tr key={row.team_id} className={row.position === 1 ? "bg-primary/5" : ""}>
+              <td><span className={`inline-grid size-7 place-items-center rounded font-bold ${row.position === 1 ? "bg-primary text-primary-foreground" : "bg-secondary text-foreground"}`}>{row.position}</span></td>
+              <td>
                 <div className="font-medium text-foreground">{row.team_name}</div>
                 <div className="text-xs text-muted-foreground">{row.username}</div>
               </td>
-              <td className="px-4 py-3 font-semibold text-primary">{row.points}</td>
-              <td className="px-4 py-3">{row.played}</td>
-              <td className="px-4 py-3">{row.wins}</td>
-              <td className="px-4 py-3">{row.draws}</td>
-              <td className="px-4 py-3">{row.losses}</td>
-              <td className="px-4 py-3">{row.goals_for}</td>
-              <td className="px-4 py-3">{row.goals_against}</td>
-              <td className="px-4 py-3">{row.goal_diff}</td>
+              <td className="font-display text-base font-bold text-primary">{row.points}</td>
+              <td>{row.played}</td><td>{row.wins}</td><td>{row.draws}</td><td>{row.losses}</td><td>{row.goals_for}</td><td>{row.goals_against}</td><td>{row.goal_diff}</td>
             </tr>
           ))}
         </tbody>

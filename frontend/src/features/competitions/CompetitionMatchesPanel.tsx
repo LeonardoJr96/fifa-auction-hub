@@ -7,6 +7,8 @@ import {
   useSimulateMatch,
 } from "@/features/competitions/hooks";
 import type { CompetitionMatch, MatchResultPayload } from "@/types/api";
+import { Button } from "@/components/ui/button";
+import { StatePanel } from "@/components/StatePanel";
 
 function MatchResultForm({
   competitionId,
@@ -149,7 +151,7 @@ function MatchResultForm({
               />
             </div>
           ))}
-          <button
+          <Button
             type="button"
             onClick={() =>
               setStatRows((rows) => [
@@ -168,18 +170,17 @@ function MatchResultForm({
         <button
           type="submit"
           disabled={registerResult.isPending}
-          className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-60"
         >
           {registerResult.isPending ? "Salvando…" : "Registrar resultado"}
-        </button>
-        {canSimulate ? <button
+          </Button>
+        {canSimulate ? <Button
           type="button"
           disabled={simulate.isPending}
           onClick={() => simulate.mutate(match.id)}
-          className="rounded-md border border-input px-4 py-2 text-sm disabled:opacity-60"
+          variant="outline"
         >
           {simulate.isPending ? "Simulando…" : "Simular"}
-        </button> : null}
+        </Button> : null}
       </div>
     </form>
   );
@@ -210,13 +211,13 @@ export function CompetitionMatchesPanel({
   const { data: matches, isLoading, isError } = useCompetitionMatches(competitionId);
 
   if (isLoading) {
-    return <p className="text-sm text-muted-foreground">Carregando partidas…</p>;
+    return <StatePanel kind="loading" title="Carregando partidas" />;
   }
   if (isError) {
-    return <p className="text-sm text-destructive">Não foi possível carregar as partidas.</p>;
+    return <StatePanel kind="error" title="Partidas indisponíveis" description="Tente novamente em alguns instantes." />;
   }
   if (!matches?.length) {
-    return <p className="text-sm text-muted-foreground">Nenhuma partida gerada ainda.</p>;
+    return <StatePanel kind="empty" title="Nenhuma partida gerada" description="O calendário aparecerá após a geração dos confrontos." />;
   }
 
   const grouped = matches.reduce<Record<string, CompetitionMatch[]>>((acc, match) => {
@@ -228,22 +229,18 @@ export function CompetitionMatchesPanel({
   return (
     <div className="space-y-6">
       {Object.entries(grouped).map(([roundLabel, roundMatches]) => (
-        <section key={roundLabel} className="rounded-xl border border-border bg-card p-5">
-          <h3 className="text-sm font-semibold text-foreground">{roundLabel}</h3>
+        <section key={roundLabel} className="surface-panel">
+          <div className="section-heading"><div><p className="eyebrow">Calendário</p><h3 className="font-display font-semibold text-foreground">{roundLabel}</h3></div></div>
           <ul className="mt-4 space-y-4">
             {roundMatches.map((match) => (
-              <li key={match.id} className="rounded-md border border-border/70 p-4">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="text-sm">
-                    <span className="font-medium text-foreground">{match.home_team_name}</span>
-                    <span className="mx-2 text-muted-foreground">vs</span>
-                    <span className="font-medium text-foreground">{match.away_team_name}</span>
-                  </div>
-                  <div className="text-sm font-semibold text-foreground">
+              <li key={match.id} className="rounded-lg border border-border/70 bg-background/30 p-4">
+                <div className="match-row">
+                  <span className="min-w-0 flex-1 truncate text-right font-semibold text-foreground">{match.home_team_name}</span>
+                  <div className={`score-box ${match.status === "played" ? "text-primary" : "text-muted-foreground"}`}>
                     {match.status === "played"
                       ? `${match.home_score} - ${match.away_score}`
                       : "Agendado"}
-                  </div>
+                  </div><span className="min-w-0 flex-1 truncate font-semibold text-foreground">{match.away_team_name}</span>
                 </div>
                 <MatchStats match={match} />
                 <MatchResultForm
