@@ -2,6 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 
 import { useAuth } from "@/features/auth/AuthContext";
 import { BracketStatusPanel } from "@/features/competitions/BracketStatusPanel";
+import { PageHeader } from "@/components/PageHeader";
+import { StatePanel } from "@/components/StatePanel";
 
 
 export const Route = createFileRoute("/admin/")({
@@ -9,6 +11,10 @@ export const Route = createFileRoute("/admin/")({
     meta: [
       { title: "Painel admin · ReverseDraft" },
       { name: "description", content: "Administração de leilões da plataforma." },
+      { property: "og:title", content: "Administração · ReverseDraft" },
+      { property: "og:description", content: "Operação de leilões e competições da plataforma." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -41,16 +47,15 @@ function AdminHomePage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-4 py-8">
-      <h1 className="text-2xl font-bold tracking-tight text-foreground">Painel admin</h1>
-      <p className="mt-1 text-sm text-muted-foreground">Gerencie leilões e competições da plataforma.</p>
+    <div className="page-container">
+      <PageHeader eyebrow="Sistema" title="Administração" description="Controle leilões, competições e o chaveamento da plataforma." />
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2">
         {CARDS.map((card) => (
           <Link
             key={card.to}
             to={card.to}
-            className="rounded-xl border border-border bg-card p-5 transition-colors hover:border-primary/60"
+            className="surface-panel transition-colors hover:border-primary/60"
           >
             <h2 className="text-base font-bold text-foreground">{card.title}</h2>
             <p className="mt-1 text-sm text-muted-foreground">{card.description}</p>
@@ -66,11 +71,7 @@ function AdminHomePage() {
 
 export function RestrictedNotice() {
   return (
-    <div className="mx-auto max-w-md px-4 py-16 text-center">
-      <h1 className="text-xl font-semibold text-foreground">Acesso restrito</h1>
-      <p className="mt-2 text-sm text-muted-foreground">
-        Esta área é exclusiva para administradores.
-      </p>
+    <div className="page-container"><StatePanel kind="permission" title="Acesso restrito" description="Esta área é exclusiva para administradores." />
       <Link
         to="/login"
         className="mt-6 inline-flex rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"

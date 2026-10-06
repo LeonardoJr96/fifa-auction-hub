@@ -10,10 +10,13 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
+import { CircleHelp, Wifi } from "lucide-react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AuthProvider, useAuth } from "@/features/auth/AuthContext";
+import { AppSidebar } from "@/components/AppSidebar";
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 
 function NotFoundComponent() {
   return (
@@ -85,6 +88,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@500;600;700;800&display=swap" },
       {
         rel: "stylesheet",
         href: appCss,
@@ -112,60 +118,20 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
-const navLinkClass =
-  "px-2 py-1 text-[13px] font-medium text-foreground/70 transition-colors hover:text-primary";
-
 function SiteHeader() {
-  const { isAuthenticated, isStaff, user, logout } = useAuth();
+  const { isAuthenticated, user } = useAuth();
 
   return (
-    <header className="border-b border-border bg-pitch-deep">
-      <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-1 gap-y-2 px-4 py-2.5">
-        <Link to="/" className="mr-3 flex items-center gap-2">
-          <span className="grid h-7 w-7 place-items-center rounded-full bg-primary text-[13px] font-black text-primary-foreground">
-            R
-          </span>
-          <span className="text-[15px] font-semibold tracking-tight text-foreground">
-            ReverseDraft
-          </span>
-        </Link>
-
-        <nav className="flex flex-1 flex-wrap items-center gap-x-1">
-          <Link to="/" activeOptions={{ exact: true }} className={navLinkClass}>
-            Leilão
-          </Link>
-          <Link to="/players" className={navLinkClass}>
-            Jogadores
-          </Link>
-          <Link to="/competitions" className={navLinkClass}>
-            Competições
-          </Link>
-          {isAuthenticated ? (
-            <Link to="/bolsa" className={navLinkClass}>
-              Bolsa
-            </Link>
-          ) : null}
-          {isAuthenticated ? (
-            <Link to="/me" className={navLinkClass}>
-              Minha conta
-            </Link>
-          ) : null}
-          {isStaff ? (
-            <Link to="/admin" className={navLinkClass}>
-              Admin
-            </Link>
-          ) : null}
-          {isAuthenticated ? (
-            <button type="button" onClick={logout} className={`ml-auto ${navLinkClass}`}>
-              Sair ({user?.username})
-            </button>
-          ) : (
-            <Link to="/login" className={`ml-auto ${navLinkClass} text-primary`}>
-              Fazer login
-            </Link>
-          )}
-        </nav>
+    <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-border bg-background/90 px-4 backdrop-blur-xl sm:px-6">
+      <SidebarTrigger className="size-9" aria-label="Abrir ou recolher navegação" />
+      <div className="h-5 w-px bg-border" />
+      <div className="min-w-0 flex-1">
+        <p className="truncate font-display text-sm font-semibold text-foreground">Central de competição</p>
+        <p className="hidden text-[11px] text-muted-foreground sm:block">Operação, performance e mercado em tempo real</p>
       </div>
+      <span className="hidden items-center gap-2 rounded-full border border-live/20 bg-live/10 px-3 py-1.5 text-[11px] font-bold text-live sm:flex"><Wifi className="size-3.5" /> Central ativa</span>
+      {isAuthenticated ? <Link to="/me" className="grid size-9 place-items-center rounded-full border border-border bg-secondary font-display text-xs font-bold text-foreground" aria-label="Abrir minha conta">{user?.username?.slice(0, 2).toUpperCase()}</Link> : <Link to="/login" className="text-sm font-semibold text-primary">Entrar</Link>}
+      <CircleHelp className="hidden size-4 text-muted-foreground lg:block" aria-hidden="true" />
     </header>
   );
 }
@@ -179,16 +145,16 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <div className="flex min-h-screen flex-col bg-background">
-          <SiteHeader />
-          {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-          <main className="flex-1">
-            <Outlet />
-          </main>
-          <footer className="border-t border-border py-6 text-center text-xs text-muted-foreground">
-            ReverseDraft · leilão ascendente de jogadores
-          </footer>
-        </div>
+        <SidebarProvider defaultOpen>
+          <div className="flex min-h-screen w-full bg-background">
+            <AppSidebar />
+            <SidebarInset className="min-w-0">
+              <SiteHeader />
+              <div className="flex-1"><Outlet /></div>
+              <footer className="border-t border-border px-6 py-5 text-xs text-muted-foreground">ReverseDraft · futebol, competição e performance</footer>
+            </SidebarInset>
+          </div>
+        </SidebarProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

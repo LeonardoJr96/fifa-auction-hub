@@ -9,6 +9,8 @@ import { useRoster, useTeam } from "@/features/team/hooks";
 import type { Me } from "@/types/api";
 import { ApiError } from "@/lib/api";
 import { formatDateTime, formatMoney } from "@/lib/format";
+import { PageHeader } from "@/components/PageHeader";
+import { StatePanel } from "@/components/StatePanel";
 
 export const Route = createFileRoute("/me")({
   head: () => ({
@@ -23,6 +25,8 @@ export const Route = createFileRoute("/me")({
         property: "og:description",
         content: "Acompanhe seu saldo, lances e elenco comprado no ReverseDraft.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: MePage,
@@ -58,26 +62,21 @@ function MePage() {
 
   if (isLoading) {
     return (
-      <div className="mx-auto w-full max-w-5xl px-4 py-10">
-        <div className="h-32 animate-pulse rounded-xl bg-muted" />
-        <div className="mt-6 h-64 animate-pulse rounded-xl bg-muted" />
-      </div>
+      <div className="page-container"><StatePanel kind="loading" title="Carregando sua conta" /></div>
     );
   }
 
   if (isError || !me) {
     return (
-      <p role="alert" className="mx-auto max-w-5xl px-4 py-10 text-sm text-destructive">
-        Não foi possível carregar sua conta.
-      </p>
+      <div className="page-container"><StatePanel kind="error" title="Conta indisponível" description="Não foi possível carregar seus dados agora." /></div>
     );
   }
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-4 py-8">
-      <header className="rounded-xl border border-border bg-card p-6">
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">{me.username}</h1>
-        <p className="text-sm text-muted-foreground">{me.email}</p>
+    <div className="page-container">
+      <PageHeader eyebrow="Meu clube" title={me.username} description={me.email} />
+      <header className="surface-panel border-primary/30">
+        <h2 className="font-display text-lg font-bold text-foreground">Finanças do clube</h2>
         <div className="mt-4">
           <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Saldo</p>
           <p className="text-4xl font-black tabular-nums text-foreground">

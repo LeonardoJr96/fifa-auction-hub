@@ -12,6 +12,10 @@ import { useAuctionRealtime } from "@/features/auction/useAuctionRealtime";
 
 import { formatCountdown, formatDateTime, formatMoney } from "@/lib/format";
 import { auctionStatus } from "@/lib/auction-status";
+import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/PageHeader";
+import { StatePanel } from "@/components/StatePanel";
+import { Gavel, Radio, Timer } from "lucide-react";
 
 export const Route = createFileRoute("/auctions/$auctionId")({
   head: () => ({
@@ -23,6 +27,8 @@ export const Route = createFileRoute("/auctions/$auctionId")({
       },
       { property: "og:title", content: "Leilão ao vivo · ReverseDraft" },
       { property: "og:description", content: "Preço atual, cronômetro e lances em tempo real." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: AuctionPage,
@@ -92,17 +98,13 @@ function AuctionPage() {
 
   if (isLoading) {
     return (
-      <div className="mx-auto w-full max-w-4xl px-4 py-10">
-        <div className="h-64 animate-pulse rounded-xl bg-muted" />
-      </div>
+      <div className="page-container"><StatePanel kind="loading" title="Carregando leilão" description="Sincronizando preço, cronômetro e histórico." /></div>
     );
   }
 
   if (isError || !auction) {
     return (
-      <p role="alert" className="mx-auto max-w-4xl px-4 py-10 text-sm text-destructive">
-        {error instanceof Error ? error.message : "Leilão não encontrado."}
-      </p>
+      <div className="page-container"><StatePanel kind="error" title="Leilão indisponível" description={error instanceof Error ? error.message : "Leilão não encontrado."} /></div>
     );
   }
 
@@ -126,9 +128,10 @@ function AuctionPage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-4xl px-4 py-8">
-      <div className="grid gap-5 lg:grid-cols-[1.2fr_1fr]">
-        <section className="rounded-xl border border-border bg-card p-5">
+    <div className="page-container">
+      <PageHeader eyebrow="Sala de disputa" title={player?.common_name ?? product?.title ?? "Leilão ao vivo"} description={`${product?.category ?? "Jogador"} · ${STATUS_LABEL[auctionStatus(auction)] ?? auction.status}`} actions={<span className="status-dot"><Radio />{liveConnected ? "Ao vivo" : "Atualização periódica"}</span>} />
+      <div className="grid gap-6 lg:grid-cols-[1.25fr_0.75fr]">
+        <section className="surface-panel">
           <div className="flex items-center gap-4">
             <PlayerPhoto
               src={playerPhotoSrc(player)}
@@ -136,9 +139,9 @@ function AuctionPage() {
               className="h-20 w-20 shrink-0"
             />
             <div className="min-w-0">
-              <h1 className="truncate text-xl font-bold text-foreground sm:text-2xl">
+              <h2 className="truncate font-display text-xl font-bold text-foreground sm:text-2xl">
                 {player?.common_name ?? product?.title ?? "Jogador"}
-              </h1>
+              </h2>
               <p className="text-xs text-muted-foreground">
                 {product?.category ?? "—"} · {STATUS_LABEL[auctionStatus(auction)] ?? auction.status}
                 {auction.seller_username ? (
@@ -185,17 +188,17 @@ function AuctionPage() {
 
         <section className="flex flex-col gap-4">
           <div
-            className={`rounded-xl border bg-card p-5 text-center transition-all ${
+            className={`surface-panel text-center transition-all ${
               extended ? "border-gold shadow-bid" : "border-border"
             }`}
           >
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            <p className="eyebrow flex items-center justify-center gap-2"><Gavel className="size-4" />
               Preço atual
             </p>
             <p className="mt-1 text-4xl font-black tabular-nums text-foreground">
               {formatMoney(auction.current_price)}
             </p>
-            <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            <p className="mt-5 flex items-center justify-center gap-2 text-xs font-semibold uppercase text-muted-foreground"><Timer className="size-4" />
               Tempo restante
             </p>
             <p className="text-2xl font-bold tabular-nums text-pitch">
@@ -220,14 +223,14 @@ function AuctionPage() {
                     Saldo do time: {formatMoney(team?.balance ?? 0)} · valor a pagar:{" "}
                     {formatMoney(auction.current_price)}
                   </p>
-                  <button
+                   <Button
                     type="button"
                     onClick={() => payAuction.mutate(auction.id)}
                     disabled={payAuction.isPending}
-                    className="mt-3 w-full rounded-md bg-pitch px-4 py-2.5 text-sm font-bold text-pitch-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
+                     className="mt-3 w-full"
                   >
                     {payAuction.isPending ? "Pagando…" : "Pagar agora"}
-                  </button>
+                   </Button>
                   {payAuction.isError ? (
                     <p role="alert" className="mt-2 text-sm font-medium text-destructive">
                       {payAuction.error instanceof Error
@@ -257,7 +260,7 @@ function AuctionPage() {
             </p>
           ) : null}
 
-          <form onSubmit={handleBid} className="rounded-xl border border-border bg-card p-5">
+          <form onSubmit={handleBid} className="surface-panel">
             <label htmlFor="bid" className="text-sm font-medium text-foreground">
               Seu lance (mínimo {formatMoney(minimumBid)})
             </label>
@@ -272,13 +275,13 @@ function AuctionPage() {
               disabled={!isOpen || !isAuthenticated}
               className="mt-2 w-full rounded-md border border-input bg-background px-3 py-2 text-lg font-semibold tabular-nums outline-none focus:ring-2 focus:ring-ring disabled:opacity-60"
             />
-            <button
+            <Button
               type="submit"
               disabled={!isOpen || !isAuthenticated || placeBid.isPending}
-              className="mt-3 w-full rounded-md bg-gold px-4 py-3 text-base font-bold text-gold-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
+              className="mt-3 w-full"
             >
               {placeBid.isPending ? "Enviando…" : "Dar lance"}
-            </button>
+            </Button>
             {!isAuthenticated ? (
               <p className="mt-2 text-xs text-muted-foreground">
                 <Link to="/login" className="font-semibold text-pitch hover:underline">
@@ -294,7 +297,7 @@ function AuctionPage() {
             ) : null}
           </form>
 
-          <div className="rounded-xl border border-border bg-card p-5">
+          <div className="surface-panel">
             <div className="flex items-center justify-between gap-3">
               <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
                 Últimos lances

@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as VideosRouteImport } from './routes/videos'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as RegisterRouteImport } from './routes/register'
@@ -28,6 +29,11 @@ import { Route as ApiPublicHealthRouteImport } from './routes/api/public/health'
 import { Route as AdminCompetitionsNewRouteImport } from './routes/admin.competitions.new'
 import { Route as AdminAuctionsNewRouteImport } from './routes/admin.auctions.new'
 
+const VideosRoute = VideosRouteImport.update({
+  id: '/videos',
+  path: '/videos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
@@ -129,6 +135,7 @@ export interface FileRoutesByFullPath {
   '/register': typeof RegisterRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/videos': typeof VideosRoute
   '/auctions/$auctionId': typeof AuctionsAuctionIdRoute
   '/competitions/$competitionId': typeof CompetitionsCompetitionIdRoute
   '/players/$playerId': typeof PlayersPlayerIdRoute
@@ -149,6 +156,7 @@ export interface FileRoutesByTo {
   '/register': typeof RegisterRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/videos': typeof VideosRoute
   '/auctions/$auctionId': typeof AuctionsAuctionIdRoute
   '/competitions/$competitionId': typeof CompetitionsCompetitionIdRoute
   '/players/$playerId': typeof PlayersPlayerIdRoute
@@ -170,6 +178,7 @@ export interface FileRoutesById {
   '/register': typeof RegisterRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/videos': typeof VideosRoute
   '/auctions/$auctionId': typeof AuctionsAuctionIdRoute
   '/competitions/$competitionId': typeof CompetitionsCompetitionIdRoute
   '/players/$playerId': typeof PlayersPlayerIdRoute
@@ -192,6 +201,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/sitemap.xml'
     | '/terms'
+    | '/videos'
     | '/auctions/$auctionId'
     | '/competitions/$competitionId'
     | '/players/$playerId'
@@ -212,6 +222,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/sitemap.xml'
     | '/terms'
+    | '/videos'
     | '/auctions/$auctionId'
     | '/competitions/$competitionId'
     | '/players/$playerId'
@@ -232,6 +243,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/sitemap.xml'
     | '/terms'
+    | '/videos'
     | '/auctions/$auctionId'
     | '/competitions/$competitionId'
     | '/players/$playerId'
@@ -253,6 +265,7 @@ export interface RootRouteChildren {
   RegisterRoute: typeof RegisterRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
+  VideosRoute: typeof VideosRoute
   AuctionsAuctionIdRoute: typeof AuctionsAuctionIdRoute
   PlayersPlayerIdRoute: typeof PlayersPlayerIdRoute
   AdminIndexRoute: typeof AdminIndexRoute
@@ -266,6 +279,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/videos': {
+      id: '/videos'
+      path: '/videos'
+      fullPath: '/videos'
+      preLoaderRoute: typeof VideosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/terms': {
       id: '/terms'
       path: '/terms'
@@ -416,6 +436,7 @@ const rootRouteChildren: RootRouteChildren = {
   RegisterRoute: RegisterRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
+  VideosRoute: VideosRoute,
   AuctionsAuctionIdRoute: AuctionsAuctionIdRoute,
   PlayersPlayerIdRoute: PlayersPlayerIdRoute,
   AdminIndexRoute: AdminIndexRoute,
