@@ -33,14 +33,14 @@ const publicGroups = [
     label: "Principal",
     items: [
       { title: "Leilões", to: "/" as const, icon: Gauge, exact: true },
-      { title: "Competições", to: "/competitions" as const, icon: Trophy },
+      { title: "Competições", to: "/competitions" as const, icon: Trophy, exact: false },
     ],
   },
   {
     label: "Conteúdo",
     items: [
-      { title: "Jogadores", to: "/players" as const, icon: UsersRound },
-      { title: "Vídeos", to: "/videos" as const, icon: Film },
+      { title: "Jogadores", to: "/players" as const, icon: UsersRound, exact: false },
+      { title: "Vídeos", to: "/videos" as const, icon: Film, exact: false },
     ],
   },
 ];

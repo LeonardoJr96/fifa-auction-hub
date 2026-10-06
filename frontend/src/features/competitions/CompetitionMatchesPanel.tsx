@@ -162,17 +162,17 @@ function MatchResultForm({
             className="text-sm text-primary"
           >
             + Adicionar linha
-          </button>
+          </Button>
         </div>
       ) : null}
 
       <div className="flex flex-wrap gap-2">
-        <button
+        <Button
           type="submit"
           disabled={registerResult.isPending}
         >
           {registerResult.isPending ? "Salvando…" : "Registrar resultado"}
-          </Button>
+        </Button>
         {canSimulate ? <Button
           type="button"
           disabled={simulate.isPending}

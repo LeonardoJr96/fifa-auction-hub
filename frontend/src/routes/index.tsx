@@ -16,6 +16,9 @@ import { useAuctions, auctionProductId } from "@/features/players/hooks";
 import { usePagination } from "@/hooks/use-pagination";
 import type { Product } from "@/types/api";
 import { isOpenAuction } from "@/lib/auction-status";
+import { Gavel, Radio } from "lucide-react";
+import { PageHeader } from "@/components/PageHeader";
+import { StatePanel } from "@/components/StatePanel";
 
 export const Route = createFileRoute("/")({
   validateSearch: (search: Record<string, unknown>): Partial<PlayerFilterValues> =>
@@ -72,13 +75,9 @@ function CatalogPage() {
   const refreshing = isFetching && !isLoading;
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-8">
-      <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-        Leilão de jogadores
-      </h1>
-      <p className="mt-1 text-sm text-muted-foreground">
-        Jogadores disponíveis para leilão ascendente.
-      </p>
+    <div className="page-container">
+      <PageHeader eyebrow="Mercado ao vivo" title="Leilão de jogadores" description="Dispute atletas em leilões ascendentes e monte um elenco capaz de competir." actions={<span className="status-dot"><Radio /> Atualização ao vivo</span>} />
+      <div className="mb-1 flex items-center justify-between gap-4"><p className="flex items-center gap-2 text-sm font-semibold text-foreground"><Gavel className="size-4 text-primary" /> {filtered.length} jogadores em disputa</p></div>
 
       <PlayerFilters
         values={search}
@@ -95,9 +94,7 @@ function CatalogPage() {
       />
 
       {isError ? (
-        <p role="alert" className="mt-8 rounded-md bg-destructive/10 px-4 py-3 text-sm text-destructive">
-          Erro ao carregar leilões. Verifique se o backend está rodando.
-        </p>
+        <StatePanel kind="error" title="Leilões indisponíveis" description="Nenhum jogador encontrado agora. Verifique a conexão com a API." />
       ) : null}
 
       <div
@@ -133,11 +130,7 @@ function CatalogPage() {
       ) : null}
 
       {!isLoading && !isError && filtered.length === 0 ? (
-        <p className="mt-10 text-center text-sm text-muted-foreground">
-          {(auctions ?? []).length === 0
-            ? "Não há nenhum leilão aberto no momento."
-            : "Nenhum jogador encontrado com esses filtros."}
-        </p>
+        <StatePanel kind="empty" title={(auctions ?? []).length === 0 ? "Nenhum leilão aberto" : "Nenhum jogador encontrado"} description={(auctions ?? []).length === 0 ? "Os próximos jogadores aparecerão assim que entrarem em disputa." : "Ajuste ou limpe os filtros para ampliar a busca."} />
       ) : null}
     </div>
   );

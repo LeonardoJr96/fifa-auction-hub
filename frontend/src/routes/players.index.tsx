@@ -12,6 +12,9 @@ import {
 } from "@/components/PlayerFilters";
 import { PlayerTable, PlayerTableSkeleton } from "@/components/PlayerTable";
 import { useOpenAuctionsByProduct, useProducts } from "@/features/players/hooks";
+import { ArrowRight } from "lucide-react";
+import { PageHeader } from "@/components/PageHeader";
+import { StatePanel } from "@/components/StatePanel";
 // Inline pagination to avoid hook-order issues
 
 export const Route = createFileRoute("/players/")({
@@ -71,25 +74,19 @@ function PlayersPage() {
   const refreshing = isFetching && !isLoading;
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-8">
-      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 sm:flex sm:flex-wrap sm:justify-between">
-        <div className="min-w-0">
-          <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-            Todos os jogadores
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
+    <div className="page-container">
+      <PageHeader eyebrow="Base FIFA / EA" title="Todos os jogadores" description={
               {isLoading
                 ? "Carregando lista de jogadores..."
-                : `${total} jogadores encontrados · 24 por página.`}
-          </p>
-        </div>
+                : `${total} jogadores encontrados · 24 por página.`} as unknown as string
+          } actions={
         <Link
           to="/"
-          className="inline-flex shrink-0 items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+          className="inline-flex shrink-0 items-center gap-2 text-sm font-semibold text-primary"
         >
-          Ir para o leilão
+          Ir para o leilão <ArrowRight className="size-4" />
         </Link>
-      </div>
+      } />
 
       <PlayerFilters
         values={filters}
@@ -102,9 +99,7 @@ function PlayersPage() {
       <AppliedFilters values={filters} onChange={update} onReset={reset} />
 
       {isError ? (
-        <p role="alert" className="mt-8 rounded-md bg-destructive/10 px-4 py-3 text-sm text-destructive">
-          Nenhum jogador encontrado.
-        </p>
+        <StatePanel kind="error" title="Nenhum jogador encontrado" description="A lista não pôde ser carregada agora." />
       ) : null}
 
       <div
@@ -134,9 +129,7 @@ function PlayersPage() {
       ) : null}
 
       {!isLoading && !isError && total === 0 ? (
-        <p className="mt-10 text-center text-sm text-muted-foreground">
-          Nenhum jogador encontrado com esses filtros.
-        </p>
+        <StatePanel kind="empty" title="Nenhum jogador encontrado" description="Ajuste ou limpe os filtros para ampliar a busca." />
       ) : null}
     </div>
   );
