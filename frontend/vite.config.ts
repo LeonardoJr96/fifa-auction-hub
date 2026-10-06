@@ -21,7 +21,21 @@ export default defineConfig({
       // e estourar o timeout de 45s de inicialização.
       proxy: {
         // Apenas prefixos do Django. /login, /admin e /me são rotas do próprio app.
-        "/api": { target: "http://127.0.0.1:8000", changeOrigin: true },
+        "/api": {
+          target: "http://127.0.0.1:8000",
+          changeOrigin: true,
+          // Se o Django não estiver rodando, responde 503 limpo em vez de 500.
+          configure: (proxy) => {
+            proxy.on("error", (err, _req, res) => {
+              console.warn("[proxy /api] backend indisponível:", err.message);
+              const r = res as import("node:http").ServerResponse;
+              if (r && !r.headersSent && typeof r.writeHead === "function") {
+                r.writeHead(503, { "Content-Type": "application/json" });
+                r.end(JSON.stringify({ detail: "Backend indisponível" }));
+              }
+            });
+          },
+        },
         "/ws": { target: "ws://127.0.0.1:8000", ws: true, changeOrigin: true },
         "/django-admin": { target: "http://127.0.0.1:8000", changeOrigin: true },
         "/static": { target: "http://127.0.0.1:8000", changeOrigin: true },
