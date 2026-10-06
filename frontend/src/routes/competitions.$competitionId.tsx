@@ -50,7 +50,7 @@ function CompetitionDetailPage() {
   const { isAuthenticated, isStaff } = useAuth();
   const { data: competition, isLoading } = useCompetition(competitionId);
   const join = useJoinCompetition(competitionId);
-  const [tab, setTab] = useState<Tab>("standings");
+  const [selectedTab, setSelectedTab] = useState<Tab | null>(null);
 
   if (isLoading) {
     return <div className="page-container"><StatePanel kind="loading" title="Carregando competição" description="Preparando tabela, partidas e informações do torneio." /></div>;
@@ -72,19 +72,27 @@ function CompetitionDetailPage() {
     !competition.is_joined &&
     competition.participant_count < competition.max_participants;
 
+  // A aba principal vem primeiro: liga → classificação, copa → chaveamento, draft → draft.
   const tabs: Array<{ id: Tab; label: string; show: boolean }> = [
-    { id: "overview", label: "Visão geral", show: true },
     { id: "standings", label: "Classificação", show: competition.competition_type === "league" },
+    { id: "bracket", label: "Chaveamento", show: competition.competition_type === "cup" },
+    { id: "draft", label: "Draft", show: competition.competition_type === "draft" || competition.status === "draft" },
     { id: "matches", label: "Partidas", show: competition.competition_type !== "draft" || competition.status !== "registration" },
     { id: "teams", label: "Times", show: true },
     { id: "players", label: "Jogadores", show: true },
-    { id: "stats", label: "Estatísticas", show: competition.competition_type !== "draft" },
     { id: "scorers", label: "Artilharia", show: competition.competition_type !== "draft" },
     { id: "assists", label: "Assistências", show: competition.competition_type !== "draft" },
-    { id: "draft", label: "Draft", show: competition.competition_type === "draft" || competition.status === "draft" },
-    { id: "bracket", label: "Chaveamento", show: competition.competition_type === "cup" },
+    { id: "stats", label: "Estatísticas", show: competition.competition_type !== "draft" },
+    { id: "overview", label: "Resumo", show: true },
     { id: "settings", label: "Configurações", show: isStaff },
   ];
+
+  const visibleTabs = tabs.filter((item) => item.show);
+  // Nunca tela vazia: se a aba escolhida não existe para este tipo, cai na primeira disponível.
+  const tab: Tab =
+    selectedTab && visibleTabs.some((item) => item.id === selectedTab)
+      ? selectedTab
+      : (visibleTabs[0]?.id ?? "overview");
 
   return (
     <div className="page-container">
@@ -101,24 +109,22 @@ function CompetitionDetailPage() {
       </header>
 
       <div className="tab-rail" role="tablist" aria-label="Áreas da competição">
-        {tabs
-          .filter((item) => item.show)
-          .map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => setTab(item.id)}
-              role="tab"
-              aria-selected={tab === item.id}
-              className={`tab-button ${
-                tab === item.id
-                  ? "tab-button-active"
-                  : ""
-              }`}
-            >
-              {item.label}
-            </button>
-          ))}
+        {visibleTabs.map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            onClick={() => setSelectedTab(item.id)}
+            role="tab"
+            aria-selected={tab === item.id}
+            className={`tab-button ${
+              tab === item.id
+                ? "tab-button-active"
+                : ""
+            }`}
+          >
+            {item.label}
+          </button>
+        ))}
       </div>
 
       <div className="mt-7">
