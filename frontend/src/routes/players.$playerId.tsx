@@ -58,7 +58,6 @@ const GROUPS: { title: string; keys: [string, string][] }[] = [
       ["reactions", "Reação"],
       ["ball_control", "Controle de bola"],
       ["composure", "Frieza"],
-      ["skill_moves", "Dribles especiais"],
     ],
   },
   {
@@ -80,8 +79,6 @@ const GROUPS: { title: string; keys: [string, string][] }[] = [
       ["stamina", "Fôlego"],
       ["strength", "Força"],
       ["aggression", "Agressividade"],
-      ["height", "Altura (cm)"],
-      ["weight", "Peso (kg)"],
     ],
   },
   {
@@ -103,11 +100,34 @@ function footLabel(foot: unknown): string {
   return "Pé —";
 }
 
-/** Estrelas (perna ruim / dribles), de 1 a 5. */
-function starLabel(value: unknown): string {
-  const n = Number(value);
-  if (!Number.isFinite(n) || n <= 0) return "—";
-  return `${"★".repeat(Math.min(5, n))}${"☆".repeat(Math.max(0, 5 - n))} (${n})`;
+/** Estrelas (perna ruim / dribles), máximo 5. */
+function Stars({ label, value }: { label: string; value: unknown }) {
+  const raw = Number(value);
+  const n = Number.isFinite(raw) ? Math.max(0, Math.min(5, Math.round(raw))) : 0;
+  return (
+    <div className="rounded-md border border-border bg-secondary/40 px-3 py-2">
+      <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">{label}</p>
+      <p className="mt-0.5 text-base leading-none" aria-label={n ? `${n} de 5 estrelas` : "Sem dados"}>
+        {n ? (
+          <>
+            <span className="text-gold">{"★".repeat(n)}</span>
+            <span className="text-muted-foreground/40">{"★".repeat(5 - n)}</span>
+          </>
+        ) : (
+          <span className="text-sm text-muted-foreground">—</span>
+        )}
+      </p>
+    </div>
+  );
+}
+
+function Fact({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-md border border-border bg-secondary/40 px-3 py-2">
+      <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">{label}</p>
+      <p className="mt-0.5 font-display text-sm font-semibold text-foreground">{value}</p>
+    </div>
+  );
 }
 
 const NON_RATING_KEYS = new Set(["height", "weight", "skill_moves"]);
@@ -172,7 +192,7 @@ function PlayerDetailPage() {
     : GROUPS.filter((group) => group.title !== "Goleiro");
 
   return (
-    <div className="mx-auto w-full max-w-4xl px-4 py-8">
+    <div className="mx-auto w-full max-w-6xl px-4 py-8">
       <div className="flex flex-col gap-5 rounded-xl border border-border bg-card p-5 sm:flex-row sm:items-center">
         <PlayerPhoto
           src={playerPhotoSrc(player)}
@@ -185,10 +205,16 @@ function PlayerDetailPage() {
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {(player.positions ?? [player.best_position]).filter(Boolean).join(" · ") || "—"} ·{" "}
-            {player.age} anos · {footLabel(player.foot)} · Perna ruim{" "}
-            {starLabel(player.weak_foot)}
+            {player.age} anos
           </p>
-          <p className="mt-2 flex flex-wrap items-center gap-2 text-xs">
+          <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-5">
+            <Fact label="Pé preferido" value={footLabel(player.foot)} />
+            <Stars label="Perna ruim" value={player.weak_foot} />
+            <Stars label="Dribles" value={player.skill_moves} />
+            <Fact label="Altura" value={readValue(player, "height") === "—" ? "—" : `${readValue(player, "height")} cm`} />
+            <Fact label="Peso" value={readValue(player, "weight") === "—" ? "—" : `${readValue(player, "weight")} kg`} />
+          </div>
+          <p className="mt-3 flex flex-wrap items-center gap-2 text-xs">
             <span className="font-semibold uppercase tracking-wide text-muted-foreground">
               Tipo de corrida
             </span>
@@ -285,10 +311,10 @@ function PlayerDetailPage() {
         </div>
       ) : null}
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-2">
+      <div className="mt-6 grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {groups.map((group) => (
           <section key={group.title} className="rounded-xl border border-border bg-card p-5">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            <h2 className="border-b border-border pb-2 font-display text-sm font-bold uppercase tracking-wide text-foreground">
               {group.title}
             </h2>
             <dl className="mt-3 space-y-1.5 text-sm">
