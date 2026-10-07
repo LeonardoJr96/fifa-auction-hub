@@ -64,7 +64,7 @@ if [[ -n "$REMOTE_KEY" ]]; then
     exit 1
   }
 
-  DOWNLOAD_ROOT="${TMPDIR:-/tmp}/mega8lance-db-restore"
+  DOWNLOAD_ROOT="${TMPDIR:-/tmp}/fifa-auction-hub-db-restore"
   mkdir -p "$DOWNLOAD_ROOT"
   DOWNLOADED_TEMP_FILE="$DOWNLOAD_ROOT/$(basename "$REMOTE_KEY")"
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 ################################################################################
-# Instalação do Nginx (host) — Mega8Lance
+# Instalação do Nginx (host) — FIFA Auction Hub
 # Uso: sudo bash setups/install-nginx.sh [stable|mainline]
 ################################################################################
 
@@ -178,7 +178,7 @@ main() {
   fi
 
   echo "========================================================="
-  echo "  Instalação do Nginx (host) — Mega8Lance"
+  echo "  Instalação do Nginx (host) — FIFA Auction Hub"
   echo "========================================================="
   echo
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# Mega8Lance - FACTORY RESET
+# FIFA Auction Hub - FACTORY RESET
 # Apaga dados persistidos e backups locais, depois sobe o stack de novo.
 # Mantém .env e as configurações do Nginx (host + nginx/nginx.conf).
 # ==============================================================================
@@ -137,4 +137,4 @@ fi
 log "Redeploying from a clean database..." "START" "$C_CYAN"
 bash "$SCRIPT_DIR/deploy.sh"
 log "After first boot, create an admin with:" "INFO" "$C_CYAN"
-log "  docker exec -it mega8lance_backend python manage.py createsuperuser" "INFO" "$C_CYAN"
+log "  docker compose exec backend python manage.py createsuperuser" "INFO" "$C_CYAN"

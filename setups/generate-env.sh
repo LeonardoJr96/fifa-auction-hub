@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 ################################################################################
-# Gera/atualiza .env do Mega8Lance de forma interativa
+# Gera/atualiza .env do FIFA Auction Hub de forma interativa
 ################################################################################
 
 set -euo pipefail
@@ -88,7 +88,7 @@ PY
 }
 
 echo "========================================================="
-echo "  Gerar .env — Mega8Lance"
+echo "  Gerar .env — FIFA Auction Hub"
 echo "========================================================="
 echo
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# Mega8Lance - DEPLOY SYSTEM (READINESS + DIAGNOSTIC HEALTHCHECK)
+# FIFA Auction Hub - DEPLOY SYSTEM (READINESS + DIAGNOSTIC HEALTHCHECK)
 # Version: 1.0.0
 # ==============================================================================
 
@@ -56,18 +56,18 @@ while [[ $# -gt 0 ]]; do
 done
 
 CRITICAL_CONTAINERS=(
-  "mega8lance_db"
-  "mega8lance_redis"
-  "mega8lance_backend"
-  "mega8lance_celery_worker"
-  "mega8lance_celery_beat"
-  "mega8lance_frontend"
-  "mega8lance_nginx"
+  "db"
+  "redis"
+  "backend"
+  "celery_worker"
+  "celery_beat"
+  "frontend"
+  "nginx"
 )
 
 CORE_CONTAINERS=(
-  "mega8lance_db"
-  "mega8lance_redis"
+  "db"
+  "redis"
 )
 
 C_CYAN="\033[0;36m"
@@ -100,29 +100,43 @@ read_version_field() {
 
 get_container_health() {
   local container="$1"
-  docker inspect --format='{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' "$container" 2>/dev/null || echo "unknown"
+  local container_id
+  container_id="$(docker_compose ps -a -q "$container" 2>/dev/null | head -n 1)"
+  [[ -n "$container_id" ]] || {
+    echo "unknown"
+    return 0
+  }
+  docker inspect --format='{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' "$container_id" 2>/dev/null || echo "unknown"
 }
 
 get_container_state() {
   local container="$1"
-  docker inspect --format='{{.State.Status}}' "$container" 2>/dev/null || echo "unknown"
+  local container_id
+  container_id="$(docker_compose ps -a -q "$container" 2>/dev/null | head -n 1)"
+  [[ -n "$container_id" ]] || {
+    echo "unknown"
+    return 0
+  }
+  docker inspect --format='{{.State.Status}}' "$container_id" 2>/dev/null || echo "unknown"
 }
 
 show_container_diagnostics() {
   local tail_lines="${1:-80}"
   shift || true
-  local container state health line
+  local container container_id state health line
 
   for container in "$@"; do
+    container_id="$(docker_compose ps -a -q "$container" 2>/dev/null | head -n 1)"
     state="$(get_container_state "$container")"
     health="$(get_container_health "$container")"
-    log "Diagnostics for $container -> state=$state health=$health" "DIAG" "$C_MAGENTA"
-    docker inspect --format='ExitCode={{.State.ExitCode}} Error={{.State.Error}} StartedAt={{.State.StartedAt}} FinishedAt={{.State.FinishedAt}}' "$container" 2>/dev/null |
+    log "Diagnostics for $container${container_id:+ ($container_id)} -> state=$state health=$health" "DIAG" "$C_MAGENTA"
+    [[ -n "$container_id" ]] || continue
+    docker inspect --format='ExitCode={{.State.ExitCode}} Error={{.State.Error}} StartedAt={{.State.StartedAt}} FinishedAt={{.State.FinishedAt}}' "$container_id" 2>/dev/null |
       while IFS= read -r line; do
         log "$container inspect: $line" "DIAG" "$C_MAGENTA"
       done || true
     log "$container last $tail_lines log lines:" "DIAG" "$C_MAGENTA"
-    docker logs --tail "$tail_lines" "$container" 2>&1 |
+    docker logs --tail "$tail_lines" "$container_id" 2>&1 |
       while IFS= read -r line; do
         log "$container | $line" "LOG" "$C_RESET"
       done || true
@@ -188,47 +202,57 @@ check_container_running() {
 }
 
 check_postgres_ready() {
-  check_container_running "mega8lance_db" || return 1
-  [[ "$(get_container_health mega8lance_db)" == "healthy" ]] && return 0
-  docker exec mega8lance_db sh -ec 'pg_isready -h 127.0.0.1 -d "$POSTGRES_DB" -U "$POSTGRES_USER"' >/dev/null 2>&1 || {
-    printf 'DB not ready (docker health: %s)\n' "$(get_container_health mega8lance_db)"
+  local container_id
+  check_container_running "db" || return 1
+  [[ "$(get_container_health db)" == "healthy" ]] && return 0
+  container_id="$(docker_compose ps -q db | head -n 1)"
+  docker exec "$container_id" sh -ec 'pg_isready -h 127.0.0.1 -d "$POSTGRES_DB" -U "$POSTGRES_USER"' >/dev/null 2>&1 || {
+    printf 'DB not ready (docker health: %s)\n' "$(get_container_health db)"
     return 1
   }
 }
 
 check_redis_ready() {
-  check_container_running "mega8lance_redis" || return 1
-  [[ "$(get_container_health mega8lance_redis)" == "healthy" ]] && return 0
-  docker exec mega8lance_redis redis-cli ping >/dev/null 2>&1 || {
-    printf 'Redis not ready (docker health: %s)\n' "$(get_container_health mega8lance_redis)"
+  local container_id
+  check_container_running "redis" || return 1
+  [[ "$(get_container_health redis)" == "healthy" ]] && return 0
+  container_id="$(docker_compose ps -q redis | head -n 1)"
+  docker exec "$container_id" redis-cli ping >/dev/null 2>&1 || {
+    printf 'Redis not ready (docker health: %s)\n' "$(get_container_health redis)"
     return 1
   }
 }
 
 check_backend_ready() {
-  check_container_running "mega8lance_backend" || return 1
-  docker exec mega8lance_backend python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/system/health/', timeout=5).read()" >/dev/null 2>&1 || {
-    printf 'Backend endpoint not ready (docker health: %s)\n' "$(get_container_health mega8lance_backend)"
+  local container_id
+  check_container_running "backend" || return 1
+  container_id="$(docker_compose ps -q backend | head -n 1)"
+  docker exec "$container_id" python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/system/health/', timeout=5).read()" >/dev/null 2>&1 || {
+    printf 'Backend endpoint not ready (docker health: %s)\n' "$(get_container_health backend)"
     return 1
   }
 }
 
 check_frontend_ready() {
-  check_container_running "mega8lance_frontend" || return 1
-  docker exec mega8lance_frontend wget -q -O /dev/null http://127.0.0.1/ >/dev/null 2>&1 || {
-    printf 'Frontend endpoint not ready (docker health: %s)\n' "$(get_container_health mega8lance_frontend)"
+  local container_id
+  check_container_running "frontend" || return 1
+  container_id="$(docker_compose ps -q frontend | head -n 1)"
+  docker exec "$container_id" wget -q -O /dev/null http://127.0.0.1/ >/dev/null 2>&1 || {
+    printf 'Frontend endpoint not ready (docker health: %s)\n' "$(get_container_health frontend)"
     return 1
   }
 }
 
 check_nginx_ready() {
-  check_container_running "mega8lance_nginx" || return 1
-  docker exec mega8lance_nginx wget -q -O /dev/null http://127.0.0.1/api/v1/system/health/ >/dev/null 2>&1 || {
-    printf 'Nginx API proxy not ready (docker health: %s)\n' "$(get_container_health mega8lance_nginx)"
+  local container_id
+  check_container_running "nginx" || return 1
+  container_id="$(docker_compose ps -q nginx | head -n 1)"
+  docker exec "$container_id" wget -q -O /dev/null http://127.0.0.1/api/v1/system/health/ >/dev/null 2>&1 || {
+    printf 'Nginx API proxy not ready (docker health: %s)\n' "$(get_container_health nginx)"
     return 1
   }
-  docker exec mega8lance_nginx wget -q -O /dev/null http://127.0.0.1/ >/dev/null 2>&1 || {
-    printf 'Nginx frontend proxy not ready (docker health: %s)\n' "$(get_container_health mega8lance_nginx)"
+  docker exec "$container_id" wget -q -O /dev/null http://127.0.0.1/ >/dev/null 2>&1 || {
+    printf 'Nginx frontend proxy not ready (docker health: %s)\n' "$(get_container_health nginx)"
     return 1
   }
 }
@@ -380,9 +404,9 @@ invoke_task "Wait for real health" --diagnostics "${CORE_CONTAINERS[@]}" -- task
 invoke_task "Run Migrations" task_run_migrations
 invoke_task "Collect Static" task_collect_static
 invoke_task "Start application services" task_start_application_services
-invoke_task "Wait Backend Readiness" --diagnostics mega8lance_backend mega8lance_db mega8lance_redis -- task_wait_backend_readiness
-invoke_task "Wait Frontend Readiness" --diagnostics mega8lance_frontend -- task_wait_frontend_readiness
-invoke_task "Wait Nginx Readiness" --diagnostics mega8lance_nginx mega8lance_backend mega8lance_frontend -- task_wait_nginx_readiness
+invoke_task "Wait Backend Readiness" --diagnostics backend db redis -- task_wait_backend_readiness
+invoke_task "Wait Frontend Readiness" --diagnostics frontend -- task_wait_frontend_readiness
+invoke_task "Wait Nginx Readiness" --diagnostics nginx backend frontend -- task_wait_nginx_readiness
 invoke_task "Final Verification" task_final_verification
 invoke_task "Post-Deploy Cleanup" task_post_deploy_cleanup
 

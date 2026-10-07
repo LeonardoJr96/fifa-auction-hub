@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 ################################################################################
-# Proxy reverso + domínio + SSL (Let's Encrypt) — Mega8Lance
+# Proxy reverso + domínio + SSL (Let's Encrypt) — FIFA Auction Hub
 #
 # Host Nginx (80/443) → Docker nginx em 127.0.0.1:8080
 # Também atualiza ALLOWED_HOSTS, CORS, CSRF, FRONTEND_URL no .env
@@ -17,8 +17,8 @@ readonly NC='\033[0m'
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 ENV_FILE="${PROJECT_ROOT}/.env"
-SITE_AVAILABLE="/etc/nginx/sites-available/mega8lance-proxy"
-SITE_ENABLED="/etc/nginx/sites-enabled/mega8lance-proxy"
+SITE_AVAILABLE="/etc/nginx/sites-available/fifa-auction-hub-proxy"
+SITE_ENABLED="/etc/nginx/sites-enabled/fifa-auction-hub-proxy"
 APP_BIND_IP="127.0.0.1"
 APP_BIND_PORT="8080"
 
@@ -116,7 +116,7 @@ rebind_docker_nginx() {
 
   log_info "Recriando container nginx em ${APP_BIND_IP}:${APP_BIND_PORT}..."
   if docker_compose up -d --force-recreate --no-deps nginx; then
-    log_success "Container mega8lance_nginx republicado."
+    log_success "Container nginx republicado."
   else
     log_warning "Falha ao recriar nginx. Rode depois: ./install.sh deploy"
   fi
@@ -124,11 +124,17 @@ rebind_docker_nginx() {
 
 write_proxy_config() {
   local domain="$1"
+  local legacy_site_available="/etc/nginx/sites-available/mega8lance-proxy"
+  local legacy_site_enabled="/etc/nginx/sites-enabled/mega8lance-proxy"
 
   mkdir -p /etc/nginx/sites-available /etc/nginx/sites-enabled
 
+  if [[ -L "$legacy_site_enabled" ]] && [[ "$(readlink -f "$legacy_site_enabled")" == "$legacy_site_available" ]]; then
+    rm -f "$legacy_site_enabled"
+  fi
+
   cat > "$SITE_AVAILABLE" << EOF
-# Mega8Lance — proxy reverso (gerado por setups/nginx-proxy.sh)
+# FIFA Auction Hub — proxy reverso (gerado por setups/nginx-proxy.sh)
 server {
     listen 80;
     listen [::]:80;
@@ -184,7 +190,7 @@ ensure_certbot() {
 }
 
 echo "========================================================="
-echo "  Proxy reverso / domínio — Mega8Lance"
+echo "  Proxy reverso / domínio — FIFA Auction Hub"
 echo "========================================================="
 echo
 
