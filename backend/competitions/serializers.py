@@ -34,6 +34,9 @@ class CompetitionListSerializer(serializers.ModelSerializer):
             "draft_order_mode",
             "draft_seed",
             "league_double_round",
+            "league_win_points",
+            "league_draw_points",
+            "league_loss_points",
             "max_participants",
             "draft_rounds",
             "participant_count",
@@ -73,6 +76,9 @@ class CompetitionCreateSerializer(serializers.ModelSerializer):
             "max_participants",
             "draft_rounds",
             "league_double_round",
+            "league_win_points",
+            "league_draw_points",
+            "league_loss_points",
         ]
 
 

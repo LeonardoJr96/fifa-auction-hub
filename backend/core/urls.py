@@ -24,7 +24,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('django-admin/', admin.site.urls),
     
     # OBS: os routers de auction/products já registram seus próprios
     # prefixos ('auctions', 'bids', 'products'), então aqui usamos só

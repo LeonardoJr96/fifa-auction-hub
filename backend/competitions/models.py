@@ -50,6 +50,9 @@ class Competition(models.Model):
     )
     draft_seed = models.PositiveIntegerField(null=True, blank=True)
     league_double_round = models.BooleanField(default=True)
+    league_win_points = models.PositiveIntegerField(default=3)
+    league_draw_points = models.PositiveIntegerField(default=1)
+    league_loss_points = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(

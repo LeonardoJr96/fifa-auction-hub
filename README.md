@@ -36,7 +36,7 @@ cp .env.example .env
 - **Django** lê via `django-environ` (`backend/core/settings/base.py`)
 - **Vite** lê da mesma raiz (`envDir` no `vite.config.ts`)
 
-Em dev local, o Vite faz proxy de `/api`, `/ws`, `/login`, `/admin` e `/media` para `http://127.0.0.1:8000`. Não é necessário `frontend/.env`.
+Em dev local, o Vite encaminha `/api`, `/login/`, `/ws`, `/django-admin`, `/static` e `/media` para `http://127.0.0.1:8000`. O painel administrativo do app fica em `/admin`; o Django Admin fica em `/django-admin/`. Não é necessário `frontend/.env`.
 
 ## Desenvolvimento local
 

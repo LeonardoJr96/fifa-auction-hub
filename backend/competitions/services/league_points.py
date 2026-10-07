@@ -20,12 +20,14 @@ def _apply_match_points(match):
         team=match.away_team,
     )
     if match.home_score > match.away_score:
-        entry_home.points += 3
+        entry_home.points += match.competition.league_win_points
+        entry_away.points += match.competition.league_loss_points
     elif match.home_score < match.away_score:
-        entry_away.points += 3
+        entry_away.points += match.competition.league_win_points
+        entry_home.points += match.competition.league_loss_points
     else:
-        entry_home.points += 1
-        entry_away.points += 1
+        entry_home.points += match.competition.league_draw_points
+        entry_away.points += match.competition.league_draw_points
     entry_home.save(update_fields=["points"])
     entry_away.save(update_fields=["points"])
 

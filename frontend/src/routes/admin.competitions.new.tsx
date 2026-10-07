@@ -8,10 +8,7 @@ import type { CompetitionType, DraftMode, DraftOrderMode } from "@/types/api";
 
 export const Route = createFileRoute("/admin/competitions/new")({
   head: () => ({
-    meta: [
-      { title: "Criar competição · ReverseDraft" },
-      { name: "robots", content: "noindex" },
-    ],
+    meta: [{ title: "Criar competição · ReverseDraft" }, { name: "robots", content: "noindex" }],
   }),
   component: NewCompetitionPage,
 });
@@ -33,6 +30,9 @@ function NewCompetitionPage() {
   const [maxParticipants, setMaxParticipants] = useState("8");
   const [draftRounds, setDraftRounds] = useState("18");
   const [leagueDoubleRound, setLeagueDoubleRound] = useState(true);
+  const [leagueWinPoints, setLeagueWinPoints] = useState("3");
+  const [leagueDrawPoints, setLeagueDrawPoints] = useState("1");
+  const [leagueLossPoints, setLeagueLossPoints] = useState("0");
 
   if (!isAuthenticated || !isStaff) {
     return <RestrictedNotice />;
@@ -50,6 +50,9 @@ function NewCompetitionPage() {
       max_participants: Number(maxParticipants) || 8,
       draft_rounds: competitionType === "draft" ? Number(draftRounds) || 18 : 0,
       league_double_round: leagueDoubleRound,
+      league_win_points: Number(leagueWinPoints),
+      league_draw_points: Number(leagueDrawPoints),
+      league_loss_points: Number(leagueLossPoints),
     });
     navigate({
       to: "/competitions/$competitionId",
@@ -70,7 +73,12 @@ function NewCompetitionPage() {
       <form onSubmit={handleSubmit} className="mt-6 space-y-4">
         <label className="block space-y-1">
           <span className="text-sm font-medium text-foreground">Nome</span>
-          <input required value={name} onChange={(e) => setName(e.target.value)} className={inputClass} />
+          <input
+            required
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className={inputClass}
+          />
         </label>
 
         <label className="block space-y-1">
@@ -151,14 +159,54 @@ function NewCompetitionPage() {
         ) : null}
 
         {competitionType === "league" ? (
-          <label className="flex items-center gap-2 text-sm text-foreground">
-            <input
-              type="checkbox"
-              checked={leagueDoubleRound}
-              onChange={(e) => setLeagueDoubleRound(e.target.checked)}
-            />
-            Turno e returno (ida e volta)
-          </label>
+          <>
+            <fieldset className="space-y-3 rounded-md border border-border p-4">
+              <legend className="px-1 text-sm font-semibold text-foreground">Pontos da liga</legend>
+              <div className="grid gap-3 sm:grid-cols-3">
+                <label className="block space-y-1">
+                  <span className="text-sm font-medium text-foreground">Vitória</span>
+                  <input
+                    type="number"
+                    min={0}
+                    required
+                    value={leagueWinPoints}
+                    onChange={(e) => setLeagueWinPoints(e.target.value)}
+                    className={inputClass}
+                  />
+                </label>
+                <label className="block space-y-1">
+                  <span className="text-sm font-medium text-foreground">Empate</span>
+                  <input
+                    type="number"
+                    min={0}
+                    required
+                    value={leagueDrawPoints}
+                    onChange={(e) => setLeagueDrawPoints(e.target.value)}
+                    className={inputClass}
+                  />
+                </label>
+                <label className="block space-y-1">
+                  <span className="text-sm font-medium text-foreground">Derrota</span>
+                  <input
+                    type="number"
+                    min={0}
+                    required
+                    value={leagueLossPoints}
+                    onChange={(e) => setLeagueLossPoints(e.target.value)}
+                    className={inputClass}
+                  />
+                </label>
+              </div>
+            </fieldset>
+            <label className="flex items-center gap-2 text-sm text-foreground">
+              <input
+                type="checkbox"
+                checked={leagueDoubleRound}
+                onChange={(e) => setLeagueDoubleRound(e.target.checked)}
+              />
+              Turno e returno (ida e volta)
+            </label>
+          </>
         ) : null}
 
         <label className="block space-y-1">

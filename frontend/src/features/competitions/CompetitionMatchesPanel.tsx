@@ -3,6 +3,7 @@ import { useState } from "react";
 import {
   useCompetitionMatches,
   useCompetitionRosters,
+  useGenerateLeagueFixtures,
   useRegisterMatchResult,
   useSimulateMatch,
 } from "@/features/competitions/hooks";
@@ -26,13 +27,31 @@ function MatchResultForm({
   const simulate = useSimulateMatch(competitionId);
   const [homeScore, setHomeScore] = useState(String(match.home_score));
   const [awayScore, setAwayScore] = useState(String(match.away_score));
+  const [isEditing, setIsEditing] = useState(false);
   const [showStats, setShowStats] = useState(false);
   const [statRows, setStatRows] = useState<
     Array<{ player: string; team: string; goals: string; assists: string }>
   >([{ player: "", team: String(match.home_team ?? ""), goals: "0", assists: "0" }]);
 
-  if (!canReportResults || match.status === "played") {
+  if (!canReportResults) {
     return null;
+  }
+
+  if (match.status === "played" && !isEditing) {
+    return (
+      <Button
+        type="button"
+        variant="outline"
+        className="mt-3"
+        onClick={() => {
+          setHomeScore(String(match.home_score));
+          setAwayScore(String(match.away_score));
+          setIsEditing(true);
+        }}
+      >
+        Editar resultado
+      </Button>
+    );
   }
 
   const allPlayers =
@@ -44,7 +63,7 @@ function MatchResultForm({
       })),
     ) ?? [];
 
-  async function handleSubmit(event: React.FormEvent) {
+  function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     const payload: MatchResultPayload = {
       home_score: Number(homeScore) || 0,
@@ -60,11 +79,14 @@ function MatchResultForm({
           assists: Number(row.assists) || 0,
         }));
     }
-    await registerResult.mutateAsync({ matchId: match.id, payload });
+    registerResult.mutate({ matchId: match.id, payload }, { onSuccess: () => setIsEditing(false) });
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mt-3 space-y-3 rounded-md border border-border bg-muted/20 p-3">
+    <form
+      onSubmit={handleSubmit}
+      className="mt-3 space-y-3 rounded-md border border-border bg-muted/20 p-3"
+    >
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="space-y-1 text-sm">
           <span className="text-muted-foreground">{match.home_team_name}</span>
@@ -89,7 +111,11 @@ function MatchResultForm({
       </div>
 
       <label className="flex items-center gap-2 text-sm text-foreground">
-        <input type="checkbox" checked={showStats} onChange={(event) => setShowStats(event.target.checked)} />
+        <input
+          type="checkbox"
+          checked={showStats}
+          onChange={(event) => setShowStats(event.target.checked)}
+        />
         Registrar estatísticas dos jogadores
       </label>
 
@@ -167,21 +193,36 @@ function MatchResultForm({
       ) : null}
 
       <div className="flex flex-wrap gap-2">
-        <Button
-          type="submit"
-          disabled={registerResult.isPending}
-        >
-          {registerResult.isPending ? "Salvando…" : "Registrar resultado"}
+        <Button type="submit" disabled={registerResult.isPending}>
+          {registerResult.isPending
+            ? "Salvando…"
+            : match.status === "played"
+              ? "Atualizar resultado"
+              : "Registrar resultado"}
         </Button>
-        {canSimulate ? <Button
-          type="button"
-          disabled={simulate.isPending}
-          onClick={() => simulate.mutate(match.id)}
-          variant="outline"
-        >
-          {simulate.isPending ? "Simulando…" : "Simular"}
-        </Button> : null}
+        {match.status === "played" ? (
+          <Button type="button" variant="outline" onClick={() => setIsEditing(false)}>
+            Cancelar
+          </Button>
+        ) : null}
+        {canSimulate ? (
+          <Button
+            type="button"
+            disabled={simulate.isPending}
+            onClick={() => simulate.mutate(match.id)}
+            variant="outline"
+          >
+            {simulate.isPending ? "Simulando…" : "Simular"}
+          </Button>
+        ) : null}
       </div>
+      {registerResult.isError ? (
+        <p role="alert" className="text-sm text-destructive">
+          {registerResult.error instanceof Error
+            ? registerResult.error.message
+            : "Não foi possível salvar o resultado."}
+        </p>
+      ) : null}
     </form>
   );
 }
@@ -203,21 +244,54 @@ export function CompetitionMatchesPanel({
   competitionId,
   canReportResults,
   canSimulate,
+  canGenerateFixtures,
 }: {
   competitionId: string;
   canReportResults: boolean;
   canSimulate: boolean;
+  canGenerateFixtures: boolean;
 }) {
   const { data: matches, isLoading, isError } = useCompetitionMatches(competitionId);
+  const generateFixtures = useGenerateLeagueFixtures(competitionId);
 
   if (isLoading) {
     return <StatePanel kind="loading" title="Carregando partidas" />;
   }
   if (isError) {
-    return <StatePanel kind="error" title="Partidas indisponíveis" description="Tente novamente em alguns instantes." />;
+    return (
+      <StatePanel
+        kind="error"
+        title="Partidas indisponíveis"
+        description="Tente novamente em alguns instantes."
+      />
+    );
   }
   if (!matches?.length) {
-    return <StatePanel kind="empty" title="Nenhuma partida gerada" description="O calendário aparecerá após a geração dos confrontos." />;
+    return (
+      <div className="space-y-4">
+        <StatePanel
+          kind="empty"
+          title="Nenhuma partida gerada"
+          description="O calendário aparecerá após a geração dos confrontos."
+        />
+        {canGenerateFixtures ? (
+          <Button
+            type="button"
+            disabled={generateFixtures.isPending}
+            onClick={() => generateFixtures.mutate()}
+          >
+            {generateFixtures.isPending ? "Gerando rodadas…" : "Gerar rodadas"}
+          </Button>
+        ) : null}
+        {generateFixtures.isError ? (
+          <p role="alert" className="text-sm text-destructive">
+            {generateFixtures.error instanceof Error
+              ? generateFixtures.error.message
+              : "Não foi possível gerar as rodadas."}
+          </p>
+        ) : null}
+      </div>
+    );
   }
 
   const grouped = matches.reduce<Record<string, CompetitionMatch[]>>((acc, match) => {
@@ -230,17 +304,32 @@ export function CompetitionMatchesPanel({
     <div className="space-y-6">
       {Object.entries(grouped).map(([roundLabel, roundMatches]) => (
         <section key={roundLabel} className="surface-panel">
-          <div className="section-heading"><div><p className="eyebrow">Calendário</p><h3 className="font-display font-semibold text-foreground">{roundLabel}</h3></div></div>
+          <div className="section-heading">
+            <div>
+              <p className="eyebrow">Calendário</p>
+              <h3 className="font-display font-semibold text-foreground">{roundLabel}</h3>
+            </div>
+          </div>
           <ul className="mt-4 space-y-4">
             {roundMatches.map((match) => (
-              <li key={match.id} className="rounded-lg border border-border/70 bg-background/30 p-4">
+              <li
+                key={match.id}
+                className="rounded-lg border border-border/70 bg-background/30 p-4"
+              >
                 <div className="match-row">
-                  <span className="min-w-0 flex-1 truncate text-right font-semibold text-foreground">{match.home_team_name}</span>
-                  <div className={`score-box ${match.status === "played" ? "text-primary" : "text-muted-foreground"}`}>
+                  <span className="min-w-0 flex-1 truncate text-right font-semibold text-foreground">
+                    {match.home_team_name}
+                  </span>
+                  <div
+                    className={`score-box ${match.status === "played" ? "text-primary" : "text-muted-foreground"}`}
+                  >
                     {match.status === "played"
                       ? `${match.home_score} - ${match.away_score}`
                       : "Agendado"}
-                  </div><span className="min-w-0 flex-1 truncate font-semibold text-foreground">{match.away_team_name}</span>
+                  </div>
+                  <span className="min-w-0 flex-1 truncate font-semibold text-foreground">
+                    {match.away_team_name}
+                  </span>
                 </div>
                 <MatchStats match={match} />
                 <MatchResultForm

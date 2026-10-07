@@ -79,7 +79,7 @@ def register_competition_match_result(
     if competition.competition_type == Competition.CompetitionType.CUP and home_score == away_score:
         raise ValidationError("Partidas de copa precisam de um vencedor.")
 
-    parsed_stats = _parse_stats_payload(stats, match)
+    parsed_stats = _parse_stats_payload(stats, match) if stats is not None else None
     was_played = match.status == "played"
     previous_home = match.home_score if was_played else None
     previous_away = match.away_score if was_played else None
@@ -90,7 +90,8 @@ def register_competition_match_result(
         match.status = "played"
         match.save(update_fields=["home_score", "away_score", "status"])
 
-        _save_match_stats(match, parsed_stats)
+        if parsed_stats is not None:
+            _save_match_stats(match, parsed_stats)
 
         if competition.competition_type == Competition.CompetitionType.LEAGUE:
             rebuild_league_points(competition)

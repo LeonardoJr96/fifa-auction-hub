@@ -339,7 +339,7 @@ class FinishCompetitionView(APIView):
         try:
             if competition.campaign_id:
                 campaign_services._require_admin(request.user, competition.campaign)
-            elif not request.user.is_staff:
+            elif not request.user.is_staff and competition.created_by_id != request.user.id:
                 return Response(
                     {"detail": "Apenas administradores podem encerrar esta competição."},
                     status=status.HTTP_403_FORBIDDEN,

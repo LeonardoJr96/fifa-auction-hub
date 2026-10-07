@@ -20,6 +20,9 @@ def create_competition(
     max_participants: int = 8,
     draft_rounds: int = 18,
     league_double_round: bool = True,
+    league_win_points: int = 3,
+    league_draw_points: int = 1,
+    league_loss_points: int = 0,
 ) -> Competition:
     if not user.is_staff:
         raise ValidationError("Apenas administradores podem criar competições.")
@@ -41,6 +44,9 @@ def create_competition(
         max_participants=max_participants,
         draft_rounds=draft_rounds if competition_type == Competition.CompetitionType.DRAFT else 0,
         league_double_round=league_double_round,
+        league_win_points=league_win_points,
+        league_draw_points=league_draw_points,
+        league_loss_points=league_loss_points,
         created_by=user,
     )
 
@@ -84,4 +90,3 @@ def activate_without_draft(user, competition: Competition) -> Competition:
         competition.save(update_fields=["status"])
         auto_generate_fixtures(competition)
     return competition
-

@@ -2,7 +2,6 @@ import {
   useActivateCompetition,
   useFinishCompetition,
   useGenerateBracket,
-  useGenerateLeagueFixtures,
   useStartDraft,
 } from "@/features/competitions/hooks";
 import type { Competition } from "@/types/api";
@@ -10,29 +9,22 @@ import type { Competition } from "@/types/api";
 export function CompetitionAdminBar({
   competition,
   competitionId,
-  isStaff,
+  canManage,
 }: {
   competition: Competition;
   competitionId: string;
-  isStaff: boolean;
+  canManage: boolean;
 }) {
   const startDraft = useStartDraft(competitionId);
-  const generateFixtures = useGenerateLeagueFixtures(competitionId);
   const generateBracket = useGenerateBracket(competitionId);
   const activate = useActivateCompetition(competitionId);
   const finish = useFinishCompetition(competitionId);
 
-  if (!isStaff || competition.status === "finished") {
+  if (!canManage || competition.status === "finished") {
     return null;
   }
 
-  const canStartDraft =
-    competition.status === "registration" && competition.participant_count >= 2;
-
-  const canGenerateLeague =
-    competition.competition_type === "league" &&
-    competition.status === "registration" &&
-    competition.participant_count >= 2;
+  const canStartDraft = competition.status === "registration" && competition.participant_count >= 2;
 
   const canGenerateCup =
     competition.competition_type === "cup" &&
@@ -56,16 +48,6 @@ export function CompetitionAdminBar({
           className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-60"
         >
           Iniciar draft
-        </button>
-      ) : null}
-      {canGenerateLeague ? (
-        <button
-          type="button"
-          disabled={generateFixtures.isPending}
-          onClick={() => generateFixtures.mutate()}
-          className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-60"
-        >
-          Gerar rodadas
         </button>
       ) : null}
       {canGenerateCup ? (
@@ -97,6 +79,13 @@ export function CompetitionAdminBar({
         >
           Encerrar competição
         </button>
+      ) : null}
+      {generateBracket.isError ? (
+        <p role="alert" className="w-full text-sm text-destructive">
+          {generateBracket.error instanceof Error
+            ? generateBracket.error.message
+            : "Não foi possível gerar o chaveamento."}
+        </p>
       ) : null}
     </div>
   );

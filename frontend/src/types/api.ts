@@ -113,7 +113,6 @@ export interface Portfolio {
   incoming_offers: PortfolioListing[];
 }
 
-
 export interface Paginated<T> {
   count: number;
   next: string | null;
@@ -155,7 +154,6 @@ export interface MeUpdate {
   post_code?: string;
   country?: string;
 }
-
 
 export type TransactionType = "auction_payment" | "balance_recharge" | "refund" | "direct_purchase";
 
@@ -257,6 +255,9 @@ export interface Competition {
   draft_order_mode: DraftOrderMode;
   draft_seed: number | null;
   league_double_round: boolean;
+  league_win_points: number;
+  league_draw_points: number;
+  league_loss_points: number;
   max_participants: number;
   draft_rounds: number;
   participant_count: number;
@@ -299,6 +300,9 @@ export interface CompetitionCreatePayload {
   max_participants?: number;
   draft_rounds?: number;
   league_double_round?: boolean;
+  league_win_points?: number;
+  league_draw_points?: number;
+  league_loss_points?: number;
 }
 
 export interface StandingRow {
@@ -424,7 +428,6 @@ export interface Message {
   text: string;
   created_at: string;
 }
-
 
 export interface ConversationMessages {
   messages: Message[];

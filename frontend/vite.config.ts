@@ -20,7 +20,21 @@ export default defineConfig({
       // Fixar 5173 com strictPort fazia o dev server morrer no boot (porta ocupada)
       // e estourar o timeout de 45s de inicialização.
       proxy: {
-        // Apenas prefixos do Django. /login, /admin e /me são rotas do próprio app.
+        // /login/ (com barra final) encaminha a API sem capturar a página /login.
+        "/login/": {
+          target: "http://127.0.0.1:8000",
+          changeOrigin: true,
+          configure: (proxy) => {
+            proxy.on("error", (err, _req, res) => {
+              console.warn("[proxy /login] backend indisponível:", err.message);
+              const r = res as import("node:http").ServerResponse;
+              if (r && !r.headersSent && typeof r.writeHead === "function") {
+                r.writeHead(503, { "Content-Type": "application/json" });
+                r.end(JSON.stringify({ detail: "Backend indisponível" }));
+              }
+            });
+          },
+        },
         "/api": {
           target: "http://127.0.0.1:8000",
           changeOrigin: true,
