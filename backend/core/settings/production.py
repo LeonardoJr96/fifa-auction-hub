@@ -2,6 +2,7 @@ from .base import *  # noqa: F403
 
 DEBUG = False
 SECURE_SSL_REDIRECT = env.bool("SECURE_SSL_REDIRECT", default=True)
+SECURE_REDIRECT_EXEMPT = [r"^api/v1/system/health/$"]
 SESSION_COOKIE_SECURE = env.bool("COOKIE_SECURE", default=True)
 CSRF_COOKIE_SECURE = env.bool("COOKIE_SECURE", default=True)
 SECURE_HSTS_SECONDS = env.int("SECURE_HSTS_SECONDS", default=31536000)

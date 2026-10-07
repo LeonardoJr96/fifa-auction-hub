@@ -1,9 +1,13 @@
 from unittest.mock import patch
 
 from django.db import DatabaseError
-from django.test import SimpleTestCase
+from django.test import SimpleTestCase, override_settings
 
 
+@override_settings(
+    SECURE_SSL_REDIRECT=True,
+    SECURE_REDIRECT_EXEMPT=[r"^api/v1/system/health/$"],
+)
 class HealthCheckTests(SimpleTestCase):
     @patch("core.health.connection")
     def test_returns_ok_when_database_is_available(self, database_connection):
