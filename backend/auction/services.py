@@ -1,5 +1,6 @@
 # auction/services.py
 from datetime import timedelta
+import logging
 
 from django.core.exceptions import ValidationError
 from django.conf import settings
@@ -7,9 +8,13 @@ from django.utils import timezone
 from django.db import transaction
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
+from redis.exceptions import RedisError
 
 from .models import Auction, Bid, PricingMode
 from common.models import Status
+from user.models import User
+
+logger = logging.getLogger(__name__)
 
 def create_auction(product, pricing_mode, duration_minutes, manual_price=None, min_increment=1):
     """
@@ -46,13 +51,14 @@ def place_bid(user, auction: Auction, price):
     Registra um novo lance no leilão.
     O pagamento do valor vencedor é feito depois, com o saldo do usuário.
     """
-    if user.self_excluded_until and user.self_excluded_until > timezone.now():
-        raise ValidationError(
-            f"Você optou por autoexclusão até {user.self_excluded_until:%d/%m/%Y}."
-        )
-
     with transaction.atomic():
         auction = Auction.objects.select_for_update().get(pk=auction.pk)
+        user = User.objects.select_for_update().get(pk=user.pk)
+
+        if user.self_excluded_until and user.self_excluded_until > timezone.now():
+            raise ValidationError(
+                f"Você optou por autoexclusão até {user.self_excluded_until:%d/%m/%Y}."
+            )
 
         if auction.status != Status.OPEN:
             raise ValidationError("Este leilão não está aberto para lances.")
@@ -63,6 +69,9 @@ def place_bid(user, auction: Auction, price):
         agora = timezone.now()
         if auction.time_ending < agora:
             raise ValidationError("O leilão já terminou.")
+
+        if user.lance_credits <= 0:
+            raise ValidationError("Você não possui créditos de lance disponíveis.")
 
         current_price = get_current_price(auction)
         has_bids = Bid.objects.filter(auction=auction).exists()
@@ -81,6 +90,9 @@ def place_bid(user, auction: Auction, price):
             bid_time=agora,
             price=price,
         )
+        user.lance_credits -= 1
+        user.save(update_fields=["lance_credits"])
+        auction.number_of_bids = Bid.objects.filter(auction=auction).count()
 
         # a extensão nunca ENCURTA o leilão — só garante um mínimo
         # de N segundos de janela a partir deste lance
@@ -88,7 +100,7 @@ def place_bid(user, auction: Auction, price):
         if janela_minima > auction.time_ending:
             auction.time_ending = janela_minima
 
-        auction.save()
+        auction.save(update_fields=["number_of_bids", "time_ending"])
 
     transaction.on_commit(lambda: _broadcast_bid(bid))
     return bid
@@ -98,13 +110,20 @@ def _broadcast_bid(bid):
     channel_layer = get_channel_layer()
     if channel_layer is None:
         return
-    async_to_sync(channel_layer.group_send)(
-        f'auction_{bid.auction_id}',
-        {'type': 'bid.placed', 'payload': {
-            'type': 'bid.placed', 'auction_id': bid.auction_id,
-            'amount': str(bid.price), 'user': bid.user.username,
-        }},
-    )
+    try:
+        async_to_sync(channel_layer.group_send)(
+            f'auction_{bid.auction_id}',
+            {'type': 'bid.placed', 'payload': {
+                'type': 'bid.placed', 'auction_id': bid.auction_id,
+                'amount': str(bid.price), 'user': bid.user.username,
+            }},
+        )
+    except RedisError:
+        logger.warning(
+            "Lance %s foi salvo, mas não foi possível publicar a atualização em tempo real: Redis indisponível.",
+            bid.pk,
+            exc_info=True,
+        )
 
 
 def get_bid_status(bid):

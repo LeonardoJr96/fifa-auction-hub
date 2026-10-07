@@ -1,7 +1,9 @@
+from decimal import Decimal
+
 from rest_framework import serializers
 from products.models import Product
 from products.serializers import ProductSerializer
-from .models import Auction, Bid, PricingMode
+from .models import Auction, Bid
 from .services import get_current_price
 
 class AuctionSerializer(serializers.ModelSerializer):
@@ -28,17 +30,13 @@ class CreateAuctionSerializer(serializers.Serializer):
     não o cliente.
     """
     product = serializers.PrimaryKeyRelatedField(queryset=Product.objects.all())
-    pricing_mode = serializers.ChoiceField(choices=Auction._meta.get_field('pricing_mode').choices)
     duration_minutes = serializers.IntegerField(min_value=1)
-    manual_price = serializers.DecimalField(max_digits=25, decimal_places=2, required=False)
-    min_increment = serializers.DecimalField(max_digits=25, decimal_places=2, required=False, default=1)
-
-    def validate(self, data):
-        if data['pricing_mode'] == PricingMode.MANUAL and 'manual_price' not in data:
-            raise serializers.ValidationError(
-                {"manual_price": "Obrigatório quando pricing_mode = 'manual'."}
-            )
-        return data
+    starting_price = serializers.DecimalField(
+        max_digits=25, decimal_places=2, min_value=Decimal("0.01")
+    )
+    min_increment = serializers.DecimalField(
+        max_digits=25, decimal_places=2, min_value=Decimal("0.01"), default=1
+    )
 
 
 class BidSerializer(serializers.ModelSerializer):

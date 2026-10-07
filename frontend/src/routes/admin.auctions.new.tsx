@@ -30,8 +30,7 @@ function NewAuctionPage() {
 
   const [query, setQuery] = useState("");
   const [productId, setProductId] = useState<number | null>(null);
-  const [pricingMode, setPricingMode] = useState<"player_value" | "manual">("player_value");
-  const [manualPrice, setManualPrice] = useState("");
+  const [startingPrice, setStartingPrice] = useState("");
   const [duration, setDuration] = useState("10");
   const [minIncrement, setMinIncrement] = useState("1000");
 
@@ -67,10 +66,9 @@ function NewAuctionPage() {
     if (!productId) return;
     const auction = await createAuction.mutateAsync({
       product: productId,
-      pricing_mode: pricingMode,
+      starting_price: Number(startingPrice),
       duration_minutes: Number(duration) || 10,
       min_increment: Number(minIncrement) || 1,
-      ...(pricingMode === "manual" ? { manual_price: Number(manualPrice) || 0 } : {}),
     });
     navigate({ to: "/auctions/$auctionId", params: { auctionId: String(auction.id) } });
   }
@@ -117,45 +115,27 @@ function NewAuctionPage() {
           ) : null}
         </div>
 
-        <fieldset>
-          <legend className="text-sm font-medium text-foreground">Preço inicial</legend>
-          <div className="mt-2 inline-flex rounded-md border border-border p-1">
-            {(
-              [
-                ["player_value", "Valor do jogador"],
-                ["manual", "Definir manualmente"],
-              ] as const
-            ).map(([value, label]) => (
-              <button
-                key={value}
-                type="button"
-                onClick={() => setPricingMode(value)}
-                className={`rounded px-3 py-1.5 text-sm font-medium transition-colors ${
-                  pricingMode === value
-                    ? "bg-pitch text-pitch-foreground"
-                    : "text-muted-foreground hover:bg-accent"
-                }`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-          {pricingMode === "manual" ? (
-            <input
-              type="number"
-              min={0}
-              step="0.01"
-              value={manualPrice}
-              onChange={(event) => setManualPrice(event.target.value)}
-              placeholder="1000000"
-              className={`${inputClass} mt-3`}
-            />
-          ) : selected ? (
-            <p className="mt-2 text-sm text-muted-foreground">
-              Base: {formatMoney(selected.price)}
+        <div>
+          <label htmlFor="starting_price" className="text-sm font-medium text-foreground">
+            Lance mínimo inicial
+          </label>
+          <input
+            id="starting_price"
+            type="number"
+            min="0.01"
+            step="0.01"
+            required
+            value={startingPrice}
+            onChange={(event) => setStartingPrice(event.target.value)}
+            placeholder="1000000"
+            className={`${inputClass} mt-1`}
+          />
+          {selected ? (
+            <p className="mt-1 text-xs text-muted-foreground">
+              Valor do jogador: {formatMoney(selected.price)}. Defina o valor mínimo para abrir os lances.
             </p>
           ) : null}
-        </fieldset>
+        </div>
 
         <div>
           <label htmlFor="duration" className="text-sm font-medium text-foreground">
@@ -173,12 +153,14 @@ function NewAuctionPage() {
 
         <div>
           <label htmlFor="min_increment" className="text-sm font-medium text-foreground">
-            Incremento mínimo
+            Incremento mínimo por lance
           </label>
           <input
             id="min_increment"
             type="number"
-            min={1}
+            min="0.01"
+            step="0.01"
+            required
             value={minIncrement}
             onChange={(event) => setMinIncrement(event.target.value)}
             className={`${inputClass} mt-1`}
@@ -195,7 +177,13 @@ function NewAuctionPage() {
 
         <button
           type="submit"
-          disabled={!productId || createAuction.isPending}
+          disabled={
+            !productId ||
+            !startingPrice ||
+            Number(startingPrice) < 0.01 ||
+            Number(minIncrement) < 0.01 ||
+            createAuction.isPending
+          }
           className="w-full rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50"
         >
           {createAuction.isPending ? "Criando…" : "Criar leilão"}

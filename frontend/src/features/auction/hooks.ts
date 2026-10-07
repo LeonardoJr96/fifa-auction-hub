@@ -74,8 +74,7 @@ export function useCreateAuction() {
   return useMutation({
     mutationFn: (payload: {
       product: number;
-      pricing_mode: "player_value" | "manual";
-      manual_price?: number;
+      starting_price: number;
       duration_minutes: number;
       min_increment?: number;
     }) => apiRequest<Auction>("/auctions/", { method: "POST", body: payload }),

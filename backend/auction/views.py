@@ -35,8 +35,8 @@ class AuctionViewSet(viewsets.ModelViewSet):
         return [perm() for perm in classes]
 
     def get_serializer_class(self):
-        # Criar um leilão usa um shape de dados diferente de ler um leilão
-        # (duration_minutes/manual_price em vez de time_starting/time_ending).
+        # Criar um leilão usa um shape diferente de ler um leilão: o cliente
+        # informa o lance mínimo inicial e a duração, não os campos de tempo.
         if self.action == 'create':
             return CreateAuctionSerializer
         return AuctionSerializer
@@ -65,9 +65,9 @@ class AuctionViewSet(viewsets.ModelViewSet):
 
         auction = create_auction(
             product=data['product'],
-            pricing_mode=data['pricing_mode'],
+            pricing_mode=PricingMode.MANUAL,
             duration_minutes=data['duration_minutes'],
-            manual_price=data.get('manual_price'),
+            manual_price=data['starting_price'],
             min_increment=data.get('min_increment', 1),
         )
 

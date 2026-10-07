@@ -2,10 +2,13 @@ from django.test import TestCase
 from django.utils import timezone
 from datetime import timedelta
 from django.core.exceptions import ValidationError
+from redis.exceptions import ConnectionError as RedisConnectionError
+from unittest.mock import patch
 
 from user.models import User
 from products.models import Product
 from .models import Auction, Bid
+from .serializers import CreateAuctionSerializer
 from .services import place_bid, get_winning_bid, close_auction
 from common.models import Status
 
@@ -33,10 +36,19 @@ class PlaceBidTests(TestCase):
         self.user.refresh_from_db()
         self.assertEqual(self.user.lance_credits, 4)
 
+    def test_bid_incrementa_contagem_do_leilao(self):
+        self.auction.number_of_bids = 8
+        self.auction.save(update_fields=["number_of_bids"])
+        place_bid(self.user, self.auction, 10)
+        self.auction.refresh_from_db()
+        self.assertEqual(self.auction.number_of_bids, 1)
+
     def test_bid_repetido_pelo_mesmo_usuario_e_recusado(self):
         place_bid(self.user, self.auction, 10)
         with self.assertRaises(ValidationError):
             place_bid(self.user, self.auction, 10)
+        self.auction.refresh_from_db()
+        self.assertEqual(self.auction.number_of_bids, 1)
 
     def test_bid_repetido_nao_desconta_credito_na_falha(self):
         place_bid(self.user, self.auction, 10)
@@ -52,6 +64,37 @@ class PlaceBidTests(TestCase):
         self.user.save()
         with self.assertRaises(ValidationError):
             place_bid(self.user, self.auction, 10)
+        self.auction.refresh_from_db()
+        self.assertEqual(self.auction.number_of_bids, 0)
+        self.assertFalse(Bid.objects.filter(auction=self.auction).exists())
+
+    def test_criacao_exige_lance_minimo_inicial(self):
+        serializer = CreateAuctionSerializer(
+            data={"product": self.product.pk, "duration_minutes": 10}
+        )
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("starting_price", serializer.errors)
+
+    def test_criacao_aceita_lance_minimo_inicial_manual(self):
+        serializer = CreateAuctionSerializer(
+            data={
+                "product": self.product.pk,
+                "duration_minutes": 10,
+                "starting_price": "250.00",
+            }
+        )
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+
+    def test_bid_is_saved_when_realtime_redis_is_unavailable(self):
+        async def fail_group_send(*args, **kwargs):
+            raise RedisConnectionError("Redis unavailable")
+
+        with patch("auction.services.get_channel_layer") as get_channel_layer:
+            get_channel_layer.return_value.group_send = fail_group_send
+            with self.captureOnCommitCallbacks(execute=True):
+                bid = place_bid(self.user, self.auction, 10)
+
+        self.assertTrue(Bid.objects.filter(pk=bid.pk).exists())
 
 
 class GetWinningBidTests(TestCase):
