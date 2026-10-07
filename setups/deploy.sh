@@ -227,7 +227,7 @@ check_backend_ready() {
   local container_id
   check_container_running "backend" || return 1
   container_id="$(docker_compose ps -q backend | head -n 1)"
-  docker exec "$container_id" python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/django-admin/login/', timeout=5).read()" >/dev/null 2>&1 || {
+  docker exec "$container_id" python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/system/health/', timeout=5).read()" >/dev/null 2>&1 || {
     printf 'Backend endpoint not ready (docker health: %s)\n' "$(get_container_health backend)"
     return 1
   }
@@ -247,8 +247,8 @@ check_nginx_ready() {
   local container_id
   check_container_running "nginx" || return 1
   container_id="$(docker_compose ps -q nginx | head -n 1)"
-  docker exec "$container_id" wget -q -O /dev/null http://127.0.0.1/django-admin/login/ >/dev/null 2>&1 || {
-    printf 'Nginx backend proxy not ready (docker health: %s)\n' "$(get_container_health nginx)"
+  docker exec "$container_id" wget -q -O /dev/null http://127.0.0.1/api/v1/system/health/ >/dev/null 2>&1 || {
+    printf 'Nginx API proxy not ready (docker health: %s)\n' "$(get_container_health nginx)"
     return 1
   }
   docker exec "$container_id" wget -q -O /dev/null http://127.0.0.1/ >/dev/null 2>&1 || {

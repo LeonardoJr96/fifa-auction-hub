@@ -22,9 +22,11 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from django.conf import settings
 from django.conf.urls.static import static
+from core.health import health_check
 
 urlpatterns = [
     path('django-admin/', admin.site.urls),
+    path('api/v1/system/health/', health_check, name='health-check'),
     
     # OBS: os routers de auction/products já registram seus próprios
     # prefixos ('auctions', 'bids', 'products'), então aqui usamos só
