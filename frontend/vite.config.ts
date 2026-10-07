@@ -12,6 +12,9 @@ import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
 export default defineConfig({
+  nitro: {
+    preset: "node-server",
+  },
   vite: {
     // Um único .env na raiz do monorepo (padrão Mega8Lance).
     envDir: repoRoot,

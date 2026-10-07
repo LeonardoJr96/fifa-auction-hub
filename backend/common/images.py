@@ -62,6 +62,8 @@ def normalize_imagefield_to_webp(
         return False
 
     if field_file._committed:
+        if not default_storage.exists(field_file.name):
+            return False
         with field_file.open("rb") as handle:
             raw = handle.read()
     else:

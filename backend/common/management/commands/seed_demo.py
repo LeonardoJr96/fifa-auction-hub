@@ -52,6 +52,10 @@ class Command(BaseCommand):
             created = seed_test_users(seed_dir, force=options["force_users"])
             self.stdout.write(self.style.SUCCESS(f"Usuários de teste criados: {created}"))
 
+        if not options["skip_media"]:
+            copied = sync_seed_media(seed_dir)
+            self.stdout.write(self.style.SUCCESS(f"Fotos copiadas para media: {copied}"))
+
         if not options["skip_players"]:
             if options["if_empty"] and is_database_seeded():
                 self.stdout.write("Jogadores já existem — pulando importação (--if-empty).")
@@ -64,9 +68,5 @@ class Command(BaseCommand):
                         "Rode setups/export-seed.sh no ambiente local primeiro."
                     )
                 )
-
-        if not options["skip_media"]:
-            copied = sync_seed_media(seed_dir)
-            self.stdout.write(self.style.SUCCESS(f"Fotos copiadas para media: {copied}"))
 
         self.stdout.write(self.style.SUCCESS("Seed concluído."))

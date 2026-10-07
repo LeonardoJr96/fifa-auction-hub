@@ -14,9 +14,16 @@ ENV VITE_WS_URL=$VITE_WS_URL
 
 RUN npm run build
 
-FROM nginx:1.27-alpine
+FROM node:22-alpine
 
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-COPY --from=build /app/.output/public /usr/share/nginx/html
+WORKDIR /app
+
+COPY --from=build /app/.output ./.output
+
+ENV NODE_ENV=production
+ENV NITRO_HOST=0.0.0.0
+ENV NITRO_PORT=80
 
 EXPOSE 80
+
+CMD ["node", ".output/server/index.mjs"]

@@ -60,10 +60,16 @@ services:
   celery_worker:
     <<: *backend-app
     command: celery -A core worker -l info
+    depends_on:
+      backend:
+        condition: service_healthy
 
   celery_beat:
     <<: *backend-app
     command: celery -A core beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    depends_on:
+      backend:
+        condition: service_healthy
 
   frontend:
     build:
@@ -72,8 +78,12 @@ services:
         # Caminhos relativos: mesma origem via nginx (padrão monorepo).
         VITE_API_URL: ${VITE_API_URL:-/api/v1}
         VITE_WS_URL: ${VITE_WS_URL:-}
-    depends_on:
-      - backend
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1/').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   nginx:
     image: nginx:1.27-alpine
@@ -84,8 +94,10 @@ services:
       - staticfiles:/var/www/static:ro
       - media:/var/www/media:ro
     depends_on:
-      - backend
-      - frontend
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_healthy
 
 volumes:
   pgdata:
