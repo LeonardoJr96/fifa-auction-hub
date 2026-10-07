@@ -3,11 +3,11 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "install": "cd frontend && bun install",
-    "dev": "cd frontend && bun run dev",
-    "build": "cd frontend && bun run build && cd .. && rm -rf dist && ln -sfn frontend/dist dist",
-    "build:dev": "cd frontend && bun run build:dev && cd .. && rm -rf dist && ln -sfn frontend/dist dist",
-    "preview": "cd frontend && bun run preview",
-    "lint": "cd frontend && bun run lint"
+    "install": "cd frontend && npm install",
+    "dev": "cd frontend && npm run dev",
+    "build": "npm --prefix frontend run build && node -e \"const fs=require('fs'); const path=require('path'); const root=process.cwd(); const dist=path.join(root,'dist'); const outputPublic=path.join(root,'frontend','.output','public'); fs.rmSync(dist,{recursive:true,force:true}); if (fs.existsSync(outputPublic)) { fs.cpSync(outputPublic, dist, { recursive: true, force: true }); } else { fs.mkdirSync(dist,{recursive:true}); }\"",
+    "build:dev": "npm --prefix frontend run build:dev && node -e \"const fs=require('fs'); const path=require('path'); const root=process.cwd(); const dist=path.join(root,'dist'); const outputPublic=path.join(root,'frontend','.output','public'); fs.rmSync(dist,{recursive:true,force:true}); if (fs.existsSync(outputPublic)) { fs.cpSync(outputPublic, dist, { recursive: true, force: true }); } else { fs.mkdirSync(dist,{recursive:true}); }\"",
+    "preview": "cd frontend && npm run preview",
+    "lint": "cd frontend && npm run lint"
   }
 }
