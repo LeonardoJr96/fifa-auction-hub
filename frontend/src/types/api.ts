@@ -258,6 +258,9 @@ export interface Competition {
   league_win_points: number;
   league_draw_points: number;
   league_loss_points: number;
+  match_win_reward: string;
+  match_draw_reward: string;
+  match_loss_reward: string;
   max_participants: number;
   draft_rounds: number;
   participant_count: number;
@@ -303,6 +306,18 @@ export interface CompetitionCreatePayload {
   league_win_points?: number;
   league_draw_points?: number;
   league_loss_points?: number;
+  match_win_reward?: string;
+  match_draw_reward?: string;
+  match_loss_reward?: string;
+}
+
+export interface CompetitionSettingsPayload {
+  league_win_points: number;
+  league_draw_points: number;
+  league_loss_points: number;
+  match_win_reward: string;
+  match_draw_reward: string;
+  match_loss_reward: string;
 }
 
 export interface StandingRow {

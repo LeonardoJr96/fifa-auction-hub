@@ -11,9 +11,12 @@ from fifa_data.models import Player
 from team.models import RosterEntry
 
 from .league_points import _advance_winner, _apply_match_points, rebuild_league_points
+from .rewards import pay_match_rewards
 
 
+@transaction.atomic
 def register_manual_result(match, home_score, away_score, stats=None):
+    match = Match.objects.select_for_update().get(pk=match.pk)
     if getattr(match, "status", None) == "played":
         raise ValidationError("Este confronto já possui resultado registrado.")
 
@@ -39,6 +42,8 @@ def register_manual_result(match, home_score, away_score, stats=None):
                 goals=stat.get("goals", 0),
                 assists=stat.get("assists", 0),
             )
+
+    pay_match_rewards(match)
 
     if match.competition.competition_type == "league":
         rebuild_league_points(match.competition)

@@ -5,6 +5,7 @@ import type {
   BracketResponse,
   Competition,
   CompetitionCreatePayload,
+  CompetitionSettingsPayload,
   CompetitionMatch,
   CompetitionRoster,
   DraftOrderItem,
@@ -72,7 +73,10 @@ export function useCompetitionRosters(competitionId: string, enabled = true) {
   });
 }
 
-function invalidateCompetition(queryClient: ReturnType<typeof useQueryClient>, competitionId: string) {
+function invalidateCompetition(
+  queryClient: ReturnType<typeof useQueryClient>,
+  competitionId: string,
+) {
   return Promise.all([
     queryClient.invalidateQueries({ queryKey: ["competitions"] }),
     queryClient.invalidateQueries({ queryKey: ["competition", competitionId] }),
@@ -86,7 +90,8 @@ function invalidateCompetition(queryClient: ReturnType<typeof useQueryClient>, c
 export function useJoinCompetition(competitionId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: () => apiRequest<Competition>(`/competitions/${competitionId}/join/`, { method: "POST" }),
+    mutationFn: () =>
+      apiRequest<Competition>(`/competitions/${competitionId}/join/`, { method: "POST" }),
     onSuccess: async () => invalidateCompetition(queryClient, competitionId),
   });
 }
@@ -94,7 +99,8 @@ export function useJoinCompetition(competitionId: string) {
 export function useStartDraft(competitionId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: () => apiRequest<DraftState>(`/competitions/${competitionId}/draft/start/`, { method: "POST" }),
+    mutationFn: () =>
+      apiRequest<DraftState>(`/competitions/${competitionId}/draft/start/`, { method: "POST" }),
     onSuccess: async (data) => {
       queryClient.setQueryData(["competition", competitionId, "draft"], data);
       await invalidateCompetition(queryClient, competitionId);
@@ -118,10 +124,13 @@ export function useDraftPick(competitionId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (playerId: number) =>
-      apiRequest<{ pick: unknown; draft: DraftState }>(`/competitions/${competitionId}/draft/pick/`, {
-        method: "POST",
-        body: { player: playerId },
-      }),
+      apiRequest<{ pick: unknown; draft: DraftState }>(
+        `/competitions/${competitionId}/draft/pick/`,
+        {
+          method: "POST",
+          body: { player: playerId },
+        },
+      ),
     onSuccess: async (data) => {
       queryClient.setQueryData(["competition", competitionId, "draft"], data.draft);
       await queryClient.invalidateQueries({ queryKey: ["competition", competitionId, "rosters"] });
@@ -133,7 +142,9 @@ export function useGenerateLeagueFixtures(competitionId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: () =>
-      apiRequest<CompetitionMatch[]>(`/competitions/${competitionId}/generate-fixtures/`, { method: "POST" }),
+      apiRequest<CompetitionMatch[]>(`/competitions/${competitionId}/generate-fixtures/`, {
+        method: "POST",
+      }),
     onSuccess: async () => invalidateCompetition(queryClient, competitionId),
   });
 }
@@ -142,10 +153,13 @@ export function useGenerateBracket(competitionId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: () =>
-      apiRequest<{ matches: CompetitionMatch[] }>(`/competitions/${competitionId}/generate-bracket/`, {
-        method: "POST",
-        body: {},
-      }),
+      apiRequest<{ matches: CompetitionMatch[] }>(
+        `/competitions/${competitionId}/generate-bracket/`,
+        {
+          method: "POST",
+          body: {},
+        },
+      ),
     onSuccess: async () => invalidateCompetition(queryClient, competitionId),
   });
 }
@@ -158,7 +172,13 @@ export function useRegisterMatchResult(competitionId: string) {
         method: "POST",
         body: payload,
       }),
-    onSuccess: async () => invalidateCompetition(queryClient, competitionId),
+    onSuccess: async () =>
+      Promise.all([
+        invalidateCompetition(queryClient, competitionId),
+        queryClient.invalidateQueries({ queryKey: ["me"] }),
+        queryClient.invalidateQueries({ queryKey: ["payments", "me"] }),
+        queryClient.invalidateQueries({ queryKey: ["team", "me"] }),
+      ]),
   });
 }
 
@@ -169,7 +189,13 @@ export function useSimulateMatch(competitionId: string) {
       apiRequest<CompetitionMatch>(`/competitions/${competitionId}/matches/${matchId}/simulate/`, {
         method: "POST",
       }),
-    onSuccess: async () => invalidateCompetition(queryClient, competitionId),
+    onSuccess: async () =>
+      Promise.all([
+        invalidateCompetition(queryClient, competitionId),
+        queryClient.invalidateQueries({ queryKey: ["me"] }),
+        queryClient.invalidateQueries({ queryKey: ["payments", "me"] }),
+        queryClient.invalidateQueries({ queryKey: ["team", "me"] }),
+      ]),
   });
 }
 
@@ -184,7 +210,8 @@ export function useFinishCompetition(competitionId: string) {
 export function useActivateCompetition(competitionId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: () => apiRequest<Competition>(`/competitions/${competitionId}/activate/`, { method: "POST" }),
+    mutationFn: () =>
+      apiRequest<Competition>(`/competitions/${competitionId}/activate/`, { method: "POST" }),
     onSuccess: async () => invalidateCompetition(queryClient, competitionId),
   });
 }
@@ -197,5 +224,17 @@ export function useCreateCompetition() {
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["competitions"] });
     },
+  });
+}
+
+export function useUpdateCompetitionSettings(competitionId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: Partial<CompetitionSettingsPayload>) =>
+      apiRequest<Competition>(`/competitions/${competitionId}/settings/`, {
+        method: "PATCH",
+        body: payload,
+      }),
+    onSuccess: async () => invalidateCompetition(queryClient, competitionId),
   });
 }

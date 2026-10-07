@@ -3,6 +3,7 @@ import { useState } from "react";
 import { ChevronLeft, CircleDot, Settings, Trophy, UsersRound } from "lucide-react";
 
 import { CompetitionAdminBar } from "@/features/competitions/CompetitionAdminBar";
+import { CompetitionSettingsForm } from "@/features/competitions/CompetitionSettingsForm";
 import { CompetitionBracketPanel } from "@/features/competitions/CompetitionBracketPanel";
 import { CompetitionDraftPanel } from "@/features/competitions/CompetitionDraftPanel";
 import { CompetitionMatchesPanel } from "@/features/competitions/CompetitionMatchesPanel";
@@ -238,6 +239,7 @@ function CompetitionDetailPage() {
               </div>
               <Settings />
             </div>
+            <CompetitionSettingsForm competition={competition} />
             <CompetitionAdminBar
               competition={competition}
               competitionId={competitionId}

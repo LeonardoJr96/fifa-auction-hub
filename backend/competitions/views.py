@@ -1,4 +1,5 @@
 from django.core.exceptions import ValidationError as DjangoValidationError
+from django.db import transaction
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, status
 from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
@@ -15,6 +16,7 @@ from .serializers import (
     CompetitionCreateSerializer,
     CompetitionDetailSerializer,
     CompetitionListSerializer,
+    CompetitionSettingsSerializer,
     DraftOrderItemSerializer,
     DraftStateSerializer,
     MatchResultSerializer,
@@ -59,6 +61,26 @@ class CompetitionDetailView(generics.RetrieveAPIView):
     )
     serializer_class = CompetitionDetailSerializer
     permission_classes = [AllowAny]
+
+
+class CompetitionSettingsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, pk):
+        competition = get_object_or_404(Competition, pk=pk)
+        if not request.user.is_staff and competition.created_by_id != request.user.id:
+            return Response({"detail": "Sem permissão para alterar este evento."}, status=status.HTTP_403_FORBIDDEN)
+
+        serializer = CompetitionSettingsSerializer(competition, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        with transaction.atomic():
+            serializer.save()
+            if competition.competition_type == Competition.CompetitionType.LEAGUE and any(
+                field in serializer.validated_data
+                for field in ("league_win_points", "league_draw_points", "league_loss_points")
+            ):
+                competition_services.get_standings(competition)
+        return Response(CompetitionDetailSerializer(competition, context={"request": request}).data)
 
 
 class JoinCompetitionView(APIView):

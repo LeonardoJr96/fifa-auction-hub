@@ -37,6 +37,7 @@ const TX_LABEL: Record<string, string> = {
   balance_recharge: "Recarga de saldo",
   refund: "Reembolso",
   direct_purchase: "Compra/venda entre jogadores",
+  competition_reward: "Premiação de competição",
 };
 
 function MePage() {

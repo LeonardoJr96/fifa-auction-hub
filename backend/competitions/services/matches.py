@@ -6,6 +6,7 @@ from campaigns.models import MatchPlayerStat
 from ..models import Competition, Match, MatchResultLog, Participant
 from .league_points import _advance_winner, rebuild_league_points
 from .legacy import register_manual_result, simulate_match
+from .rewards import pay_match_rewards
 
 
 def require_competition_reporter(user, competition: Competition) -> None:
@@ -80,11 +81,11 @@ def register_competition_match_result(
         raise ValidationError("Partidas de copa precisam de um vencedor.")
 
     parsed_stats = _parse_stats_payload(stats, match) if stats is not None else None
-    was_played = match.status == "played"
-    previous_home = match.home_score if was_played else None
-    previous_away = match.away_score if was_played else None
-
     with transaction.atomic():
+        match = Match.objects.select_for_update().get(pk=match.pk)
+        was_played = match.status == "played"
+        previous_home = match.home_score if was_played else None
+        previous_away = match.away_score if was_played else None
         match.home_score = home_score
         match.away_score = away_score
         match.status = "played"
@@ -92,6 +93,9 @@ def register_competition_match_result(
 
         if parsed_stats is not None:
             _save_match_stats(match, parsed_stats)
+
+        if not was_played:
+            pay_match_rewards(match)
 
         if competition.competition_type == Competition.CompetitionType.LEAGUE:
             rebuild_league_points(competition)

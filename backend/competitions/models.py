@@ -53,6 +53,9 @@ class Competition(models.Model):
     league_win_points = models.PositiveIntegerField(default=3)
     league_draw_points = models.PositiveIntegerField(default=1)
     league_loss_points = models.PositiveIntegerField(default=0)
+    match_win_reward = models.DecimalField(max_digits=12, decimal_places=2, default=30000)
+    match_draw_reward = models.DecimalField(max_digits=12, decimal_places=2, default=10000)
+    match_loss_reward = models.DecimalField(max_digits=12, decimal_places=2, default=5000)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(
@@ -238,3 +241,23 @@ class MatchResultLog(models.Model):
 
     def __str__(self):
         return f"Match #{self.match_id} · {self.home_score}-{self.away_score}"
+
+
+class CompetitionMatchReward(models.Model):
+    match = models.ForeignKey(Match, on_delete=models.CASCADE, related_name="rewards")
+    team = models.ForeignKey("team.Team", on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="competition_match_rewards",
+    )
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["match", "team"], name="unique_competition_match_team_reward"),
+        ]
+
+    def __str__(self):
+        return f"Partida #{self.match_id} · {self.team} · {self.amount}"

@@ -23,6 +23,9 @@ def create_competition(
     league_win_points: int = 3,
     league_draw_points: int = 1,
     league_loss_points: int = 0,
+    match_win_reward=30000,
+    match_draw_reward=10000,
+    match_loss_reward=5000,
 ) -> Competition:
     if not user.is_staff:
         raise ValidationError("Apenas administradores podem criar competições.")
@@ -47,6 +50,9 @@ def create_competition(
         league_win_points=league_win_points,
         league_draw_points=league_draw_points,
         league_loss_points=league_loss_points,
+        match_win_reward=match_win_reward,
+        match_draw_reward=match_draw_reward,
+        match_loss_reward=match_loss_reward,
         created_by=user,
     )
 

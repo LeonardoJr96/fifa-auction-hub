@@ -5,6 +5,7 @@ from . import views
 urlpatterns = [
     path("competitions/", views.CompetitionListView.as_view(), name="competition-list"),
     path("competitions/<int:pk>/", views.CompetitionDetailView.as_view(), name="competition-detail"),
+    path("competitions/<int:pk>/settings/", views.CompetitionSettingsView.as_view(), name="competition-settings"),
     path("competitions/<int:pk>/join/", views.JoinCompetitionView.as_view(), name="competition-join"),
     path("competitions/<int:pk>/activate/", views.ActivateCompetitionView.as_view(), name="competition-activate"),
     path("competitions/<int:pk>/draft/", views.DraftStateView.as_view(), name="competition-draft-state"),

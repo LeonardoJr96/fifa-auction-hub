@@ -6,6 +6,7 @@ class TransactionType(models.TextChoices):
     BALANCE_RECHARGE = "balance_recharge", "Recarga de saldo"
     REFUND = "refund", "Estorno"
     DIRECT_PURCHASE = "direct_purchase", "Compra direta (mercado P2P)"
+    COMPETITION_REWARD = "competition_reward", "Premiação de competição"
 
 
 class TransactionStatus(models.TextChoices):

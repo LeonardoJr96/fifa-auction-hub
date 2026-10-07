@@ -33,6 +33,9 @@ function NewCompetitionPage() {
   const [leagueWinPoints, setLeagueWinPoints] = useState("3");
   const [leagueDrawPoints, setLeagueDrawPoints] = useState("1");
   const [leagueLossPoints, setLeagueLossPoints] = useState("0");
+  const [matchWinReward, setMatchWinReward] = useState("30000");
+  const [matchDrawReward, setMatchDrawReward] = useState("10000");
+  const [matchLossReward, setMatchLossReward] = useState("5000");
 
   if (!isAuthenticated || !isStaff) {
     return <RestrictedNotice />;
@@ -53,6 +56,9 @@ function NewCompetitionPage() {
       league_win_points: Number(leagueWinPoints),
       league_draw_points: Number(leagueDrawPoints),
       league_loss_points: Number(leagueLossPoints),
+      match_win_reward: matchWinReward,
+      match_draw_reward: matchDrawReward,
+      match_loss_reward: matchLossReward,
     });
     navigate({
       to: "/competitions/$competitionId",
@@ -208,6 +214,54 @@ function NewCompetitionPage() {
             </label>
           </>
         ) : null}
+
+        <fieldset className="space-y-3 rounded-md border border-border p-4">
+          <legend className="px-1 text-sm font-semibold text-foreground">
+            Premiação por partida (R$)
+          </legend>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <label className="block space-y-1">
+              <span className="text-sm font-medium text-foreground">Vitória</span>
+              <input
+                type="number"
+                min={0}
+                step="0.01"
+                required
+                value={matchWinReward}
+                onChange={(e) => setMatchWinReward(e.target.value)}
+                className={inputClass}
+              />
+            </label>
+            <label className="block space-y-1">
+              <span className="text-sm font-medium text-foreground">Empate</span>
+              <input
+                type="number"
+                min={0}
+                step="0.01"
+                required
+                value={matchDrawReward}
+                onChange={(e) => setMatchDrawReward(e.target.value)}
+                className={inputClass}
+              />
+            </label>
+            <label className="block space-y-1">
+              <span className="text-sm font-medium text-foreground">Derrota</span>
+              <input
+                type="number"
+                min={0}
+                step="0.01"
+                required
+                value={matchLossReward}
+                onChange={(e) => setMatchLossReward(e.target.value)}
+                className={inputClass}
+              />
+            </label>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            O valor é creditado no saldo do usuário dono do time ao registrar o resultado. Valores
+            já pagos não mudam se o placar ou estas regras forem alterados depois.
+          </p>
+        </fieldset>
 
         <label className="block space-y-1">
           <span className="text-sm font-medium text-foreground">Máx. participantes</span>

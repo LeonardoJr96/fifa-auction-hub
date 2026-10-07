@@ -37,6 +37,9 @@ class CompetitionListSerializer(serializers.ModelSerializer):
             "league_win_points",
             "league_draw_points",
             "league_loss_points",
+            "match_win_reward",
+            "match_draw_reward",
+            "match_loss_reward",
             "max_participants",
             "draft_rounds",
             "participant_count",
@@ -64,6 +67,16 @@ class CompetitionDetailSerializer(CompetitionListSerializer):
 
 
 class CompetitionCreateSerializer(serializers.ModelSerializer):
+    match_win_reward = serializers.DecimalField(
+        max_digits=12, decimal_places=2, min_value=0, required=False, default=30000,
+    )
+    match_draw_reward = serializers.DecimalField(
+        max_digits=12, decimal_places=2, min_value=0, required=False, default=10000,
+    )
+    match_loss_reward = serializers.DecimalField(
+        max_digits=12, decimal_places=2, min_value=0, required=False, default=5000,
+    )
+
     class Meta:
         model = Competition
         fields = [
@@ -79,6 +92,32 @@ class CompetitionCreateSerializer(serializers.ModelSerializer):
             "league_win_points",
             "league_draw_points",
             "league_loss_points",
+            "match_win_reward",
+            "match_draw_reward",
+            "match_loss_reward",
+        ]
+
+
+class CompetitionSettingsSerializer(serializers.ModelSerializer):
+    match_win_reward = serializers.DecimalField(
+        max_digits=12, decimal_places=2, min_value=0, required=False,
+    )
+    match_draw_reward = serializers.DecimalField(
+        max_digits=12, decimal_places=2, min_value=0, required=False,
+    )
+    match_loss_reward = serializers.DecimalField(
+        max_digits=12, decimal_places=2, min_value=0, required=False,
+    )
+
+    class Meta:
+        model = Competition
+        fields = [
+            "league_win_points",
+            "league_draw_points",
+            "league_loss_points",
+            "match_win_reward",
+            "match_draw_reward",
+            "match_loss_reward",
         ]
 
 

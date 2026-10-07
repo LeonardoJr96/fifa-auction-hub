@@ -1,8 +1,10 @@
 from django.test import TestCase
 from django.utils import timezone
+from rest_framework.test import APIClient
 
 from competitions.models import Competition, Match, CompetitionEntry, MatchResultLog, Participant
 from campaigns.models import Campaign, MarketWindow
+from payment.models import Transaction, TransactionType
 from team.models import Team
 from competitions import services as competition_services
 
@@ -103,3 +105,75 @@ class CompetitionsIntegrationTests(TestCase):
 
         self.assertEqual(competition.entries.get(team=self.team_a).points, 7)
         self.assertEqual(competition.entries.get(team=self.team_b).points, 3)
+
+    def test_match_rewards_are_paid_once_and_not_revised_after_result_correction(self):
+        competition = Competition.objects.create(
+            name="Paid Rewards League",
+            competition_type=Competition.CompetitionType.LEAGUE,
+            created_by=self.owner,
+            match_win_reward=30000,
+            match_draw_reward=10000,
+            match_loss_reward=5000,
+        )
+        match = Match.objects.create(
+            competition=competition,
+            home_team=self.team_a,
+            away_team=self.team_b,
+        )
+
+        competition_services.register_competition_match_result(
+            self.owner, competition, match, home_score=2, away_score=0,
+        )
+
+        self.owner.refresh_from_db()
+        self.owner_b.refresh_from_db()
+        self.assertEqual(self.owner.balance, 30000)
+        self.assertEqual(self.owner_b.balance, 5000)
+        self.assertEqual(Transaction.objects.filter(type=TransactionType.COMPETITION_REWARD).count(), 2)
+
+        competition.match_win_reward = 90000
+        competition.save(update_fields=["match_win_reward"])
+        competition_services.register_competition_match_result(
+            self.owner, competition, match, home_score=0, away_score=1,
+        )
+
+        self.owner.refresh_from_db()
+        self.owner_b.refresh_from_db()
+        self.assertEqual(self.owner.balance, 30000)
+        self.assertEqual(self.owner_b.balance, 5000)
+        self.assertEqual(match.rewards.count(), 2)
+        self.assertEqual(Transaction.objects.filter(type=TransactionType.COMPETITION_REWARD).count(), 2)
+
+        next_match = Match.objects.create(
+            competition=competition,
+            home_team=self.team_a,
+            away_team=self.team_b,
+        )
+        competition_services.register_competition_match_result(
+            self.owner, competition, next_match, home_score=1, away_score=1,
+        )
+
+        self.owner.refresh_from_db()
+        self.owner_b.refresh_from_db()
+        self.assertEqual(self.owner.balance, 40000)
+        self.assertEqual(self.owner_b.balance, 15000)
+
+    def test_competition_creator_can_update_rewards_in_event_settings(self):
+        competition = Competition.objects.create(
+            name="Settings League",
+            competition_type=Competition.CompetitionType.LEAGUE,
+            created_by=self.owner,
+        )
+        client = APIClient()
+        client.force_authenticate(user=self.owner)
+
+        response = client.patch(
+            f"/api/v1/competitions/{competition.id}/settings/",
+            {"match_win_reward": "42000.00", "league_win_points": 4},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        competition.refresh_from_db()
+        self.assertEqual(competition.match_win_reward, 42000)
+        self.assertEqual(competition.league_win_points, 4)
