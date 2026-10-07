@@ -1,7 +1,8 @@
 from .base import *  # noqa: F403
 
 DEBUG = False
-SECURE_SSL_REDIRECT = env.bool("SECURE_SSL_REDIRECT", default=True)
+SECURE_SSL_REDIRECT = env.bool("SECURE_SSL_REDIRECT", default=False)
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SECURE_REDIRECT_EXEMPT = [r"^api/v1/system/health/$"]
 SESSION_COOKIE_SECURE = env.bool("COOKIE_SECURE", default=True)
 CSRF_COOKIE_SECURE = env.bool("COOKIE_SECURE", default=True)

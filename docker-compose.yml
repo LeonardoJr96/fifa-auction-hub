@@ -9,7 +9,7 @@ x-backend-app: &backend-app
     REDIS_URL: redis://redis:6379/0
     CELERY_BROKER_URL: redis://redis:6379/0
     SEED_DIR: /setups/seed
-    SEED_ON_START: ${SEED_ON_START:-true}
+    SEED_ON_START: ${SEED_ON_START:-false}
   volumes:
     - staticfiles:/app/staticfiles
     - media:/app/media

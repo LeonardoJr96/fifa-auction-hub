@@ -890,7 +890,7 @@ def sync_product(sender, instance: Player, created, **kwargs):
     # Replica a foto do jogador como capa do produto no catálogo.
     # Copiamos os bytes em vez de reaproveitar o mesmo arquivo do Player
     # pra manter product_images/ independente de player_photos/.
-    if instance.photo:
+    if instance.photo and instance.photo.storage.exists(instance.photo.name):
         cover, _ = ProductImage.objects.get_or_create(
             product=product, is_cover=True, defaults={"order": 0},
         )

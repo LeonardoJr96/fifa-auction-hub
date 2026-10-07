@@ -1,3 +1,4 @@
+from types import SimpleNamespace
 from unittest.mock import Mock, patch
 
 from django.core.files.base import ContentFile
@@ -29,3 +30,31 @@ class PhotoBackfillTests(SimpleTestCase):
         self.assertIsInstance(result, ContentFile)
         self.assertEqual(result.name, "123.png")
         self.assertEqual(result.read(), b"photo-bytes")
+
+    @patch("products.models.Product.objects.update_or_create")
+    @patch("products.models.ProductImage.objects.get_or_create")
+    def test_missing_player_photo_does_not_break_product_sync(
+        self,
+        get_or_create_image,
+        update_or_create_product,
+    ):
+        photo = SimpleNamespace(
+            name="player_photos/70448_Awd2XZJ.png",
+            storage=Mock(),
+        )
+        photo.storage.exists.return_value = False
+        player = SimpleNamespace(
+            photo=photo,
+            common_name="",
+            first_name="Test",
+            last_name="Player",
+            price=0,
+            positions_list=[],
+        )
+        update_or_create_product.return_value = (Mock(), True)
+
+        from fifa_data.models import sync_product
+
+        sync_product(None, player, created=True)
+
+        get_or_create_image.assert_not_called()

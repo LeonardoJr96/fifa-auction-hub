@@ -89,9 +89,18 @@ Depois:
 ./install.sh deploy
 ```
 
-No startup, o backend importa automaticamente:
-- **10 usuários de teste** (`setups/test-users.txt`, senha `Test@1234`)
-- **jogadores** e **fotos** de `setups/seed/` (somente se o banco estiver vazio)
+Por padrão, o backend inicia sem importar o catálogo de demonstração, para que
+login e Django Admin fiquem disponíveis sem aguardar a carga do fixture. Para
+importar os dados depois que os serviços estiverem ativos:
+
+```sh
+docker compose exec backend python manage.py seed_demo --if-empty
+```
+
+O comando carrega os usuários de teste de `setups/test-users.txt` e, se o banco
+de jogadores estiver vazio, importa jogadores e fotos de `setups/seed/`. Também
+é possível habilitar a carga automática definindo `SEED_ON_START=true` no `.env`;
+nesse caso, o backend só começa a atender depois que a importação terminar.
 
 Acesse `http://localhost:8080` (ou `NGINX_PORT` no `.env`).
 
