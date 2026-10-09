@@ -21,6 +21,12 @@ class ProductListSerializer(serializers.ModelSerializer):
         player = getattr(obj, 'player', None)
         if not player:
             return None
+
+        photo_url = getattr(player, 'photo_url', None)
+        photo = getattr(player, 'photo', None)
+        if photo and hasattr(photo, 'url'):
+            photo_url = photo.url
+
         return {
             'id': player.id,
             'common_name': player.common_name,
@@ -30,8 +36,7 @@ class ProductListSerializer(serializers.ModelSerializer):
             'best_position': player.best_position,
             'positions': player.positions,
             'foot': player.foot,
-            'photo_url': player.photo_url,
-            'photo_data_uri': getattr(player, 'photo_data_uri', None),
+            'photo_url': photo_url,
         }
 
 

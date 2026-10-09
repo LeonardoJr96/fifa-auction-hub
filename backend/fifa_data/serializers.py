@@ -13,12 +13,15 @@ class PlayerSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def get_photo_data_uri(self, obj):
+        if self.context.get("include_photo_data_uri") is False:
+            return None
+
         """
         Prioridade:
           1. Arquivo salvo localmente → retorna URL /media/player_photos/...
           2. Base64 embutido            → retorna data:image/png;base64,...
           3. Link externo (CDN SoFIFA)  → retorna photo_url como fallback
-        """        # 1. Arquivo local persistido; arquivos em memória são data URI.
+        """
         photo = getattr(obj, "photo", None)
         if photo and getattr(photo, "_committed", True) is False and hasattr(photo, "read"):
             position = photo.tell() if hasattr(photo, "tell") else 0
