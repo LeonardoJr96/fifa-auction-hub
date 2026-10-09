@@ -45,16 +45,19 @@ export function usePlayer(id: string) {
 /** Lista de leilões sem polling global por padrão. Telas ativas podem habilitar
  * atualização periódica explicitamente caso precisem de sincronização em tempo real.
  */
-export function useAuctions(options: { enabled?: boolean; realtime?: boolean } = {}) {
-  const { enabled = true, realtime = false } = options;
+export function useAuctions(
+  options: { enabled?: boolean; realtime?: boolean; page?: number; pageSize?: number } = {},
+) {
+  const { enabled = true, realtime = false, page = 1, pageSize = 50 } = options;
 
   return useQuery({
-    queryKey: ["auctions", realtime ? "live" : "snapshot"],
-    queryFn: () => apiListAll<Auction>("/auctions/"),
+    queryKey: ["auctions", realtime ? "live" : "snapshot", page, pageSize],
+    queryFn: () => apiPage<Auction>("/auctions/", { page, pageSize }),
     enabled,
     staleTime: 30 * 1000,
     refetchInterval: realtime ? 15000 : false,
     refetchOnWindowFocus: false,
+    select: (pageData) => pageData.results,
   });
 }
 

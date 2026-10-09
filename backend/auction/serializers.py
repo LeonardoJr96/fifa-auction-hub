@@ -2,9 +2,25 @@ from decimal import Decimal
 
 from rest_framework import serializers
 from products.models import Product
-from products.serializers import ProductSerializer
+from products.serializers import ProductListSerializer, ProductSerializer
 from .models import Auction, Bid
 from .services import get_current_price
+
+class AuctionListSerializer(serializers.ModelSerializer):
+    current_price = serializers.SerializerMethodField()
+    product = ProductListSerializer(read_only=True)
+    seller_username = serializers.CharField(source='seller.username', read_only=True, allow_null=True)
+    starting_price = serializers.DecimalField(max_digits=25, decimal_places=2, coerce_to_string=False)
+    min_increment = serializers.DecimalField(max_digits=25, decimal_places=2, coerce_to_string=False)
+
+    class Meta:
+        model = Auction
+        fields = '__all__'
+        read_only_fields = ['status', 'winner', 'number_of_bids', 'payment_deadline', 'seller']
+
+    def get_current_price(self, obj):
+        return get_current_price(obj)
+
 
 class AuctionSerializer(serializers.ModelSerializer):
     current_price = serializers.SerializerMethodField()

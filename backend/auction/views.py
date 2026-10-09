@@ -8,6 +8,7 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 
 from .models import Auction, Bid, PricingMode
 from .serializers import (
+    AuctionListSerializer,
     AuctionSerializer,
     CreateAuctionSerializer,
     BidSerializer,
@@ -19,7 +20,7 @@ from team.portfolio_services import maybe_finalize_user_auction
 from common.models import Status
 
 class AuctionViewSet(viewsets.ModelViewSet):
-    queryset = Auction.objects.all()
+    queryset = Auction.objects.select_related("product", "product__player", "seller").prefetch_related("product__images")
     serializer_class = AuctionSerializer
 
     def get_permissions(self):
@@ -39,6 +40,8 @@ class AuctionViewSet(viewsets.ModelViewSet):
         # informa o lance mínimo inicial e a duração, não os campos de tempo.
         if self.action == 'create':
             return CreateAuctionSerializer
+        if self.action == 'list':
+            return AuctionListSerializer
         return AuctionSerializer
 
     def retrieve(self, request, *args, **kwargs):
