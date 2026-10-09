@@ -40,38 +40,30 @@ export const Route = createFileRoute("/players/")({
 });
 
 function PlayersPage() {
-  const { data: products, isLoading, isFetching, isError } = useProducts();
+  const pageSize = 24;
+  const page = Number(Route.useSearch().page) || 1;
+  const { data: pageData, isLoading, isFetching, isError } = useProducts(page, pageSize);
   const openAuctions = useOpenAuctionsByProduct();
   const rawSearch = Route.useSearch();
   const filters: PlayerFilterValues = { ...defaultPlayerFilters, ...rawSearch };
   const navigate = Route.useNavigate();
 
   const update = (patch: Partial<PlayerFilterValues>) =>
-    navigate({ to: "/players", search: cleanPlayerSearch({ ...filters, ...patch }) });
+    navigate({ to: "/players", search: cleanPlayerSearch({ ...filters, ...patch, page: 1 }) });
   const reset = () => navigate({ to: "/players", search: {} });
 
-  const { positions, filtered } = usePlayerFiltering(products, filters);
-
-  const pageSize = 24;
-  const total = filtered.length;
+  const products = pageData?.results ?? [];
+  const total = pageData?.count ?? products.length;
   const pageCount = Math.max(1, Math.ceil(total / pageSize));
-  const page = Number(filters.page) || 1;
   const current = Math.min(Math.max(1, page), pageCount);
-  const visible = filtered.slice((current - 1) * pageSize, current * pageSize);
+  const { positions, filtered } = usePlayerFiltering(products, filters);
+  const visible = filtered;
 
   const goTo = (next: number) => {
     const target = Math.min(Math.max(1, next), pageCount);
     navigate({ to: "/players", search: cleanPlayerSearch({ ...filters, page: target }) });
     if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
   };
-
-  console.debug("[PlayersPage] render", {
-    filters,
-    productsCount: products?.length ?? 0,
-    filteredCount: filtered.length,
-    paginationPage: current,
-    paginationPageCount: pageCount,
-  });
 
   const refreshing = isFetching && !isLoading;
 
