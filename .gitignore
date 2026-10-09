@@ -71,3 +71,5 @@ frontend/.env
 # Legado na raiz do monorepo
 /media/
 /node_modules/
+/.cursor/
+/.agents/
