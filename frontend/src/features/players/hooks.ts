@@ -42,12 +42,19 @@ export function usePlayer(id: string) {
   return useQuery(playerQueryOptions(id));
 }
 
-/** Todos os leilões — usado pra descobrir quais produtos estão em leilão aberto. */
-export function useAuctions() {
+/** Lista de leilões sem polling global por padrão. Telas ativas podem habilitar
+ * atualização periódica explicitamente caso precisem de sincronização em tempo real.
+ */
+export function useAuctions(options: { enabled?: boolean; realtime?: boolean } = {}) {
+  const { enabled = true, realtime = false } = options;
+
   return useQuery({
-    queryKey: ["auctions"],
+    queryKey: ["auctions", realtime ? "live" : "snapshot"],
     queryFn: () => apiListAll<Auction>("/auctions/"),
-    refetchInterval: 15000,
+    enabled,
+    staleTime: 30 * 1000,
+    refetchInterval: realtime ? 15000 : false,
+    refetchOnWindowFocus: false,
   });
 }
 
@@ -57,7 +64,7 @@ export function auctionProductId(auction: Auction): number {
 
 /** Mapa produto -> leilão aberto. */
 export function useOpenAuctionsByProduct() {
-  const { data } = useAuctions();
+  const { data } = useAuctions({ realtime: false });
   return useMemo(() => {
     const map = new Map<number, Auction>();
     for (const auction of data ?? []) {

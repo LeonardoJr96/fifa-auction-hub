@@ -49,8 +49,8 @@ function CatalogPage() {
   const search: PlayerFilterValues = { ...defaultPlayerFilters, ...rawSearch };
   const navigate = Route.useNavigate();
 
-  // Usa auctions diretamente: o serializer já traz product+player aninhados
-  const { data: auctions, isLoading, isFetching, isError } = useAuctions();
+  // O catálogo de leilões só precisa de atualização ativa quando a tela estiver em foco.
+  const { data: auctions, isLoading, isFetching, isError } = useAuctions({ realtime: false });
 
   const { openAuctions, products } = useMemo(() => {
     const openMap = new Map();
