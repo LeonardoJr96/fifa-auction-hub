@@ -1,8 +1,10 @@
+import io
 from types import SimpleNamespace
 from unittest.mock import Mock, patch
 
 from django.core.files.base import ContentFile
 from django.test import SimpleTestCase
+from PIL import Image
 
 from fifa_data.models import Player
 from fifa_data.serializers import PlayerSerializer
@@ -52,15 +54,28 @@ class PhotoBackfillTests(SimpleTestCase):
 
     @patch("fifa_data.services.urlopen")
     def test_fetch_photo_as_file_returns_content_file(self, mock_urlopen):
+        buffer = io.BytesIO()
+        Image.new("RGB", (2, 2), color="blue").save(buffer, format="PNG")
+
+        mock_response = Mock()
+        mock_response.read.return_value = buffer.getvalue()
+        mock_urlopen.return_value.__enter__.return_value = mock_response
+
+        result = fetch_photo_as_file("https://example.com/player.png", 123)
+
+        self.assertIsInstance(result, ContentFile)
+        self.assertEqual(result.name, "123.webp")
+        self.assertGreater(len(result.read()), 0)
+
+    @patch("fifa_data.services.urlopen")
+    def test_fetch_photo_as_file_returns_none_for_invalid_payload(self, mock_urlopen):
         mock_response = Mock()
         mock_response.read.return_value = b"photo-bytes"
         mock_urlopen.return_value.__enter__.return_value = mock_response
 
         result = fetch_photo_as_file("https://example.com/player.png", 123)
 
-        self.assertIsInstance(result, ContentFile)
-        self.assertEqual(result.name, "123.png")
-        self.assertEqual(result.read(), b"photo-bytes")
+        self.assertIsNone(result)
 
     @patch("products.models.Product.objects.update_or_create")
     @patch("products.models.ProductImage.objects.get_or_create")

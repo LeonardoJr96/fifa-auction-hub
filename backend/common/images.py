@@ -8,21 +8,24 @@ from pathlib import Path
 
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 
 WEBP_QUALITY = 85
 FIFA_ID_STEM = re.compile(r"^(\d+)")
 
 
 def bytes_to_webp(data: bytes, *, quality: int = WEBP_QUALITY) -> bytes:
-    with Image.open(io.BytesIO(data)) as image:
-        if image.mode in ("RGBA", "LA") or (image.mode == "P" and "transparency" in image.info):
-            image = image.convert("RGBA")
-        else:
-            image = image.convert("RGB")
-        buffer = io.BytesIO()
-        image.save(buffer, format="WEBP", quality=quality, method=6)
-        return buffer.getvalue()
+    try:
+        with Image.open(io.BytesIO(data)) as image:
+            if image.mode in ("RGBA", "LA") or (image.mode == "P" and "transparency" in image.info):
+                image = image.convert("RGBA")
+            else:
+                image = image.convert("RGB")
+            buffer = io.BytesIO()
+            image.save(buffer, format="WEBP", quality=quality, method=6)
+            return buffer.getvalue()
+    except (UnidentifiedImageError, OSError, ValueError) as exc:
+        raise ValueError("Invalid image payload") from exc
 
 
 def content_file_to_webp(content_file, stem: str, *, quality: int = WEBP_QUALITY) -> ContentFile:

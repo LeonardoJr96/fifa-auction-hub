@@ -21,7 +21,11 @@ def _decode_photo(photo_base64: str | None, sofifa_id) -> ContentFile | None:
         raw = base64.b64decode(photo_base64, validate=True)
     except (binascii.Error, ValueError):
         return None
-    return content_file_to_webp(ContentFile(raw, name=f"{sofifa_id}.png"), str(sofifa_id))
+
+    try:
+        return content_file_to_webp(ContentFile(raw, name=f"{sofifa_id}.png"), str(sofifa_id))
+    except ValueError:
+        return None
 
 
 def fetch_photo_as_file(photo_url: str | None, sofifa_id: int | str | None = None) -> ContentFile | None:
@@ -40,7 +44,10 @@ def fetch_photo_as_file(photo_url: str | None, sofifa_id: int | str | None = Non
         return None
 
     filename = f"{sofifa_id or 'player'}.png"
-    return content_file_to_webp(ContentFile(raw, name=filename), str(sofifa_id or "player"))
+    try:
+        return content_file_to_webp(ContentFile(raw, name=filename), str(sofifa_id or "player"))
+    except ValueError:
+        return None
 
 
 def fetch_photo_as_base64(photo_url: str | None, sofifa_id: int | str | None = None) -> str | None:
