@@ -48,7 +48,7 @@ export function usePlayer(id: string) {
 export function useAuctions(
   options: { enabled?: boolean; realtime?: boolean; page?: number; pageSize?: number } = {},
 ) {
-  const { enabled = true, realtime = false, page = 1, pageSize = 50 } = options;
+  const { enabled = true, realtime = false, page = 1, pageSize = 24 } = options;
 
   return useQuery({
     queryKey: ["auctions", realtime ? "live" : "snapshot", page, pageSize],

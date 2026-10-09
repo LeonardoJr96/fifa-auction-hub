@@ -50,7 +50,11 @@ function CatalogPage() {
   const navigate = Route.useNavigate();
 
   // O catálogo de leilões só precisa de atualização ativa quando a tela estiver em foco.
-  const { data: auctions, isLoading, isFetching, isError } = useAuctions({ realtime: false });
+  const { data: auctions, isLoading, isFetching, isError } = useAuctions({
+    realtime: false,
+    page: 1,
+    pageSize: 24,
+  });
 
   const { openAuctions, products } = useMemo(() => {
     const openMap = new Map();
