@@ -1,22 +1,35 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 
-import { apiListAll, apiRequest } from "@/lib/api";
+import { apiListAll, apiPage, apiRequest } from "@/lib/api";
 import type { Auction, Player, Product } from "@/types/api";
 import { isOpenAuction } from "@/lib/auction-status";
 
-export const productsQueryOptions = () =>
+export const productsPageQueryOptions = (page = 1, pageSize = 24) =>
   queryOptions({
-    queryKey: ["products"],
-    queryFn: () => apiListAll<Product>("/products/"),
+    queryKey: ["products-page", { page, pageSize }],
+    queryFn: () => apiPage<Product>("/products/", { page, pageSize }),
     staleTime: 10 * 60 * 1000,
     gcTime: 24 * 60 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
 
+export function useProductsPage(page = 1, pageSize = 24) {
+  return useQuery(productsPageQueryOptions(page, pageSize));
+}
 
-export function useProducts() {
-  return useQuery(productsQueryOptions());
+export const productsQueryOptions = (page = 1, pageSize = 24) =>
+  queryOptions({
+    queryKey: ["products", { page, pageSize }],
+    queryFn: () => apiPage<Product>("/products/", { page, pageSize }),
+    staleTime: 10 * 60 * 1000,
+    gcTime: 24 * 60 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    select: (pageData) => pageData.results,
+  });
+
+export function useProducts(page = 1, pageSize = 24) {
+  return useQuery(productsQueryOptions(page, pageSize));
 }
 
 export const playerQueryOptions = (id: string) =>

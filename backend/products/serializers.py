@@ -1,16 +1,44 @@
 from rest_framework import serializers
-from .models import Product, ProductImage
+
 from fifa_data.serializers import PlayerSerializer
+from .models import Product, ProductImage
+
 
 class ProductImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductImage
         fields = ['id', 'image', 'is_cover', 'order']
 
+
+class ProductListSerializer(serializers.ModelSerializer):
+    player = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Product
+        fields = ['id', 'player', 'title', 'description', 'quantity', 'category', 'price', 'date_posted']
+
+    def get_player(self, obj):
+        player = getattr(obj, 'player', None)
+        if not player:
+            return None
+        return {
+            'id': player.id,
+            'common_name': player.common_name,
+            'age': player.age,
+            'overall_rating': player.overall_rating,
+            'potential': player.potential,
+            'best_position': player.best_position,
+            'positions': player.positions,
+            'foot': player.foot,
+            'photo_url': player.photo_url,
+            'photo_data_uri': getattr(player, 'photo_data_uri', None),
+        }
+
+
 class ProductSerializer(serializers.ModelSerializer):
     images = ProductImageSerializer(many=True, required=False)
     image = serializers.ImageField(write_only=True, required=False)
-    player = PlayerSerializer(read_only=True)   # dados completos do jogador, só leitura
+    player = PlayerSerializer(read_only=True)
 
     class Meta:
         model = Product
