@@ -11,7 +11,7 @@ import {
   type PlayerFilterValues,
 } from "@/components/PlayerFilters";
 import { PlayerTable, PlayerTableSkeleton } from "@/components/PlayerTable";
-import { useOpenAuctionsByProduct, useProducts } from "@/features/players/hooks";
+import { useOpenAuctionsByProduct, useProductsPage } from "@/features/players/hooks";
 import { ArrowRight } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { StatePanel } from "@/components/StatePanel";
@@ -41,23 +41,23 @@ export const Route = createFileRoute("/players/")({
 
 function PlayersPage() {
   const pageSize = 24;
-  const page = Number(Route.useSearch().page) || 1;
-  const { data: pageData, isLoading, isFetching, isError } = useProducts(page, pageSize);
-  const openAuctions = useOpenAuctionsByProduct();
   const rawSearch = Route.useSearch();
   const filters: PlayerFilterValues = { ...defaultPlayerFilters, ...rawSearch };
+  const page = Math.max(1, Number(filters.page) || 1);
+  const { data: pageData, isLoading, isFetching, isError } = useProductsPage(page, pageSize, filters);
+  const openAuctions = useOpenAuctionsByProduct();
   const navigate = Route.useNavigate();
 
   const update = (patch: Partial<PlayerFilterValues>) =>
-    navigate({ to: "/players", search: cleanPlayerSearch({ ...filters, ...patch, page: 1 }) });
+    navigate({ to: "/players", search: cleanPlayerSearch({ ...filters, ...patch, page: patch.page ?? 1 }) });
   const reset = () => navigate({ to: "/players", search: {} });
 
   const products = pageData?.results ?? [];
-  const total = pageData?.count ?? products.length;
+  const total = pageData?.count ?? 0;
   const pageCount = Math.max(1, Math.ceil(total / pageSize));
   const current = Math.min(Math.max(1, page), pageCount);
-  const { positions, filtered } = usePlayerFiltering(products, filters);
-  const visible = filtered;
+  const { positions } = usePlayerFiltering(products, filters);
+  const visible = products;
 
   const goTo = (next: number) => {
     const target = Math.min(Math.max(1, next), pageCount);
@@ -71,7 +71,7 @@ function PlayersPage() {
     <div className="page-container">
       <PageHeader eyebrow="Base FIFA / EA" title="Todos os jogadores" description={isLoading
         ? "Carregando lista de jogadores..."
-        : `${total} jogadores encontrados · 24 por página.`
+        : `${total.toLocaleString("pt-BR")} jogadores encontrados · ${pageSize} por página.`
       } actions={
         <Link
           to="/"

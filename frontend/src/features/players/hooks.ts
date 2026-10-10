@@ -5,31 +5,70 @@ import { apiListAll, apiPage, apiRequest } from "@/lib/api";
 import type { Auction, Player, Product } from "@/types/api";
 import { isOpenAuction } from "@/lib/auction-status";
 
-export const productsPageQueryOptions = (page = 1, pageSize = 24) =>
-  queryOptions({
-    queryKey: ["products-page", { page, pageSize }],
-    queryFn: () => apiPage<Product>("/products/", { page, pageSize }),
-    staleTime: 10 * 60 * 1000,
+export interface PlayerFilterParams {
+  q?: string;
+  position?: string;
+  minOverall?: number;
+  maxOverall?: number;
+  minPotential?: number;
+  minAge?: number;
+  maxAge?: number;
+  foot?: string;
+  maxPrice?: number;
+  sort?: string;
+}
+
+export const productsPageQueryOptions = (
+  page = 1,
+  pageSize = 24,
+  filters?: Partial<PlayerFilterParams>,
+) => {
+  const searchParams: Record<string, string | number | undefined> = {};
+  if (filters?.q) searchParams.q = filters.q.trim();
+  if (filters?.position) searchParams.position = filters.position;
+  if (filters?.minOverall) searchParams.minOverall = filters.minOverall;
+  if (filters?.maxOverall) searchParams.maxOverall = filters.maxOverall;
+  if (filters?.minPotential) searchParams.minPotential = filters.minPotential;
+  if (filters?.minAge) searchParams.minAge = filters.minAge;
+  if (filters?.maxAge) searchParams.maxAge = filters.maxAge;
+  if (filters?.foot) searchParams.foot = filters.foot;
+  if (filters?.maxPrice) searchParams.maxPrice = filters.maxPrice;
+  if (filters?.sort && filters.sort !== "default") searchParams.sort = filters.sort;
+
+  return queryOptions({
+    queryKey: ["products-page", { page, pageSize, ...searchParams }],
+    queryFn: () => apiPage<Product>("/products/", { page, pageSize, search: searchParams }),
+    staleTime: 5 * 60 * 1000,
     gcTime: 24 * 60 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
+};
 
-export function useProductsPage(page = 1, pageSize = 24) {
-  return useQuery(productsPageQueryOptions(page, pageSize));
+export function useProductsPage(
+  page = 1,
+  pageSize = 24,
+  filters?: Partial<PlayerFilterParams>,
+) {
+  return useQuery(productsPageQueryOptions(page, pageSize, filters));
 }
 
-export const productsQueryOptions = (page = 1, pageSize = 24) =>
+export const productsQueryOptions = (
+  page = 1,
+  pageSize = 24,
+  filters?: Partial<PlayerFilterParams>,
+) =>
   queryOptions({
-    queryKey: ["products", { page, pageSize }],
-    queryFn: () => apiPage<Product>("/products/", { page, pageSize }),
-    staleTime: 10 * 60 * 1000,
-    gcTime: 24 * 60 * 60 * 1000,
-    refetchOnWindowFocus: false,
+    ...productsPageQueryOptions(page, pageSize, filters),
+    queryKey: ["products", { page, pageSize, ...filters }],
     select: (pageData) => pageData.results,
   });
 
-export function useProducts(page = 1, pageSize = 24) {
-  return useQuery(productsQueryOptions(page, pageSize));
+export function useProducts(
+  page = 1,
+  pageSize = 24,
+  filters?: Partial<PlayerFilterParams>,
+) {
+  return useQuery(productsQueryOptions(page, pageSize, filters));
 }
 
 export const playerQueryOptions = (id: string) =>

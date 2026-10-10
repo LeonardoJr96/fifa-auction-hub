@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import type { Product } from "@/types/api";
 
@@ -107,10 +107,14 @@ function playerName(product: Product) {
   return (product.player?.common_name || product.title || "").toLowerCase();
 }
 
+export const DEFAULT_POSITIONS = [
+  "CAM", "CB", "CDM", "CF", "CM", "GK", "LB", "LM", "LW", "LWB", "RB", "RM", "RW", "RWB", "ST"
+];
+
 /** Aplica busca, filtros e ordenação sobre a lista de produtos. */
 export function usePlayerFiltering(products: Product[] | undefined, filters: PlayerFilterValues) {
   const positions = useMemo(() => {
-    const set = new Set<string>();
+    const set = new Set<string>(DEFAULT_POSITIONS);
     for (const product of products ?? []) if (product.category) set.add(product.category);
     return Array.from(set).sort();
   }, [products]);
@@ -242,9 +246,22 @@ export function PlayerFilters({
   isLoading = false,
 }: PlayerFiltersProps) {
   const [open, setOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState(values.q ?? "");
   const count = activeFilterCount(values);
   const isDirty = count > 0;
   const set = (patch: Partial<PlayerFilterValues>) => onChange({ ...patch, page: 1 });
+
+  useEffect(() => {
+    setSearchTerm(values.q ?? "");
+  }, [values.q]);
+
+  useEffect(() => {
+    if (searchTerm === (values.q ?? "")) return;
+    const timer = setTimeout(() => {
+      set({ q: searchTerm });
+    }, 350);
+    return () => clearTimeout(timer);
+  }, [searchTerm, values.q]);
 
   return (
     <div className="mt-6 rounded-xl border border-border bg-card p-4 shadow-card">
@@ -290,8 +307,13 @@ export function PlayerFilters({
           Buscar jogador
           <input
             type="search"
-            value={values.q}
-            onChange={(event) => set({ q: event.target.value })}
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                set({ q: searchTerm });
+              }
+            }}
             placeholder="Nome do jogador"
             className={`${inputClass} w-full sm:w-56`}
           />

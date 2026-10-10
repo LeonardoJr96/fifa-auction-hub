@@ -8,12 +8,9 @@ x-backend-app: &backend-app
     DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
     REDIS_URL: redis://redis:6379/0
     CELERY_BROKER_URL: redis://redis:6379/0
-    SEED_DIR: /setups/seed
-    SEED_ON_START: ${SEED_ON_START:-false}
   volumes:
     - staticfiles:/app/staticfiles
     - media:/app/media
-    - ./setups:/setups:ro
   depends_on:
     db:
       condition: service_healthy
@@ -47,7 +44,6 @@ services:
     <<: *backend-app
     command: >
       sh -c "python manage.py migrate --noinput &&
-             if [ \"$$SEED_ON_START\" = \"true\" ]; then python manage.py seed_demo --if-empty; fi &&
              python manage.py collectstatic --noinput &&
              daphne -b 0.0.0.0 -p 8000 core.asgi:application"
     healthcheck:
@@ -59,6 +55,7 @@ services:
 
   celery_worker:
     <<: *backend-app
+    profiles: ["celery"]
     command: celery -A core worker -l info
     depends_on:
       backend:
@@ -66,6 +63,7 @@ services:
 
   celery_beat:
     <<: *backend-app
+    profiles: ["celery"]
     command: celery -A core beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
     depends_on:
       backend:
