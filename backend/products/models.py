@@ -10,9 +10,9 @@ class Product(models.Model):
     title = models.CharField(max_length=255)
     description = models.CharField(max_length=500, blank=True)
     quantity = models.IntegerField(default=1)   # jogador é sempre "1 unidade"
-    category = models.CharField(max_length=255, blank=True)  # ex: posição (ST, CB...)
-    price = models.DecimalField(max_digits=25, decimal_places=2)  # valor de mercado, usado no modo PLAYER_VALUE do leilão
-    date_posted = models.DateTimeField(auto_now_add=True, blank=True)
+    category = models.CharField(max_length=255, blank=True, db_index=True)  # ex: posição (ST, CB...)
+    price = models.DecimalField(max_digits=25, decimal_places=2, db_index=True)  # valor de mercado, usado no modo PLAYER_VALUE do leilão
+    date_posted = models.DateTimeField(auto_now_add=True, blank=True, db_index=True)
 
     class Meta:
         ordering = ['-date_posted']

@@ -195,12 +195,12 @@ def populate_market_window(window, per_player_mode=None):
     from team.models import RosterEntry
 
     qs = RosterEntry.objects.filter(team__campaign=campaign).select_related('player', 'team__owner')
-    players = []
-    for r in qs:
-        # skip players already listed in active listings
-        already = MarketListing.objects.filter(player=r.player, market_window=window).exists()
-        if not already:
-            players.append((r.player, r.team.owner))
+    already_ids = set(MarketListing.objects.filter(market_window=window).values_list('player_id', flat=True))
+    players = [
+        (r.player, r.team.owner)
+        for r in qs
+        if r.player_id not in already_ids
+    ]
 
     if not players:
         return []
@@ -210,24 +210,25 @@ def populate_market_window(window, per_player_mode=None):
     else:
         selected = players[: window.player_count]
 
-    created = []
+    listings_to_create = []
     for player, seller in selected:
         listing_type = per_player_mode.get(player.id, per_player_mode.get(str(player.id)))
         if listing_type is None:
             listing_type = 'auction' if window.mode == 'auction' else 'direct' if window.mode == 'market' else 'hybrid'
         if listing_type not in {'auction', 'direct'}:
             raise ValidationError('Modalidade individual deve ser auction ou direct.')
-        listing = MarketListing.objects.create(
-            market_window=window,
-            player=player,
-            seller=seller,
-            listing_type=listing_type,
-            price=player.price if player.price is not None else None,
-            is_active=True,
+        listings_to_create.append(
+            MarketListing(
+                market_window=window,
+                player=player,
+                seller=seller,
+                listing_type=listing_type,
+                price=player.price if player.price is not None else None,
+                is_active=True,
+            )
         )
-        created.append(listing)
 
-    return created
+    return MarketListing.objects.bulk_create(listings_to_create)
 
 
 def update_listing_type(actor, listing, listing_type):

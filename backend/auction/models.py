@@ -20,9 +20,9 @@ class Auction(models.Model):
     min_increment = models.DecimalField(max_digits=25, decimal_places=2, default=1)
     number_of_bids = models.IntegerField(default=0)
     winner = models.ForeignKey('user.User', on_delete=models.SET_NULL, null=True, blank=True)
-    status = models.CharField(max_length=10, choices=Status.choices, default=Status.OPEN)
+    status = models.CharField(max_length=10, choices=Status.choices, default=Status.OPEN, db_index=True)
     time_starting = models.DateTimeField()
-    time_ending = models.DateTimeField()
+    time_ending = models.DateTimeField(db_index=True)
     payment_deadline = models.DateTimeField(null=True, blank=True)
     reopened_into = models.OneToOneField('self', null=True, blank=True, on_delete=models.SET_NULL, related_name='reopened_from')
 

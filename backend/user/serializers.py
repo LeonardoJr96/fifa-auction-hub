@@ -89,7 +89,7 @@ class MeSerializer(serializers.ModelSerializer):
         # de usuário) precisa conhecer Bid. É a mesma lição da Correção 1: manter
         # o acoplamento o mais localizado possível.
         from auction.models import Bid
-        bids = Bid.objects.filter(user=obj).select_related('auction', 'auction__product').order_by('-bid_time')
+        bids = Bid.objects.filter(user=obj).select_related('auction', 'auction__product').order_by('-bid_time')[:50]
         return MyBidSerializer(bids, many=True).data
 
 

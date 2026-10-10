@@ -52,9 +52,8 @@ class AuctionViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     def list(self, request, *args, **kwargs):
-        expired = Auction.objects.filter(status=Status.OPEN, time_ending__lte=timezone.now())[:50]
-        for auction in expired:
-            maybe_finalize_user_auction(auction)
+        # Operação somente leitura: expiração de leilões vencidos é
+        # processada assincronamente pelo Celery Beat (ou sob demanda em retrieve)
         return super().list(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):

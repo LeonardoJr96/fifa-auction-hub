@@ -457,7 +457,7 @@ class Player(models.Model):
         related_name="players",
     )
 
-    age = models.IntegerField(null=True, blank=True)
+    age = models.IntegerField(null=True, blank=True, db_index=True)
 
     # Físico
     height = models.IntegerField(null=True, blank=True, help_text="cm")
@@ -468,7 +468,7 @@ class Player(models.Model):
     best_position = models.CharField(max_length=10, blank=True, null=True)
 
     # Pé e qualificações
-    foot = models.IntegerField(null=True, blank=True, help_text="1=Right, 2=Left")
+    foot = models.IntegerField(null=True, blank=True, db_index=True, help_text="1=Right, 2=Left")
     weak_foot = models.IntegerField(null=True, blank=True, help_text="Estrelas 1-5")
     skill_moves = models.IntegerField(null=True, blank=True, help_text="Estrelas 1-5")
     international_reputation = models.IntegerField(null=True, blank=True, help_text="Estrelas 1-5")
@@ -516,8 +516,8 @@ class Player(models.Model):
     gk_reflexes = models.IntegerField(null=True, blank=True)
 
     # Ratings gerais
-    overall_rating = models.IntegerField(null=True, blank=True)
-    potential = models.IntegerField(null=True, blank=True)
+    overall_rating = models.IntegerField(null=True, blank=True, db_index=True)
+    potential = models.IntegerField(null=True, blank=True, db_index=True)
 
     # Finanças
     price = models.BigIntegerField(null=True, blank=True)

@@ -10,7 +10,6 @@ from django.conf import settings
 from .models import AccelerationType, Player, Club, League, Country, Position, Gender, LeagueType, PlayerPlayStyle, PlayerPlayStylePlus, PlayerPrime, PlayerRole, PlayerRoleAssignment, PlayerSpeciality, PlayerTeam, PlayStyle, PlayStylePlus, Speciality, Stadium, TraitType, FocusType
 from .serializers import PlayerSerializer, ClubSerializer, LeagueSerializer, CountrySerializer, PositionSerializer, GenderSerializer, LeagueTypeSerializer, PlayerPlayStyleSerializer, PlayerPlayStylePlusSerializer, PlayerPrimeSerializer, PlayerRoleSerializer, PlayerRoleAssignmentSerializer, PlayerSpecialitySerializer, PlayerTeamSerializer, PlayStyleSerializer, PlayStylePlusSerializer, SpecialitySerializer, StadiumSerializer, TraitTypeSerializer, FocusTypeSerializer, AccelerationTypeSerializer
 from .filters import PlayerFilter, ClubFilter, LeagueFilter, CountryFilter, PositionFilter, GenderFilter, LeagueTypeFilter, PlayerPlayStyleFilter, PlayerPlayStylePlusFilter, PlayerPrimeFilter, PlayerRoleFilter, PlayerRoleAssignmentFilter, PlayerSpecialityFilter, PlayerTeamFilter, PlayStyleFilter, PlayStylePlusFilter, SpecialityFilter, StadiumFilter, TraitTypeFilter, FocusTypeFilter, AccelerationTypeFilter
-from .services import import_players_bulk
 
 
 class AdminWriteModelViewSet(viewsets.ModelViewSet):
@@ -152,5 +151,6 @@ class PlayerBulkImportView(APIView):
         if request.headers.get("X-Scraper-Key") != settings.SCRAPER_IMPORT_KEY:
             return Response({"detail": "chave inválida"}, status=401)
         rows = request.data.get("players", [])
-        players = import_players_bulk(rows)
-        return Response({"imported": len(players)}, status=201)
+        from .tasks import import_players_bulk_task
+        result = import_players_bulk_task.apply_async(args=[rows])
+        return Response({"task_id": result.id, "queued": len(rows)}, status=202)

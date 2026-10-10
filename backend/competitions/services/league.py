@@ -6,11 +6,16 @@ from .permissions import require_competition_admin
 
 
 def ensure_competition_entries(competition: Competition) -> None:
-    for participant in competition.participants.select_related("team"):
-        CompetitionEntry.objects.get_or_create(
-            competition=competition,
-            team=participant.team,
-        )
+    existing_team_ids = set(
+        CompetitionEntry.objects.filter(competition=competition).values_list("team_id", flat=True)
+    )
+    entries_to_create = [
+        CompetitionEntry(competition=competition, team_id=team_id)
+        for team_id in competition.participants.values_list("team_id", flat=True)
+        if team_id not in existing_team_ids
+    ]
+    if entries_to_create:
+        CompetitionEntry.objects.bulk_create(entries_to_create, ignore_conflicts=True)
 
 
 def _round_robin_pairings(team_ids: list[int]) -> list[list[tuple[int, int]]]:
@@ -60,18 +65,20 @@ def create_league_fixtures(
             return_pairings.append([(away, home) for home, away in round_pairs])
         pairings = pairings + return_pairings
 
-    created: list[Match] = []
-    with transaction.atomic():
-        for round_number, round_pairs in enumerate(pairings, start=1):
-            for home_id, away_id in round_pairs:
-                created.append(
-                    Match.objects.create(
-                        competition=competition,
-                        home_team_id=home_id,
-                        away_team_id=away_id,
-                        round_number=round_number,
-                    ),
+    matches_to_create = []
+    for round_number, round_pairs in enumerate(pairings, start=1):
+        for home_id, away_id in round_pairs:
+            matches_to_create.append(
+                Match(
+                    competition=competition,
+                    home_team_id=home_id,
+                    away_team_id=away_id,
+                    round_number=round_number,
                 )
+            )
+
+    with transaction.atomic():
+        created = Match.objects.bulk_create(matches_to_create)
         competition.status = Competition.Status.ACTIVE
         competition.save(update_fields=["status"])
     return created
