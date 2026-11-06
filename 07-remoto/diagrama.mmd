@@ -1,0 +1,23 @@
+graph TD
+    PortalAPI["PortalAPI<br/>Autenticação e saldo do usuário<br/>Mercado de leilões e lances<br/>Ligas, copas e tabelas<br/>Elencos virtuais e formações"]
+    User["User<br/>Autenticação e saldo do usuário"]
+    Auction["Auction<br/>Mercado de leilões e lances<br/>Validação de lances<br/>Reserva/débito de saldo<br/>Consulta aos atributos do card"]
+    Competitions["Competitions<br/>Ligas, copas e tabelas<br/>Premiações e inscrições"]
+    Team["Team<br/>Elencos virtuais e formações<br/>Validação de elencos<br/>Escalação de jogadores"]
+    Payment["Payment<br/>Reserva/débito de saldo<br/>Atualização direta do saldo<br/>Notificação de cobrança"]
+    FifaData["FifaData<br/>Consulta aos atributos do card<br/>Escalação de jogadores do catálogo"]
+    Social["Social<br/>Notificação de cobrança/recibo<br/>Notificação de fim de partida/torneio"]
+
+    PortalAPI --> User
+    PortalAPI --> Auction
+    PortalAPI --> Competitions
+    PortalAPI --> Team
+    Auction --> User
+    Auction --> Payment
+    Auction --> FifaData
+    Competitions --> Team
+    Competitions --> Payment
+    Competitions --> Social
+    Team --> FifaData
+    Payment --> User
+    Payment --> Social
